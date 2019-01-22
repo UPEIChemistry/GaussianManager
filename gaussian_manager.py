@@ -10,8 +10,7 @@ class ParseError(GaussianManagerError):
 class OutputLogError(GaussianManagerError):
     pass
 
-
-#TODO: Need to double check H-CH3-OH z-matrix, because this one failed due to 'small interatomic distance' where gauss thought two atoms were on top of each other
+#TODO: Refactor to be a library, rather than a single use script
 #TODO: Add TS checker function to make sure TS are real (single imaginary frequency)
 #TODO: If adding support for more calculations, methods which have to modified are: __init__(), generate_inputs(), generate_geometries_from_outputs(), _parse_log_file() _construct_filesystem()
 #TODO: Find out how to make multiplicity specific to each molecule, instead of hardcoded
