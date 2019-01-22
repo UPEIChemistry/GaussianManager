@@ -18,60 +18,87 @@ class OutputLogError(GaussianManagerError):
 
 
 class GaussianManager(object):
-    """Class for directly managing creation and running of gaussian jobs with specified input
-            molecules, methods, basis sets and calculations. Creates a file system with a rigid structure
-            so it can properly find generated inputs for running gaussian jobs and parsing outputs. This
-            file system is designed to be well organized for human consumption, however once jobs are run
-            final geometries are compiled into a results sub-directory of the experiment directory
+    """Class for managing single gaussian jobs, including generation of input file, running the
+        specified job, handling any encountered errors, and parsing output files to extract final
+        molecular geometries and any necessary information for the appropriate calculation type.
+        GM currently supports running TSOPT and IRC jobs, but there are plans to extend this support
+        to QST2/3 calculations as well.
 
         Args:
-            root_experiment_dir (str): The root dir where GM will store all generated input/output files
-            base_molecule_dir (str): Optional. The dir storing base molecules to begin calculations with
-            methods (list of str): Optional. The general calculations GM will be running
-            basis_sets (list of str): P=
+
     """
 
     def __init__(self,
-                 root_experiment_dir,
-                 base_molecule_dir=None,
-                 methods=['mp2'],
-                 basis_sets=["6-31G"],
-                 calculations=['irc', 'tsopt']):
+                 input_molecule_path=None,
+                 root_experiment_dir=None,
+                 method='mp2',
+                 basis_set='6-31G',
+                 calculation='ts-opt',
+                 overwrite=False):
 
-        #Set base molecular directory and iterate through files in dir to make list
-        self.base_molecule_dir = os.path.expanduser(self._add_trailing_slash(base_molecule_dir))
-        self.base_molecule_list = [self.base_molecule_dir + f for f in os.listdir(self.base_molecule_dir) if os.path.isfile(os.path.join(self.base_molecule_dir, f))]
+        #Set class attributes
+        if input_molecule_path is not None:
+            self.input_molecule_path = os.path.expanduser(input_molecule_path)
+        if root_experiment_dir is not None:
+            self.root_experiment_dir = os.path.expanduser(self._add_trailing_slash(root_experiment_dir))
+        if input_molecule_path is not None and root_experiment_dir is not None:
+            self.output_molecule_path = (self.root_experiment_dir
+                                        + 'reaction/'
+                                        + os.path.basename(self.input_molecule_path)[:-4]
+                                        + '/')
+        self.method = method
+        self.basis_set = basis_set
+        self.calculation = calculation
+        self.overwrite = overwrite
 
-        self.root_experiment_dir = os.path.expanduser(self._add_trailing_slash(root_experiment_dir))
-        self.methods = methods
-        self.basis_sets = basis_sets
-        self.calculations = calculations
+    def generate_gaussian_input(self,
+                                molecule_filepath=None,
+                                input_destination_dir=None,
+                                method=None,
+                                basis_set=None,
+                                calculation_keywords=None,
+                                calculation=None,
+                                multiplicity=None,
+                                overwrite=True):
 
-    def generate_gaussian_input():
-        pass
+        #Check kwargs and assign defaults
+        if molecule_filepath is None:
+            molecule_filepath = self.input_molecule_path
+        if method is None:
+            method = self.method
+        if basis_set is None:
+            basis_set = self.basis_set
+        if calculation_keywords is None:
+            calculation = self.calculation
+            if calculation == 'ts-opt':
+                calculation_keywords = 'OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
+            elif calculation == 'irc':
+                calculation_keywords = 'IRC=CALCFC SCF(maxcyc=256)'
+        if multiplicity is None:
+            multiplicity = '-1 1'
+        if input_destination_dir is None:
+            input_destination_dir = (self.output_molecule_path
+                                     + method + '/'
+                                     + basis_set + '/'
+                                     + calculation + '/')
 
-    # def __init__(self,
-        #              xyz_dir,
-        #              experiment_dir,
-        #              methods=['mp2'],
-        #              basis_sets=["6-31G"],
-        #              calculations=['irc', 'tsopt']):
-        #     #Sanitize xyz path, pull in all files from that location and store them in a list of file paths
-        #     xyz_dir = self._add_trailing_slash(xyz_dir)
-        #     xyz_dir = os.path.expanduser(xyz_dir)
-        #     self.unopt_ts_xyz_filepaths = [xyz_dir + f for f in os.listdir(xyz_dir) if os.path.isfile(os.path.join(xyz_dir, f))]
+        #Create necessary directories for input files
+        input_destination_dir = os.path.expanduser(input_destination_dir)
+        self._makedir(input_destination_dir, verbose=True)
 
-        #     #Sanitize the path for the working experimental directory
-        #     self.experiment_dir = self._add_trailing_slash(experiment_dir)
-        #     self.experiment_dir = os.path.expanduser(self.experiment_dir)
+        #Define the necessary parts for the input file
+        molecule_filepath = os.path.expanduser(molecule_filepath)
+        reaction_name = os.path.basename(molecule_filepath)[:-4]
+        with open(molecule_filepath, 'r') as file:
+            coordinates = file.readlines()[2:]
 
-        #     #Pull in other args
-        #     self.methods = methods
-        #     self.basis_sets = basis_sets
-        #     self.calculations = calculations
-
-        #     #Construct the base file tree, which creates method / basis_set / calculation scaffold for all methods, basis sets and calculations
-        #     self.tsopt_paths, self.irc_paths = self._construct_filesystem()
+        #Create the input file
+        with open(input_destination_dir + 'input.com', 'w') as file:
+            file.write('# {}/{} {}\n\n'.format(method, basis_set, calculation_keywords))
+            file.write(reaction_name + '\n\n')
+            file.write(multiplicity + '\n')
+            file.write(''.join(line for line in coordinates))
+            file.write('\n\n')
 
     def get_all_geometries(self):
         """Exposed convenience function which runs both tsopt and irc calculations, parses
@@ -414,15 +441,19 @@ class GaussianManager(object):
             path = path + '/'
         return path
 
-    def _makedir(self, path, verbose=False):
-        """Hidden method for checking if directories exist, and making them if they don't"""
-        if os.path.isdir(os.path.expanduser(path)):
+    def _makedir(self, path, overwrite=False, verbose=False):
+        """Hidden method for creating directories"""
+
+        if os.path.isdir(path):
+            if overwrite:
+                os.removedirs(path)
+                os.makedirs(path)
             if verbose:
-                print(path + ' exists already, descending...')
+                print(path + ' already exists')
         else:
-            os.mkdir(path)
+            os.makedirs(path)
             if verbose:
-                print(path + ' created.')
+                print(path + ' created')
 
     def _construct_filesystem(self):
             """Hidden method which is called upon object instantiation which constructs the scaffold of
