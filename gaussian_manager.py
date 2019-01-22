@@ -15,6 +15,8 @@ class OutputLogError(GaussianManagerError):
 #TODO: If adding support for more calculations, methods which have to modified are: __init__(), generate_inputs(), generate_geometries_from_outputs(), _parse_log_file() _construct_filesystem()
 #TODO: Find out how to make multiplicity specific to each molecule, instead of hardcoded
 
+
+
 class GaussianManager(object):
     """Class for directly managing creation and running of gaussian jobs with specified input
             molecules, methods, basis sets and calculations. Creates a file system with a rigid structure
@@ -23,38 +25,53 @@ class GaussianManager(object):
             final geometries are compiled into a results sub-directory of the experiment directory
 
         Args:
-            xyz_dir (str): The directory containing initial xyz files. Currently xyz files must be in the format
-                outputted by obabel, where coordinates begin on the 3rd line of the file, otherwise
-                gaussian input files will NOT contain the correct information to represent the molecule
-            experiment_dir (str): The path of the root of the file system to be created, all directories
-                created by GM are sub-directories of experiment_dir
-            methods (list of strings): The different levels of theory to run gaussian at
-            basis_sets (list of strings): The basis_sets to run calculations at
-            calculations (list of strings): The different calculations to run when finding transition states, currently only supports 'irc' and 'tsopt' as inputs
+            root_experiment_dir (str): The root dir where GM will store all generated input/output files
+            base_molecule_dir (str): Optional. The dir storing base molecules to begin calculations with
+            methods (list of str): Optional. The general calculations GM will be running
+            basis_sets (list of str): P=
     """
 
     def __init__(self,
-                 xyz_dir,
-                 experiment_dir,
+                 root_experiment_dir,
+                 base_molecule_dir=None,
                  methods=['mp2'],
                  basis_sets=["6-31G"],
                  calculations=['irc', 'tsopt']):
-        #Sanitize xyz path, pull in all files from that location and store them in a list of file paths
-        xyz_dir = self._add_trailing_slash(xyz_dir)
-        xyz_dir = os.path.expanduser(xyz_dir)
-        self.unopt_ts_xyz_filepaths = [xyz_dir + f for f in os.listdir(xyz_dir) if os.path.isfile(os.path.join(xyz_dir, f))]
 
-        #Sanitize the path for the working experimental directory
-        self.experiment_dir = self._add_trailing_slash(experiment_dir)
-        self.experiment_dir = os.path.expanduser(self.experiment_dir)
+        #Set base molecular directory and iterate through files in dir to make list
+        self.base_molecule_dir = os.path.expanduser(self._add_trailing_slash(base_molecule_dir))
+        self.base_molecule_list = [self.base_molecule_dir + f for f in os.listdir(self.base_molecule_dir) if os.path.isfile(os.path.join(self.base_molecule_dir, f))]
 
-        #Pull in other args
+        self.root_experiment_dir = os.path.expanduser(self._add_trailing_slash(root_experiment_dir))
         self.methods = methods
         self.basis_sets = basis_sets
         self.calculations = calculations
 
-        #Construct the base file tree, which creates method / basis_set / calculation scaffold for all methods, basis sets and calculations
-        self.tsopt_paths, self.irc_paths = self._construct_filesystem()
+    def generate_gaussian_input():
+        pass
+
+    # def __init__(self,
+        #              xyz_dir,
+        #              experiment_dir,
+        #              methods=['mp2'],
+        #              basis_sets=["6-31G"],
+        #              calculations=['irc', 'tsopt']):
+        #     #Sanitize xyz path, pull in all files from that location and store them in a list of file paths
+        #     xyz_dir = self._add_trailing_slash(xyz_dir)
+        #     xyz_dir = os.path.expanduser(xyz_dir)
+        #     self.unopt_ts_xyz_filepaths = [xyz_dir + f for f in os.listdir(xyz_dir) if os.path.isfile(os.path.join(xyz_dir, f))]
+
+        #     #Sanitize the path for the working experimental directory
+        #     self.experiment_dir = self._add_trailing_slash(experiment_dir)
+        #     self.experiment_dir = os.path.expanduser(self.experiment_dir)
+
+        #     #Pull in other args
+        #     self.methods = methods
+        #     self.basis_sets = basis_sets
+        #     self.calculations = calculations
+
+        #     #Construct the base file tree, which creates method / basis_set / calculation scaffold for all methods, basis sets and calculations
+        #     self.tsopt_paths, self.irc_paths = self._construct_filesystem()
 
     def get_all_geometries(self):
         """Exposed convenience function which runs both tsopt and irc calculations, parses
@@ -137,7 +154,6 @@ class GaussianManager(object):
             except GaussianManagerError:
                 print('no output.log file for {}'.format(irc_path))
                 continue
-
 
     def _compile_all_geometries(self):
         """Hidden fxn which pulls all of the generated geometries from the file-tree and dumps them
