@@ -10,13 +10,6 @@ class ParseError(GaussianManagerError):
 class OutputLogError(GaussianManagerError):
     pass
 
-#TODO: Refactor to be a library, rather than a single use script
-#TODO: Add TS checker function to make sure TS are real (single imaginary frequency)
-#TODO: If adding support for more calculations, methods which have to modified are: __init__(), generate_inputs(), generate_geometries_from_outputs(), _parse_log_file() _construct_filesystem()
-#TODO: Find out how to make multiplicity specific to each molecule, instead of hardcoded
-
-
-
 class GaussianManager(object):
     """Class for managing single gaussian jobs, including generation of input file, running the
         specified job, handling any encountered errors, and parsing output files to extract final
@@ -24,8 +17,29 @@ class GaussianManager(object):
         GM currently supports running TSOPT and IRC jobs, but there are plans to extend this support
         to QST2/3 calculations as well.
 
-        Args:
+        There are two main ways of using GM; either as a wrapper for running a gaussian job, or as
+        a library of useful tools for existing inputs/outputs. When using as a wrapper, one should
+        instatiate a GM object by passing the appropriate attributes for running the job. When
+        using as a toolbox, instatiate with the defaults, and override the args to whichever method
+        you require.
 
+        For example, you could have already have an input file, and you could use GM
+        to submit the job and parse the outputs, or handle any potential errors thrown by gaussian.
+        Or, you could have an unoptimized xyz file to run some calculations on, and work GM from
+        instatiation to generate the output molecule
+
+        Args:
+            input_molecule_path (str, optional): Defaults to None. Path to the input molecule to
+                run a gaussian job. Only for standard GM usage, if using as library leave at
+                default.
+            root_experiment_dir (str, optional): Defaults to None. Root directory where GM will
+                start creating input files. Only for standard GM usage, if using as library leave
+                at default.
+            method (str, optional): Defaults to {mp2}. The level of theory which the gaus job
+                shall be run at
+            basis_set (str, optional): Defaults to {6-31G}
+            calculation (str, optional): Defaults to {ts-opt}. Currently can only be {irc} or
+                {ts-opt}, plans to add support for {qst2} and {qst3}
     """
 
     def __init__(self,
