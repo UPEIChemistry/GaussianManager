@@ -1,8 +1,18 @@
 class GaussianManagerError(Exception):
     pass
 
-class ParseError(GaussianManagerError):
+class GaussianInputError(GaussianManagerError):
     pass
 
-class OutputLogError(GaussianManagerError):
+class GaussianCovergeError(GaussianManagerError):
+    pass
+
+class GaussianBasisError(GaussianManagerError):
+    pass
+
+
+class GaussianProximityError(GaussianManagerError):
+    pass
+
+class GaussianUnknownError(GaussianManagerError):
     pass
