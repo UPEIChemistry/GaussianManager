@@ -64,7 +64,7 @@ class GaussianManager(object):
             self.input_filepath = self.output_molecule_path + 'input.com'
             self.output_filepath = self.output_molecule_path + 'output.log'
 
-
+    #TODO: Test the assertion statements
     def generate_gaussian_input(self,
                                 molecule_filepath=None,
                                 input_filepath=None,
@@ -73,18 +73,23 @@ class GaussianManager(object):
                                 calculation_keywords=None,
                                 calculation=None,
                                 multiplicity=None,
-                                overwrite=True):
+                                overwrite=False):
 
         #Check kwargs and assign defaults
         if molecule_filepath is None:
+            assert self.input_molecule_path
             molecule_filepath = self.input_molecule_path
         if input_filepath is None:
+            assert self.input_filepath
             input_filepath = self.input_filepath
         if method is None:
+            assert self.method
             method = self.method
         if basis_set is None:
+            assert self.basis_set
             basis_set = self.basis_set
         if calculation_keywords is None:
+            assert self.calculation
             calculation = self.calculation
             if calculation == 'ts-opt':
                 calculation_keywords = 'OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
@@ -96,7 +101,7 @@ class GaussianManager(object):
         #Define the necessary parts for the input file
         molecule_filepath = os.path.expanduser(molecule_filepath)
         input_filepath = os.path.expanduser(input_filepath)
-        input_destination = input_filepath - os.path.basename(input_filepath)
+        input_destination = os.path.dirname(input_filepath)
         reaction_name = os.path.basename(molecule_filepath)[:-4]
         with open(molecule_filepath, 'r') as file:
             coordinates = file.readlines()[2:]
@@ -105,7 +110,7 @@ class GaussianManager(object):
         self._makedir(input_destination, verbose=True)
 
         #Create the input file
-        with open(input_filepath + 'input.com', 'w') as file:
+        with open(input_filepath, 'w') as file:
             file.write('# {}/{} {}\n\n'.format(method, basis_set, calculation_keywords))
             file.write(reaction_name + '\n\n')
             file.write(multiplicity + '\n')
@@ -130,14 +135,17 @@ class GaussianManager(object):
         else:
             self._run_gaussian_command(input_filepath, output_filepath)
 
+    #TODO: This should be tested through run_gaussian_job outward facing method
     def _run_gaussian_command(self,
                          input_filepath=None,
                          output_filepath=None):
 
         #Assign kwarg defaults if not overridden
         if input_filepath is None:
+            assert self.input_filepath
             input_filepath = self.input_filepath
         if output_filepath is None:
+            assert self.input_filepath
             output_filepath = self.output_filepath
 
         #Generate necessary info for gaussian command
@@ -218,8 +226,8 @@ class GaussianManager(object):
 
         def _resolve_input():
 
-            with open(input_file, 'w') as file:
-                file_lines = file.readlines()
+            with open(input_filepath, 'w') as file:
+                input_filepath = file.readlines()
 
         def _resolve_convergence():
             pass
