@@ -1,8 +1,9 @@
+import exceptions
+import gaussian_utils
 import os
 import subprocess
-import exceptions
-import copy
-import shutil
+
+
 
 class GaussianManager(object):
     """Class for managing single gaussian jobs, including generation of input file, running the
@@ -156,21 +157,17 @@ class GaussianManager(object):
         #Run the command for the gaus job
         print('running calculation on {}...'.format(molecule_name))
         try:
-            subprocess.run("module load gaussian/g09.e01; g09 < {} >& {}".format(input_filepath, output_filepath), shell=True, check=True)
+            gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
         except subprocess.CalledProcessError:
 
-            #Find out what the error code is for
-            with open(output_filepath, 'r') as file:
-                error_line = file.readlines()[-3]
-            error_code = error_line.split('.exe')[0].split('/')[-1]
-
-            #Raise exception with the error code as exception's message
+            #Find out what the error code is for & raise an exception with that error code
+            error_code = gaussian_utils.discover_gaussian_error_code(output_filepath)
             raise exceptions.GaussianManagerError(error_code)
-
         else:
             print('calculation on {} completed successfully'.format(molecule_name))
 
-        # #Run the command while checking for errors, resolve if resolve_errors toggled
+    #TODO: Remove this when resolve_errors() is written and functional
+    # #Run the command while checking for errors, resolve if resolve_errors toggled
             # if resolve_errors:
 
             #     #Set the initial input file for the run
