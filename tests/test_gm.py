@@ -37,9 +37,6 @@ class TestGaussianManager:
 
         return output_filepath
 
-
-
-
 class TestInputGeneration(TestGaussianManager):
     """Tests the various ways of using gaussian_manager.generate_gaussian_input()"""
 
