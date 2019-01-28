@@ -22,9 +22,25 @@ def get_coords_from_xyz(filepath):
             coordinates = file.readlines()[2:]
     return coordinates
 
-def write_input_file(*args):
+def write_input_file(**kwargs):
+    """Writes gaussian input file when provided the proper information.  Required arguments:
+        input_filepath -- the path where the input file is written to
+        method -- the level of theory used in the calculation
+        basis_set -- self explanatory
+        calculation_keywords -- the keywords gaussian requires to know which calculation it's running
+        reaction_name -- the name of the molecule/reaction the calc is being run on
+        multiplicity -- self explanatory
+        coordinates -- the xyz coords of the molecule being subjected to gaus calc
+    """
 
-    input_filepath, method, basis_set, calculation_keywords, reaction_name, multiplicity, coordinates = args
+
+    input_filepath = kwargs['input_filepath']
+    method = kwargs['method']
+    basis_set = kwargs['basis_set']
+    calculation_keywords = kwargs['calculation_keywords']
+    reaction_name = kwargs['reaction_name']
+    multiplicity = kwargs['multiplicity']
+    coordinates = kwargs['coordinates']
 
     with open(input_filepath, 'w') as file:
         file.write('# {}/{} {}\n\n'.format(method, basis_set, calculation_keywords))
@@ -53,8 +69,9 @@ def discover_gaussian_error_code(output_filepath):
 def sanitize_path(path, add_slash=False):
     """Expand user in path and add final slash if not present and toggled"""
 
-    if path[-1] != '/':
-        path = path + '/'
+    if add_slash:
+        if path[-1] != '/':
+            path = path + '/'
     path = os.path.expanduser(path)
 
     return path

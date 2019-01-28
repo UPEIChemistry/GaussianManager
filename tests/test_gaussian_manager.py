@@ -33,10 +33,6 @@ class TestGaussianManager:
         gm = gaussian_manager.GaussianManager()
         return gm
 
-    def _create_successful_tsopt_gaussian_output(self):
-
-        return output_filepath
-
 class TestInputGeneration(TestGaussianManager):
     """Tests the various ways of using gaussian_manager.generate_gaussian_input()"""
 
@@ -60,27 +56,3 @@ class TestInputGeneration(TestGaussianManager):
         gm = super()._construct_method_attributes_gm()
         with pytest.raises(AttributeError):
             gm.generate_gaussian_input()
-
-class TestJobRunning(TestGaussianManager):
-    """Tests the various functionalities of run_gaussian_job()"""
-
-    def test_instance_attributes_successful_tsopt_gaussian_job(self):
-
-        gm = super()._construct_instance_attributes_gm()
-        gm.output_filepath = super()._create_successful_tsopt_gaussian_output()
-        try:
-            gm.run_gaussian_job(resolve_errors=False)
-        except exceptions.GaussianManagerError:
-            pytest.fail('')
-
-    def test_method_attributes_successful_tsopt_gaussian_job(self):
-
-        gm = super()._construct_method_attributes_gm()
-
-    def test_no_attributes_raises_assertion_error(self):
-        gm = super()._construct_method_attributes_gm()
-        with pytest.raises(AttributeError):
-            gm.run_gaussian_job()
-class TestErrorResolving:
-    """Tests the resolving of various errors thrown by gaussian"""
-    pass

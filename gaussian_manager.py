@@ -105,8 +105,13 @@ class GaussianManager(object):
         gaussian_utils.make_dir(input_destination)
 
         #Create the input file
-        gaussian_utils.write_input_file(input_filepath, method, basis_set, calculation_keywords,
-                                        reaction_name, multiplicity, coordinates)
+        gaussian_utils.write_input_file(input_filepath=input_filepath,
+                                        method=method,
+                                        basis_set=basis_set,
+                                        calculation_keywords=calculation_keywords,
+                                        reaction_name=reaction_name,
+                                        multiplicity=multiplicity,
+                                        coordinates=coordinates)
 
     #TODO: Test this to make sure that it's ALL working
     def start_calculation(self,
