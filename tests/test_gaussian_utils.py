@@ -1,55 +1,104 @@
 import exceptions
 import gaussian_utils
 import os
+from _pytest.monkeypatch import MonkeyPatch
 import pytest
+import socket
 import subprocess
 import tempfile
 
-test_directory = '/home/riley/dev/python/gaussian-manager/tests/'
+example_directory = '/home/riley/dev/python/gaussian-manager/tests/example/'
 
+@pytest.fixture(scope='module')
+def blank_input_filepath():
 
-def get_blank_IO():
-    input_filepath = tempfile.mkstemp()
-    output_filepath = tempfile.mkstemp()
+    _, file = tempfile.mkstemp()
 
-    return input_filepath, output_filepath
+    yield file
 
-def get_real_IO():
+@pytest.fixture(scope='module')
+def bad_input_filepath():
 
-    input_filepath = test_directory + 'example/example-input.com'
-    output_filepath = test_directory + 'example/example-output.log'
+    yield example_directory + 'bad_input.com'
 
-    return input_filepath, output_filepath
+@pytest.fixture(scope='module')
+def input_filepath():
+
+    yield example_directory + 'input.com'
+
+@pytest.fixture(scope='module')
+def molecule_filepath():
+
+    yield example_directory + 'xyz/F-CH3-OH.xyz'
+
+@pytest.fixture(scope='module')
+def successful_output_filepath():
+
+    yield example_directory + 'successful_output.log'
+
+@pytest.fixture(scope='module')
+def blank_output_filepath():
+
+    yield tempfile.mkstemp()
+
+@pytest.fixture(scope='module')
+def l101_output_filepath():
+
+    yield example_directory + 'l101_output.log'
+
+@pytest.fixture(scope='module')
+def l502_output_filepath():
+
+    yield example_directory + 'l502_output.log'
+
+@pytest.fixture(scope='module')
+def l9999_output_filepath():
+
+    yield example_directory + 'l9999_output.log'
 
 class TestGaussianUtils:
 
+    @pytest.mark.skipif('gra' not in socket.gethostname() or 'ced' not in socket.gethostname(),
+                        reason='Only test on supercomputer clusters as they have the gaussian software package')
+    def test_run_bash_command_complete_successfully(self, input_filepath, blank_output_filepath):
 
-    def run_bash_command_complete_successfully(self):
-
-        input_filepath, output_filepath = get_blank_IO()
+        output_filepath = blank_output_filepath
         gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
 
-    def test_run_bash_command_throw_error(self):
+    def test_run_mock_bash_command_complete_successfully(self, monkeypatch, input_filepath):
 
-        input_filepath, output_filepath = get_blank_IO()
-        with pytest.raises(subprocess.CalledProcessError):
+        def mock_successful_gaussian_job(inp, out):
+
+            print("I'm here!")
+
+        output_filepath = 'foo/bar/output.log'
+
+        with monkeypatch.context() as m:
+            m.setattr('gaussian_utils.run_gaussian_bash_command',
+                      mock_successful_gaussian_job)
             gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
 
-    def test_get_coords_from_xyz(self):
+    def test_run_bash_command_throw_error(self, bad_input_filepath):
 
-        molecule = test_directory + 'example/xyz/F-CH3-OH.xyz'
+        _, output_filepath = tempfile.mkstemp()
+
+        with pytest.raises(subprocess.CalledProcessError):
+            gaussian_utils.run_gaussian_bash_command(bad_input_filepath, output_filepath)
+
+    def test_get_coords_from_xyz(self, molecule_filepath):
+
         true_first_line = 'F          0.00000        0.00000        0.00000'
         true_last_line = 'H          4.12408        0.00000       -0.82631'
 
-        coords = gaussian_utils.get_coords_from_xyz(molecule)
+        coords = gaussian_utils.get_coords_from_xyz(molecule_filepath)
 
         assert (true_first_line in coords[0] and true_last_line in coords[-1])
 
-    def test_write_output_file(self):
+    def test_write_input_file(self, blank_input_filepath):
 
+        input_file = blank_input_filepath
         true_first_line = '# mp2/6-31G OPT(TS, CALFC, NOEIGEN) FREQ'
         true_last_line = '\n'
-        _, input_file = tempfile.mkstemp()
 
         gaussian_utils.write_input_file(input_filepath=input_file,
                                         method='mp2',
@@ -63,26 +112,23 @@ class TestGaussianUtils:
 
         assert (true_first_line in lines[0] and true_last_line == lines[-1])
 
-    def test_discover_l101_gaussian_error_code(self):
+    def test_discover_l101_gaussian_error_code(self, l101_output_filepath):
 
-        output_filepath = test_directory + 'example/l101_output.log'
         true_code = 'l101'
 
-        test_code = gaussian_utils.discover_gaussian_error_code(output_filepath)
+        test_code = gaussian_utils.discover_gaussian_error_code(l101_output_filepath)
         assert test_code == true_code
 
-    def test_discover_l502_gaussian_error_code(self):
+    def test_discover_l502_gaussian_error_code(self, l502_output_filepath):
 
-        output_filepath = test_directory + 'example/l502_output.log'
         true_code = 'l502'
 
-        test_code = gaussian_utils.discover_gaussian_error_code(output_filepath)
+        test_code = gaussian_utils.discover_gaussian_error_code(l502_output_filepath)
         assert test_code == true_code
 
-    def test_discover_l9999_gaussian_error_code(self):
+    def test_discover_l9999_gaussian_error_code(self, l9999_output_filepath):
 
-        output_filepath = test_directory + 'example/l9999_output.log'
         true_code = 'l9999'
 
-        test_code = gaussian_utils.discover_gaussian_error_code(output_filepath)
+        test_code = gaussian_utils.discover_gaussian_error_code(l9999_output_filepath)
         assert test_code == true_code
