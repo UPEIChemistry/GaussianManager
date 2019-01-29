@@ -66,6 +66,45 @@ def discover_gaussian_error_code(output_filepath):
 
     return error_code
 
+def write_error_log_read_input(error_log, input_filepath, counter):
+    """Used by resolve_error methods to get the required information and log attempts appropriately"""
+
+    with open(error_log, 'a') as file:
+        file.write('attempt {0} to resolve convergence error with input file {1} for '.format(counter, input_filepath))
+    with open(input_filepath, 'r') as file:
+        lines = file.readlines()
+
+    return lines
+
+def write_new_input(old_input_path, lines):
+    """Used by resolve_error methods to write a new input file from a list of lines"""
+
+    new_input_filepath = sanitize_path(os.path.dirname(old_input_path),
+                                                          add_slash=True) + 'error-resolved-input.com'
+
+    with open(new_input_filepath, 'w') as file:
+        for line in lines:
+            file.write(line)
+
+    return new_input_filepath
+
+def log_appropriate_error_code(error, name, log_file):
+    """Writes messages specific to error to log_file"""
+
+
+    error_code = error.args
+    if error_code == 'l301':
+        error_message = ('Problem with basis set for {0}.'
+                        + ' Check to make sure chosen basis set supports all atoms of {0}').format(name)
+    if error_code == 'l202':
+        error_message = 'Proximity error with {0}, check to make sure atoms are spaced far enough apart'.format(name)
+    else:
+        error_message = 'unknown error {0} encountered with {1}, unable to resolve'.format(error_code, name)
+
+    print('error code {0} encountered with {1}, logging...'.format(error_code, name))
+    with open(log_file, 'a') as file:
+        file.write(error_message)
+
 def sanitize_path(path, add_slash=False):
     """Expand user in path and add final slash if not present and toggled"""
 

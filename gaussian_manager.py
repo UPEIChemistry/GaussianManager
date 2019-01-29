@@ -67,7 +67,6 @@ class GaussianManager(object):
             self.input_filepath = self.output_molecule_path + 'input.com'
             self.output_filepath = self.output_molecule_path + 'output.log'
 
-    #TODO: Test the assertion statements
     def generate_gaussian_input(self,
                                 molecule_filepath=None,
                                 input_filepath=None,
@@ -120,59 +119,89 @@ class GaussianManager(object):
                          output_filepath=None,
                          resolve_errors=True,
                          log_filepath=None,
-                         resolve_attempts=32):
+                         resolve_attempts=8):
+        """Exposed method for starting gaussian with provided input_filepath.  If resolve_errors,
+            then this method will create new tweaked input files to try getting the calculation
+            to run successfully. If GM is unable to resolve the error, it will log the error code
+            and how it tried to resolve the error along with the final error code before
+            resolve_attempts ran out.
+
+            input_filepath (str, optional): Defaults to None. Path to the input file for running
+                gaussian
+            output_filepath (str, optional): Defaults to None. Path to where gaussian should write
+                it's output file
+            resolve_errors (bool, optional): Defaults to True. If True, the method will try to
+                resolve any errors thrown by gaussian that it recognizes
+            log_filepath (str, optional): Defaults to None. Override to specify where GM writes the
+                error log, otherwise the log is written to the directory containing the output file
+            resolve_attempts (int, optional): Defaults to 32. Counter for long GM should attempt to
+                resolve errors. Best if counter is not set too high, as gaussian calculation are
+                costly
+
+            Raises:
+                exceptions.GMUnsupportedErrorCode: Raised if GM cannot resolve the error
+        """
 
         #Assign kwarg defaults if not overridden
         input_filepath = input_filepath or self.input_filepath
-        output_filepath = output_filepath or self.output_filepath
-
-        #Generate necessary info for gaussian command
         input_filepath = gaussian_utils.sanitize_path(input_filepath)
+        output_filepath = output_filepath or self.output_filepath
         output_filepath = gaussian_utils.sanitize_path(output_filepath)
         log_filepath = log_filepath or (os.path.dirname(output_filepath) + 'error_log.txt')
 
         if resolve_errors:
+
+            #Set input variable for loop and some counters
+            new_input_file = input_filepath
+            counters = {'input_error_counter' : 0,
+                        'converge_error_counter' : 0}
+
+            #Loop until attempts runs out
             for _ in range(resolve_attempts):
+
+                #Try running gaussian with provided input/output
                 try:
-                    self._run_gaussian_command(input_filepath, output_filepath)
+                    self._run_gaussian_discover_errors(new_input_file, output_filepath)
+                    break
                 except exceptions.GaussianManagerError as error:
                     try:
-                        input_filepath = self._call_corresponding_error_code_method(error, input_filepath)
-                        continue
-                    except exceptions.GMUnknownErrorCode as e:
-                        with open(log_filepath) as log:
-                            error_message = 'error code {0} encountered with output file {1}'.format(e.args, output_filepath)
-                            print(error_message + ', logging...')
-                            log.write(error_message)
-                else:
-                    break
+                        #This will raise GMUnknownErrorCode if it doesn't recognize the error code
+                        error_resolve_method = self._get_corresponding_error_code_method(error)
+
+                        #Increment some counters for logistics
+                        if error_resolve_method is self._resolve_input_error:
+                            counters['input_error_counter'] += 1
+                        if error_resolve_method is self._resolve_convergence_error:
+                            counters['converge_error_counter'] += 1
+
+                    #Catch GMUnknownErrorCode and raise it further
+                    except exceptions.GMUnsupportedErrorCode as err:
+                        gaussian_utils.log_appropriate_error_code(err, new_input_file, log_filepath)
+                        raise err
+
+                    #Run the resolve_error method and get the path to the new input file
+                    new_input_file = error_resolve_method(input_filepath=input_filepath,
+                                                          output_filepath=output_filepath,
+                                                          error_log=log_filepath,
+                                                          counters=counters)
         else:
-            try:
-                self._run_gaussian_command(input_filepath, output_filepath)
-            except exceptions.GaussianManagerError as error:
-                error.args = 'Gaussian failed with error code {}'.format(error.args)
-                raise error
+            self._run_gaussian_discover_errors(input_filepath, output_filepath)
 
-    #FIXME: these fxns need to be completed!!!
-    def resolve_convergence_error(self, input_filepath):
-
-        return input_filepath
-
-    def resolve_input_error(self, input_filepath):
-
-        return input_filepath
-
-    def resolve_basis_error(self, input_filepath):
-
-        return input_filepath
-
-    def resolve_proximity_error(self, input_filepath):
-
-        return input_filepath
-
-    def _run_gaussian_command(self,
+    def _run_gaussian_discover_errors(self,
                          input_filepath,
                          output_filepath):
+        """Hidden method for calling gaussian_utils.run_gaussian_bash_command().  This method also
+            catches any ambiguous errors thrown by gaussian and does some snooping to find out the
+            appropriate error code before raising a more specific error
+
+            Args:
+                input_filepath (str): Filepath for the input to gaussian
+                output_filepath (str): Filepath for where gaussian should write output
+
+            Raises:
+                exceptions.GaussianManagerError: Raised with the appropriate error code as error
+                    message
+        """
 
         #Get the name of the molecule
         molecule_name = os.path.basename(input_filepath).split('_')[0]
@@ -186,10 +215,11 @@ class GaussianManager(object):
             #Find out what the error code is for & raise an exception with that error code
             error_code = gaussian_utils.discover_gaussian_error_code(output_filepath)
             raise exceptions.GaussianManagerError(error_code)
+
         else:
             print('calculation on {} completed successfully'.format(molecule_name))
 
-    def _call_corresponding_error_code_method(self, error, input_filepath):
+    def _get_corresponding_error_code_method(self, error):
         """Analyzes error.args for the appropriate error code and calls the correct function to fix
             the error.
 
@@ -203,17 +233,53 @@ class GaussianManager(object):
         """
 
         if error.args == 'l123' or error.args == 'l502' or error.args == 'l9999' or error.args == 'l103':
-            new_input = self.resolve_convergence_error(input_filepath)
-            return new_input
+            return self._resolve_convergence_error
         elif error.args == 'l101':
-            new_input = self.resolve_input_error(input_filepath)
-            return new_input
-        elif error.args == 'l202':
-            input_filepath = self.resolve_proximity_error(input_filepath)
-            return new_input
-        elif error.args == 'l301':
-            input_filepath = self.resolve_basis_error(input_filepath)
-            return new_input
-
+            return self._resolve_input_error
         else:
-            raise exceptions.GMUnknownErrorCode(error.args)
+            raise exceptions.GMUnsupportedErrorCode(error.args)
+
+    def _resolve_input_error(self, **kwargs):
+        """Currently only makes sure that the final line has a single newline character on it"""
+
+        input_filepath = kwargs['input_filepath']
+        error_log = kwargs['error_log']
+        input_counter = kwargs['counters']['input_error_counter']
+
+        old_input_lines = gaussian_utils.write_error_log_read_input(error_log,
+                                                                    input_filepath,
+                                                                    input_counter)
+
+        if old_input_lines[-1] != '\n':
+            old_input_lines.append('\n')
+
+        new_input_filepath = gaussian_utils.write_new_input(input_filepath, old_input_lines)
+        return new_input_filepath
+
+    #TODO: Add output parser to look for unoptimized structures to write new input file
+    def _resolve_convergence_error(self, **kwargs):
+        """Modifies the SCF(#) keyword in the input file.  Plans to later parse output for
+            unoptimized structures to help locate optimums"""
+
+        input_filepath = kwargs['input_filepath']
+        error_log = kwargs['error_log']
+        converge_counter = kwargs['counters']['converge_error_counter']
+
+        old_input_lines = gaussian_utils.write_error_log_read_input(error_log,
+                                                                    input_filepath,
+                                                                    converge_counter)
+
+        if converge_counter == 1:
+            maxcyc = 512
+        elif converge_counter == 2:
+            maxcyc = 1024
+        elif converge_counter >= 3:
+            maxcyc = 2084
+
+        before_SCF, after_SCF = old_input_lines[0].split('SCF')
+        after_SCF = after_SCF[12:]
+        new_first_line = before_SCF + 'SCF(maxcyc={})'.format(maxcyc) + after_SCF
+        old_input_lines[0] = new_first_line
+
+        new_input_filepath = gaussian_utils.write_new_input(input_filepath, old_input_lines)
+        return new_input_filepath

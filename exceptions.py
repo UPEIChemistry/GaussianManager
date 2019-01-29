@@ -1,5 +1,5 @@
 class GaussianManagerError(Exception):
     pass
 
-class GMUnknownErrorCode(GaussianManagerError):
+class GMUnsupportedErrorCode(GaussianManagerError):
     pass
