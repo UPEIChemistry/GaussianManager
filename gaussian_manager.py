@@ -84,6 +84,7 @@ class GaussianManager(object):
         method = method or self.method
         basis_set = basis_set or self.basis_set
 
+        #NOTE: If adding more calculation support, need to add keywords here!
         #Assign calculation_keywords default
         if calculation_keywords is None:
             calculation = self.calculation
@@ -169,10 +170,6 @@ class GaussianManager(object):
 
         return input_filepath
 
-    def resolve_unknown_error(self, input_filepath):
-
-        return input_filepath
-
     def _run_gaussian_command(self,
                          input_filepath,
                          output_filepath):
@@ -205,11 +202,11 @@ class GaussianManager(object):
                 exceptions.GMUnknownErrorCode: Raised if the method doesn't know how to deal with the error code
         """
 
-        if error.args == 'l101':
-            new_input = self.resolve_input_error(input_filepath)
+        if error.args == 'l123' or error.args == 'l502' or error.args == 'l9999' or error.args == 'l103':
+            new_input = self.resolve_convergence_error(input_filepath)
             return new_input
-        elif error.args == 'l123' or error.args == 'l502' or error.args == 'l9999':
-            input_filepath = self.resolve_convergence_error(input_filepath)
+        elif error.args == 'l101':
+            new_input = self.resolve_input_error(input_filepath)
             return new_input
         elif error.args == 'l202':
             input_filepath = self.resolve_proximity_error(input_filepath)
@@ -217,8 +214,6 @@ class GaussianManager(object):
         elif error.args == 'l301':
             input_filepath = self.resolve_basis_error(input_filepath)
             return new_input
-        elif error.args == 'l103':
-            input_filepath = self.resolve_basis_error(input_filepath)
-            return new_input
+
         else:
             raise exceptions.GMUnknownErrorCode(error.args)

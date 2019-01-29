@@ -4,55 +4,77 @@ import os
 import pytest
 import tempfile as temp
 
-test_dir = '~/dev/python/gaussian-manager/tests/example/'
-input_mol_path = test_dir + 'xyz/F-CH3-OH.xyz'
-input_filepath = test_dir + 'example-input.com'
-output_filepath = test_dir + 'example-output.log'
-method1 = 'mp2'
-method2 = 'b3lyp'
-basis_set1 = '6-31G'
-basis_set2 = 'cc-pVTZ'
-calculation1 = 'ts-opt'
-calculation2 = 'irc'
+class TestInputGeneration:
 
-class TestGaussianManager:
-    """Super class for GM testing classes containing useful methods"""
+    def read_first_last_lines(self, filepath):
 
-    def _construct_instance_attributes_gm(self):
+        with open(filepath, 'r') as file:
+            lines = file.readlines()
+        first_line = lines[0]
+        last_line = lines[-1]
 
-        root_exp_dir = temp.mkdtemp()
-        gm = gaussian_manager.GaussianManager(input_molecule_path=input_mol_path,
-                                              root_experiment_dir=root_exp_dir,
-                                              method=method1,
-                                              basis_set=basis_set1,
-                                              calculation=calculation1)
-        return gm
+        return first_line, last_line
 
-    def _construct_method_attributes_gm(self):
+    def test_instance_attributes_creates_inputfile(self, instance_attribute_gm):
 
-        gm = gaussian_manager.GaussianManager()
-        return gm
-
-class TestInputGeneration(TestGaussianManager):
-    """Tests the various ways of using gaussian_manager.generate_gaussian_input()"""
-
-    def test_instance_attributes_creates_inputfile(self):
-
-        gm = super()._construct_instance_attributes_gm()
+        gm = instance_attribute_gm
         gm.generate_gaussian_input()
         assert os.path.isfile(gm.input_filepath)
 
-    def test_method_attributes_creates_inputfile(self):
-        input_dest = temp.mkdtemp()
-        input_filepath = input_dest + 'input.com'
-        gm = super()._construct_method_attributes_gm()
-        gm.generate_gaussian_input(molecule_filepath=input_mol_path,
-                                   input_filepath=input_filepath,
-                                   method=method2,
-                                   basis_set=basis_set2)
-        assert os.path.isfile(input_filepath)
+    def test_method_attributes_calculation_no_keywords_creates_inputfile(self,
+                                                 method_attribute_gm,
+                                                 molecule_filepath,
+                                                 blank_input_filepath):
 
-    def test_no_attributes_raises_assertion_error(self):
-        gm = super()._construct_method_attributes_gm()
-        with pytest.raises(AttributeError):
-            gm.generate_gaussian_input()
+        gm = method_attribute_gm
+        input_filepath = blank_input_filepath
+        true_first_line = '# mp2/6-31G OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
+        true_last_line = '\n'
+
+        gm.generate_gaussian_input(molecule_filepath=molecule_filepath,
+                                   input_filepath=input_filepath,
+                                   method='mp2',
+                                   basis_set='6-31G',
+                                   calculation='ts-opt',
+                                   multiplicity='-1 1')
+        test_first_line, test_last_line = self.read_first_last_lines(input_filepath)
+        assert (true_first_line in test_first_line and true_last_line == test_last_line)
+
+    def test_method_attributes_calculation_and_keywords_creates_inputfile(self,
+                                                          method_attribute_gm,
+                                                          molecule_filepath,
+                                                          blank_input_filepath):
+
+        gm = method_attribute_gm
+        input_filepath = blank_input_filepath
+        true_first_line = '# mp2/6-31G OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
+        true_last_line = '\n'
+
+        gm.generate_gaussian_input(molecule_filepath=molecule_filepath,
+                                   input_filepath=input_filepath,
+                                   method='mp2',
+                                   basis_set='6-31G',
+                                   calculation_keywords='OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ',
+                                   calculation='ts-opt',
+                                   multiplicity='-1 1')
+        test_first_line, test_last_line = self.read_first_last_lines(input_filepath)
+        assert (true_first_line in test_first_line and true_last_line == test_last_line)
+
+    def test_method_attributes_only_keywords_creates_inputfile(self,
+                                                          method_attribute_gm,
+                                                          molecule_filepath,
+                                                          blank_input_filepath):
+
+        gm = method_attribute_gm
+        input_filepath = blank_input_filepath
+        true_first_line = '# mp2/6-31G OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
+        true_last_line = '\n'
+
+        gm.generate_gaussian_input(molecule_filepath=molecule_filepath,
+                                   input_filepath=input_filepath,
+                                   method='mp2',
+                                   basis_set='6-31G',
+                                   calculation_keywords='OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ',
+                                   multiplicity='-1 1')
+        test_first_line, test_last_line = self.read_first_last_lines(input_filepath)
+        assert (true_first_line in test_first_line and true_last_line == test_last_line)

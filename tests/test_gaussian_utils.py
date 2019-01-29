@@ -7,55 +7,6 @@ import socket
 import subprocess
 import tempfile
 
-example_directory = '/home/riley/dev/python/gaussian-manager/tests/example/'
-
-@pytest.fixture(scope='module')
-def blank_input_filepath():
-
-    _, file = tempfile.mkstemp()
-
-    yield file
-
-@pytest.fixture(scope='module')
-def bad_input_filepath():
-
-    yield example_directory + 'bad_input.com'
-
-@pytest.fixture(scope='module')
-def input_filepath():
-
-    yield example_directory + 'input.com'
-
-@pytest.fixture(scope='module')
-def molecule_filepath():
-
-    yield example_directory + 'xyz/F-CH3-OH.xyz'
-
-@pytest.fixture(scope='module')
-def successful_output_filepath():
-
-    yield example_directory + 'successful_output.log'
-
-@pytest.fixture(scope='module')
-def blank_output_filepath():
-
-    yield tempfile.mkstemp()
-
-@pytest.fixture(scope='module')
-def l101_output_filepath():
-
-    yield example_directory + 'l101_output.log'
-
-@pytest.fixture(scope='module')
-def l502_output_filepath():
-
-    yield example_directory + 'l502_output.log'
-
-@pytest.fixture(scope='module')
-def l9999_output_filepath():
-
-    yield example_directory + 'l9999_output.log'
-
 class TestGaussianUtils:
 
     @pytest.mark.skipif('gra' not in socket.gethostname() or 'ced' not in socket.gethostname(),
@@ -65,6 +16,8 @@ class TestGaussianUtils:
         output_filepath = blank_output_filepath
         gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
 
+    @pytest.mark.skipif('gra'  in socket.gethostname() or 'ced'  in socket.gethostname(),
+                        reason="Don't test this if on either cedar or graham")
     def test_run_mock_bash_command_complete_successfully(self, monkeypatch, input_filepath):
 
         def mock_successful_gaussian_job(inp, out):
