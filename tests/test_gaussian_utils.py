@@ -11,14 +11,14 @@ class TestGaussianUtils:
 
     @pytest.mark.skipif('gra' not in socket.gethostname() or 'ced' not in socket.gethostname(),
                         reason='Only test on supercomputer clusters as they have the gaussian software package')
-    def test_run_bash_command_complete_successfully(self, input_filepath, blank_output_filepath):
+    def test_run_bash_command_complete_successfully(self, successful_input_filepath, blank_output_filepath):
 
         output_filepath = blank_output_filepath
-        gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
+        gaussian_utils.run_gaussian_bash_command(successful_input_filepath, output_filepath)
 
     @pytest.mark.skipif('gra'  in socket.gethostname() or 'ced'  in socket.gethostname(),
                         reason="Don't test this if on either cedar or graham")
-    def test_run_mock_bash_command_complete_successfully(self, monkeypatch, input_filepath):
+    def test_run_mock_bash_command_complete_successfully(self, monkeypatch, successful_input_filepath):
 
         def mock_successful_gaussian_job(inp, out):
 
@@ -29,14 +29,14 @@ class TestGaussianUtils:
         with monkeypatch.context() as m:
             m.setattr('gaussian_utils.run_gaussian_bash_command',
                       mock_successful_gaussian_job)
-            gaussian_utils.run_gaussian_bash_command(input_filepath, output_filepath)
+            gaussian_utils.run_gaussian_bash_command(successful_input_filepath, output_filepath)
 
-    def test_run_bash_command_throw_error(self, bad_input_filepath):
+    def test_run_bash_command_throw_error(self, l101_input_filepath):
 
         _, output_filepath = tempfile.mkstemp()
 
         with pytest.raises(subprocess.CalledProcessError):
-            gaussian_utils.run_gaussian_bash_command(bad_input_filepath, output_filepath)
+            gaussian_utils.run_gaussian_bash_command(l101_input_filepath, output_filepath)
 
     def test_get_coords_from_xyz(self, molecule_filepath):
 

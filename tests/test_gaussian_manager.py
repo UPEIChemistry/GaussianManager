@@ -2,6 +2,8 @@ import exceptions
 import gaussian_manager
 import os
 import pytest
+from  _pytest.monkeypatch import MonkeyPatch
+import subprocess
 import tempfile as temp
 
 class TestInputGeneration:
@@ -78,3 +80,80 @@ class TestInputGeneration:
                                    multiplicity='-1 1')
         test_first_line, test_last_line = self.read_first_last_lines(input_filepath)
         assert (true_first_line in test_first_line and true_last_line == test_last_line)
+
+class TestRunningGaussian:
+
+    def mock_successful_gaussian_output(self, inp, out):
+
+        print('gaussian bash command mocked!')
+
+    def mock_failed_gaussian_output(self, inp, out):
+
+        raise subprocess.CalledProcessError(1, 'foo')
+
+    def test_instance_attributes_start_calculation_resolve_errors_successful(self,
+                                                                             monkeypatch,
+                                                                             instance_attribute_gm):
+
+        gm = instance_attribute_gm
+        with monkeypatch.context() as m:
+            m.setattr('gaussian_utils.run_gaussian_bash_command',
+                      self.mock_successful_gaussian_output)
+            gm.start_calculation()
+
+    def test_instance_attributes_start_calculation_resolve_errors_l301_failure(self,
+                                                                               monkeypatch,
+                                                                               instance_attribute_gm,
+                                                                               blank_input_filepath,
+                                                                               l301_output_filepath):
+
+        gm = instance_attribute_gm
+        gm.output_filepath = l301_output_filepath
+        with monkeypatch.context() as m:
+            m.setattr('gaussian_utils.run_gaussian_bash_command',
+                      self.mock_failed_gaussian_output)
+            with pytest.raises(exceptions.GMUnsupportedErrorCode) as error:
+                gm.start_calculation()
+                assert error.args == 'l301'
+
+    def test_instance_attributes_start_calculation_resolve_errors_l101_success(self,
+                                                                               monkeypatch,
+                                                                               instance_attribute_gm,
+                                                                               l101_input_filepath,
+                                                                               l101_output_filepath):
+
+        pass
+
+    def test_instance_attributes_start_calculation_resolve_errors_l502_failure(self,
+                                                                               monkeypatch,
+                                                                               instance_attribute_gm,
+                                                                               successful_input_filepath,
+                                                                               l502_output_filepath):
+
+        pass
+
+    def test_instance_attributes_start_calculation_no_resolving_successful(self,
+                                                                           monkeypatch,
+                                                                           instance_attribute_gm):
+
+        gm = instance_attribute_gm
+        with monkeypatch.context() as m:
+            m.setattr('gaussian_utils.run_gaussian_bash_command',
+                      self.mock_successful_gaussian_output)
+            gm.start_calculation(resolve_errors=False)
+
+    def test_instance_attributes_start_calculation_no_resolving_failure(self,
+                                                                        monkeypatch,
+                                                                        blank_input_filepath,
+                                                                        l101_output_filepath,
+                                                                        instance_attribute_gm):
+
+        gm = instance_attribute_gm
+        gm.input_filepath = blank_input_filepath
+        gm.output_filepath = l101_output_filepath
+        with monkeypatch.context() as m:
+            m.setattr('gaussian_utils.run_gaussian_bash_command',
+                      self.mock_failed_gaussian_output)
+            with pytest.raises(exceptions.GaussianManagerError) as error:
+                gm.start_calculation(resolve_errors=False)
+                assert error.args == 'l101'

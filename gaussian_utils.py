@@ -70,7 +70,8 @@ def write_error_log_read_input(error_log, input_filepath, counter):
     """Used by resolve_error methods to get the required information and log attempts appropriately"""
 
     with open(error_log, 'a') as file:
-        file.write('attempt {0} to resolve convergence error with input file {1} for '.format(counter, input_filepath))
+        file.write(('attempt {0} to resolve convergence error with'
+                    + ' input file {1} for ').format(counter, os.path.basename(input_filepath)))
     with open(input_filepath, 'r') as file:
         lines = file.readlines()
 
@@ -104,6 +105,51 @@ def log_appropriate_error_code(error, name, log_file):
     print('error code {0} encountered with {1}, logging...'.format(error_code, name))
     with open(log_file, 'a') as file:
         file.write(error_message)
+
+def resolve_input_error(**kwargs):
+    """Currently only makes sure that the final line has a single newline character on it"""
+
+    input_filepath = kwargs['input_filepath']
+    error_log = kwargs['error_log']
+    input_counter = kwargs['counters']['input_error_counter']
+
+    old_input_lines = write_error_log_read_input(error_log,
+                                                                input_filepath,
+                                                                input_counter)
+
+    if old_input_lines[-1] != '\n':
+        old_input_lines.append('\n')
+
+    new_input_filepath = write_new_input(input_filepath, old_input_lines)
+    return new_input_filepath
+
+#TODO: Add output parser to look for unoptimized structures to write new input file
+def resolve_convergence_error(**kwargs):
+    """Modifies the SCF(#) keyword in the input file.  Plans to later parse output for
+        unoptimized structures to help locate optimums"""
+
+    input_filepath = kwargs['input_filepath']
+    error_log = kwargs['error_log']
+    converge_counter = kwargs['counters']['converge_error_counter']
+
+    old_input_lines = write_error_log_read_input(error_log,
+                                                                input_filepath,
+                                                                converge_counter)
+
+    if converge_counter == 1:
+        maxcyc = 512
+    elif converge_counter == 2:
+        maxcyc = 1024
+    elif converge_counter >= 3:
+        maxcyc = 2084
+
+    before_SCF, after_SCF = old_input_lines[0].split('SCF')
+    after_SCF = after_SCF[12:]
+    new_first_line = before_SCF + 'SCF(maxcyc={})'.format(maxcyc) + after_SCF
+    old_input_lines[0] = new_first_line
+
+    new_input_filepath = write_new_input(input_filepath, old_input_lines)
+    return new_input_filepath
 
 def sanitize_path(path, add_slash=False):
     """Expand user in path and add final slash if not present and toggled"""

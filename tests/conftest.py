@@ -30,14 +30,19 @@ def blank_input_filepath():
     return file
 
 @pytest.fixture(scope='session')
-def bad_input_filepath():
+def l101_input_filepath():
 
-    return example_directory + 'bad_input.com'
+    return example_directory + 'l101_input.com'
 
 @pytest.fixture(scope='session')
-def input_filepath():
+def l202_input_filepath():
 
-    return example_directory + 'input.com'
+    return example_directory + 'l202_input.com'
+
+@pytest.fixture(scope='session')
+def successful_input_filepath():
+
+    return example_directory + 'successful_input.com'
 
 @pytest.fixture(scope='session')
 def molecule_filepath():
@@ -58,6 +63,11 @@ def blank_output_filepath():
 def l101_output_filepath():
 
     return example_directory + 'l101_output.log'
+
+@pytest.fixture(scope='session')
+def l301_output_filepath():
+
+    return example_directory + 'l301_output.log'
 
 @pytest.fixture(scope='session')
 def l502_output_filepath():
