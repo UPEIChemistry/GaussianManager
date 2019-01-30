@@ -78,11 +78,11 @@ class TestGaussianToolbox:
         _, test_last = self.read_first_last_lines(new_input)
         assert test_last == true_last
 
-    def test_resolve_converge_error_irc_input_successfully_changes_input(self,
-                                    l123_irc_input_filepath):
+    def test_resolve_converge_error_irc_input_no_scf_successfully_adds_scf(self,
+                                    l123_irc_input_no_scf_filepath):
 
-        true_first = '# mp2/6-31G OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=512) FREQ'
+        true_first = '# mp2/6-31G IRC=CALCFC SCF(maxcyc=512)'
 
-        new_input = toolbox.resolve_convergence_error(l123_irc_input_filepath)
+        new_input = toolbox.resolve_convergence_error(l123_irc_input_no_scf_filepath)
         test_first, _ = self.read_first_last_lines(new_input)
         assert true_first in test_first

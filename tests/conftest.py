@@ -22,7 +22,7 @@ def l101_tsopt_input_filepath():
     return example_directory + 'l101_tsopt_input.com'
 
 @pytest.fixture(scope='session')
-def l123_irc_input_filepath():
+def l123_irc_input_no_scf_filepath():
 
     return example_directory + 'l123_irc_input.com'
 

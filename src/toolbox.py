@@ -63,10 +63,11 @@ def resolve_input_error(faulty_input_filepath):
     lines = utils.read_input_lines(faulty_input_filepath)
 
     if lines[-1] != '\n':
-        lines.append('\n')
+        lines.append('\n\n')
 
     new_filepath = os.path.dirname(faulty_input_filepath) + '/fixed-input.com'
     utils.write_new_input(new_filepath, lines)
+
     return new_filepath
 
 #TODO: Add output parser to look for unoptimized structures to write new input file
@@ -77,11 +78,15 @@ def resolve_convergence_error(faulty_input_filepath, maxcyc=512, output_to_parse
     faulty_input_filepath = utils.sanitize_path(faulty_input_filepath)
     lines = utils.read_input_lines(faulty_input_filepath)
 
-    before_SCF, after_SCF = faulty_input_filepath[0].split('SCF')
-    after_SCF = after_SCF[12:]
-    new_first_line = before_SCF + 'SCF(maxcyc={})'.format(maxcyc) + after_SCF
-    lines[0] = new_first_line
+    if 'SCF' in lines[0]:
+        before_SCF, after_SCF = lines[0].split('SCF')
+        after_SCF = after_SCF[12:]
+        new_first_line = before_SCF + 'SCF(maxcyc={0})'.format(maxcyc) + after_SCF
+        lines[0] = new_first_line
+    else:
+        lines[0] = lines[0][:-1] + ' SCF(maxcyc={0})'.format(maxcyc) + lines[0][-1:]
 
     new_input_filepath = os.path.dirname(faulty_input_filepath) + '/fixed-input.com'
     utils.write_new_input(new_input_filepath, lines)
+
     return new_input_filepath
