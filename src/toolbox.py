@@ -104,12 +104,14 @@ def write_irc_geometries_from_output(output_filepath, reactant_filepath, product
             break
 
     #Parse half-output for reactant coords, write reactant xyz file
+    reactant_name = os.path.basename(reactant_filepath)[:-4]
     reactant_coords = utils.parse_output_lines_for_coordinates(output_lines[forward_path_idx + 1:])
-    utils.write_file_from_lines(reactant_coords, reactant_coords)
+    utils.write_file_from_lines(reactant_filepath, reactant_coords, obabel_name=reactant_name)
 
     #Parse half-output for product coordinates, write product xyz file
+    product_name = os.path.basename(product_filepath)[:-4]
     product_coords = utils.parse_output_lines_for_coordinates(output_lines[:forward_path_idx + 1])
-    utils.write_file_from_lines(product_filepath, product_coords)
+    utils.write_file_from_lines(product_filepath, product_coords, obabel_name=product_name)
 
 def write_tsopt_geometry_from_output(output_filepath, ts_filepath):
 
@@ -118,5 +120,6 @@ def write_tsopt_geometry_from_output(output_filepath, ts_filepath):
     output_lines = utils.read_file_lines(output_filepath)
 
     #Write product xyz file
+    ts_name = os.path.basename(ts_filepath)[:-4]
     ts_coords = utils.parse_output_lines_for_coordinates(output_lines)
-    utils.write_file_from_lines(ts_filepath, ts_coords)
+    utils.write_file_from_lines(ts_filepath, ts_coords, obabel_name=ts_name)
