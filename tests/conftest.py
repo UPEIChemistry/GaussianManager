@@ -9,7 +9,14 @@ def molecule_filepath():
 
     return example_directory + 'xyz/F-CH3-OH.xyz'
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
+def blank_molecule_filepath():
+
+    _, file = tempfile.mkstemp()
+
+    return file + '.xyz'
+
+@pytest.fixture(scope='function')
 def blank_input_filepath():
 
     _, file = tempfile.mkstemp()
@@ -37,10 +44,12 @@ def successful_tsopt_output_filepath():
 
     return example_directory + 'successful_tsopt_output.log'
 
-@pytest.fixture(scope='session')
+@pytest.fixture(scope='function')
 def blank_output_filepath():
 
-    return tempfile.mkstemp()
+    _, file = tempfile.mkstemp()
+
+    return file
 
 @pytest.fixture(scope='session')
 def l101_tsopt_output_filepath():

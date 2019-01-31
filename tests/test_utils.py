@@ -5,7 +5,7 @@ import socket
 import subprocess
 import tempfile
 
-class TestGaussianUtils:
+class TestUtilsBashCommand:
 
     @pytest.mark.skipif('gra' not in socket.gethostname() or 'ced' not in socket.gethostname(),
                         reason='Only test on supercomputer clusters as they have the gaussian software package')
@@ -36,12 +36,14 @@ class TestGaussianUtils:
         with pytest.raises(subprocess.CalledProcessError):
             utils.run_gaussian_bash_command(l101_tsopt_input_filepath, output_filepath)
 
-    def test_get_coords_from_xyz(self, molecule_filepath):
+class TestUtilsReadWrite:
+
+    def test_get_coords_from_obabel_xyz(self, molecule_filepath):
 
         true_first_line = 'F          0.00000        0.00000        0.00000'
         true_last_line = 'H          4.12408        0.00000       -0.82631'
 
-        coords = utils.get_coords_from_xyz(molecule_filepath)
+        coords = utils.get_coords_from_obabel_xyz(molecule_filepath)
 
         assert (true_first_line in coords[0] and true_last_line in coords[-1])
 
@@ -63,6 +65,30 @@ class TestGaussianUtils:
 
         assert (true_first_line in lines[0] and true_last_line == lines[-1])
 
+    def test_write_file_from_lines(self,
+                                   blank_molecule_filepath,
+                                   successful_tsopt_output_filepath):
+
+        lines = utils.read_file_lines(successful_tsopt_output_filepath)
+        coords = utils.parse_output_lines_for_coordinates(lines)
+        utils.write_file_from_lines(blank_molecule_filepath, coords)
+
+    def test_write_file_from_lines_obabel_heading(self,
+                                                  blank_molecule_filepath,
+                                                  successful_tsopt_output_filepath):
+
+        obabel_name = 'molecule'
+        true_first_line = '7'
+
+        lines = utils.read_file_lines(successful_tsopt_output_filepath)
+        coords = utils.parse_output_lines_for_coordinates(lines)
+        utils.write_file_from_lines(blank_molecule_filepath, coords, obabel_name=obabel_name)
+
+        test_lines = utils.read_file_lines(blank_molecule_filepath)
+        assert true_first_line in test_lines[0] and obabel_name in test_lines[1]
+
+class TestUtilsDiscoverError:
+
     def test_discover_l101_gaussian_error_code(self, l101_tsopt_output_filepath):
 
         true_code = 'l101'
@@ -83,3 +109,42 @@ class TestGaussianUtils:
 
         test_code = utils.discover_gaussian_error_code(l9999_tsopt_output_filepath)
         assert test_code == true_code
+
+class TestUtilsParser:
+
+    def test_parse_output_lines_for_coordinates_using_good_tsopt_output_successful(self,
+                                          successful_tsopt_output_filepath):
+
+        first_atom = 'F'
+        first_coords = '0.071970    0.000000   -0.051566'
+        last_atom = 'H'
+        last_coords = '3.932450   -0.000000   -0.849101'
+
+        test_lines = utils.read_file_lines(successful_tsopt_output_filepath)
+        test_lines = utils.parse_output_lines_for_coordinates(test_lines)
+
+        assert first_atom in test_lines[0] and first_coords in test_lines[0]
+        assert last_atom in test_lines[-1] and last_coords in test_lines[-1]
+
+    def test_parse_output_lines_for_coordinates_using_l103_tsopt_output_successful(self,
+                                                                             l301_tsopt_output_filepath):
+
+        first_atom = 'C'
+        first_coords = '0.005228   -0.682773    0.000946'
+        line_4_atom = 'Cl'
+        line_4_coords = '-0.015741    1.844659   -0.009898'
+        last_atom = 'H'
+        last_coords = '0.024825   -2.837900   -0.935003'
+
+        test_lines = utils.read_file_lines(l301_tsopt_output_filepath)
+        test_lines = utils.parse_output_lines_for_coordinates(test_lines)
+
+        assert first_atom in test_lines[0] and first_coords in test_lines[0]
+        assert line_4_atom in test_lines[4] and line_4_coords in test_lines[4]
+        assert last_atom in test_lines[-1] and last_coords in test_lines[-1]
+
+    def test_parse_output_lines_for_coordinates_using_bad_output_failure(self, blank_output_filepath):
+
+        lines = utils.read_file_lines(blank_output_filepath)
+        with pytest.raises(exceptions.GaussianUtilsError):
+            utils.parse_output_lines_for_coordinates(lines)

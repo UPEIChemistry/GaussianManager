@@ -1,4 +1,4 @@
 {
     "python.linting.enabled": true,
-    "python.pythonPath": "/home/riley/miniconda3/bin/python"
+    "python.pythonPath": "/home/riley/.miniconda3_installation/bin/python"
 }

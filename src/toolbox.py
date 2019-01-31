@@ -27,7 +27,7 @@ def generate_gaussian_input_file(molecule_filepath,
     #Define the necessary parts for the input file
     input_destination = os.path.dirname(input_filepath)
     reaction_name = os.path.basename(molecule_filepath)[:-4]
-    coordinates = utils.get_coords_from_xyz(molecule_filepath)
+    coordinates = utils.get_coords_from_obabel_xyz(molecule_filepath)
 
     #Create necessary directories for input files
     utils.make_dir(input_destination)
@@ -60,13 +60,13 @@ def resolve_input_error(faulty_input_filepath):
     """Currently only makes sure that the final line has a single newline character on it"""
 
     faulty_input_filepath = utils.sanitize_path(faulty_input_filepath)
-    lines = utils.read_input_lines(faulty_input_filepath)
+    lines = utils.read_file_lines(faulty_input_filepath)
 
     if lines[-1] != '\n':
         lines.append('\n\n')
 
     new_filepath = os.path.dirname(faulty_input_filepath) + '/fixed-input.com'
-    utils.write_new_input(new_filepath, lines)
+    utils.write_file_from_lines(new_filepath, lines)
 
     return new_filepath
 
@@ -76,7 +76,7 @@ def resolve_convergence_error(faulty_input_filepath, maxcyc=512, output_to_parse
         unoptimized structures to help locate optimums"""
 
     faulty_input_filepath = utils.sanitize_path(faulty_input_filepath)
-    lines = utils.read_input_lines(faulty_input_filepath)
+    lines = utils.read_file_lines(faulty_input_filepath)
 
     if 'SCF' in lines[0]:
         before_SCF, after_SCF = lines[0].split('SCF')
@@ -87,6 +87,36 @@ def resolve_convergence_error(faulty_input_filepath, maxcyc=512, output_to_parse
         lines[0] = lines[0][:-1] + ' SCF(maxcyc={0})'.format(maxcyc) + lines[0][-1:]
 
     new_input_filepath = os.path.dirname(faulty_input_filepath) + '/fixed-input.com'
-    utils.write_new_input(new_input_filepath, lines)
+    utils.write_file_from_lines(new_input_filepath, lines)
 
     return new_input_filepath
+
+def write_irc_geometries_from_output(output_filepath, reactant_filepath, product_filepath):
+
+    #Sanitize and gather necessary lines for parser
+    output_filepath = utils.sanitize_path(output_filepath)
+    output_lines = utils.read_file_lines(output_filepath)
+
+    #Split irc output file into two seperate set of lines for parser
+    for i, line in enumerate(output_lines):
+        if ' Calculation of FORWARD path complete.' in line:
+            forward_path_idx = i
+            break
+
+    #Parse half-output for reactant coords, write reactant xyz file
+    reactant_coords = utils.parse_output_lines_for_coordinates(output_lines[forward_path_idx + 1:])
+    utils.write_file_from_lines(reactant_coords, reactant_coords)
+
+    #Parse half-output for product coordinates, write product xyz file
+    product_coords = utils.parse_output_lines_for_coordinates(output_lines[:forward_path_idx + 1])
+    utils.write_file_from_lines(product_filepath, product_coords)
+
+def write_tsopt_geometry_from_output(output_filepath, ts_filepath):
+
+    #Sanitize and gather necessary lines for parser
+    output_filepath = utils.sanitize_path(output_filepath)
+    output_lines = utils.read_file_lines(output_filepath)
+
+    #Write product xyz file
+    ts_coords = utils.parse_output_lines_for_coordinates(output_lines)
+    utils.write_file_from_lines(ts_filepath, ts_coords)
