@@ -77,22 +77,6 @@ def write_file_from_lines(filepath, lines, obabel_name=None):
         for line in lines:
             file.write(line)
 
-def log_appropriate_error_code(error, name, log_file):
-    """Writes messages specific to error to log_file"""
-
-    error_code = error.args
-    if error_code == 'l301':
-        error_message = ('Problem with basis set for {0}.'
-                        + ' Check to make sure chosen basis set supports all atoms of {0}').format(name)
-    if error_code == 'l202':
-        error_message = 'Proximity error with {0}, check to make sure atoms are spaced far enough apart'.format(name)
-    else:
-        error_message = 'unknown error {0} encountered with {1}, unable to resolve'.format(error_code, name)
-
-    print('error code {0} encountered with {1}, logging...'.format(error_code, name))
-    with open(log_file, 'a') as file:
-        file.write(error_message)
-
 #NOTE: If adding support for more atom types, add to dictionary here!
 def parse_output_lines_for_coordinates(lines):
     """Slices a provided list of output lines for the final geometry found in the output file.

@@ -84,3 +84,12 @@ def l502_irc_output_filepath():
 def l9999_tsopt_output_filepath():
 
     return example_directory + 'l9999_tsopt_output.log'
+
+@pytest.fixture(scope='session')
+def instantiate_gm():
+
+    exp_dir = tempfile.mkdtemp()
+    gm = manager.GaussianManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
+                                 experiment_directory=exp_dir)
+
+    return gm

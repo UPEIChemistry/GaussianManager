@@ -65,7 +65,7 @@ def resolve_input_error(faulty_input_filepath):
     if lines[-1] != '\n':
         lines.append('\n\n')
 
-    new_filepath = faulty_input_filepath[:-4] + 'input-fixed.com'
+    new_filepath = faulty_input_filepath[:-4] + '-input-fixed.com'
     utils.write_file_from_lines(new_filepath, lines)
 
     return new_filepath
@@ -86,7 +86,7 @@ def resolve_convergence_error(faulty_input_filepath, maxcyc=512, output_to_parse
     else:
         lines[0] = lines[0][:-1] + ' SCF(maxcyc={0})'.format(maxcyc) + lines[0][-1:]
 
-    new_input_filepath = faulty_input_filepath[:-4] + 'convergence-fixed.com'
+    new_input_filepath = faulty_input_filepath[:-4] + '-convergence-fixed.com'
     utils.write_file_from_lines(new_input_filepath, lines)
 
     return new_input_filepath

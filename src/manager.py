@@ -31,11 +31,11 @@ class GaussianManager(object):
 
     def run_gaussian_manager(self):
 
-        self._get_gm_input_file()
+        self._write_gm_input_file()
         self._run_gm_calculation()
         self._write_gm_output_geometries()
 
-    def _get_gm_input_file(self):
+    def _write_gm_input_file(self):
 
         toolbox.generate_gaussian_input_file(molecule_filepath=self.molecule_filepath,
                                              input_filepath=self.input_filepath,
@@ -50,7 +50,7 @@ class GaussianManager(object):
             toolbox.start_gaussian_calculation(self.input_filepath, self.output_filepath)
         else:
             new_input_filepath = self.input_filepath
-            for _ in range(self.resolve_attempts):
+            for counter in range(self.resolve_attempts):
                 try:
                     toolbox.start_gaussian_calculation(new_input_filepath, self.output_filepath)
                 except exceptions.GaussianToolboxError as error:
@@ -59,7 +59,8 @@ class GaussianManager(object):
                         new_input_filepath = toolbox.resolve_input_error(self.input_filepath)
                         continue
                     elif code == 'l123' or code == 'l103' or code == 'l502' or code == 'l9999':
-                        new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath)
+                        maxcyc = min(256 * counter, 2048)
+                        new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath, maxcyc=maxcyc)
                         continue
                     else:
                         error_message = ('Unable to resolve error code {0} for input file {1}, '
@@ -71,11 +72,11 @@ class GaussianManager(object):
     def _write_gm_output_geometries(self):
 
         if self.calculation == 'tsopt':
-            ts_xyz_filepath = self.output_molecule_name + '_ts.xyz'
-            toolbox.write_tsopt_geometry_from_output(self.output_filepath, ts_xyz_filepath)
+            self.ts_xyz_filepath = self.output_molecule_name + '_ts.xyz'
+            toolbox.write_tsopt_geometry_from_output(self.output_filepath, self.ts_xyz_filepath)
         elif self.calculation == 'irc':
-            reactant_xyz_filepath = self.output_molecule_name + '_reactant.xyz'
-            product_xyz_filepath = self.output_molecule_name + '_product.xyz'
+            self.reactant_xyz_filepath = self.output_molecule_name + '_reactant.xyz'
+            self.product_xyz_filepath = self.output_molecule_name + '_product.xyz'
             toolbox.write_irc_geometries_from_output(self.output_filepath,
-                                                     reactant_xyz_filepath,
-                                                     product_xyz_filepath)
+                                                     self.reactant_xyz_filepath,
+                                                     self.product_xyz_filepath)
