@@ -53,6 +53,7 @@ class GaussianManager(object):
             for counter in range(self.resolve_attempts):
                 try:
                     toolbox.start_gaussian_calculation(new_input_filepath, self.output_filepath)
+                    break
                 except exceptions.GaussianToolboxError as error:
                     code = error.args
                     if code == 'l101':

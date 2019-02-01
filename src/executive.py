@@ -16,7 +16,7 @@ class GaussianExecutive:
                  resolve_attempts=8):
 
         self.molecule_list = [utils.sanitize_path(mol) for mol in molecule_list]
-        self.root_exp_directory = utils.sanitize_path(root_exp_directory)
+        self.root_exp_directory = utils.sanitize_path(root_exp_directory, add_slash=True)
         self.calculation_list = calculation_list
         self.method = method
         self.basis_set = basis_set
