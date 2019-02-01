@@ -47,3 +47,4 @@ class GaussianExecutive:
                     log_file = mol_exp_dir + 'error_log.txt'
                     with open(log_file, 'a') as file:
                         file.write(error.args + '\n\n -------------------------------------- \n\n')
+                    continue
