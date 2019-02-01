@@ -57,9 +57,11 @@ class GaussianManager(object):
                 except exceptions.GaussianToolboxError as error:
                     code = error.args
                     if code == 'l101':
+                        print('encountered input error with {}, resolving and attempting to restart calculation...'.format(new_input_filepath))
                         new_input_filepath = toolbox.resolve_input_error(self.input_filepath)
                         continue
                     elif code == 'l123' or code == 'l103' or code == 'l502' or code == 'l9999':
+                        print('encountered convergence error with {}, resolving and attempting to restart calculation...'.format(new_input_filepath))
                         maxcyc = min(256 * counter, 2048)
                         new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath, maxcyc=maxcyc)
                         continue

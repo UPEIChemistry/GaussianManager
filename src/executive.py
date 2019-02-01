@@ -13,7 +13,8 @@ class GaussianExecutive:
                  basis_set,
                  multiplicity='-1 1',
                  log_errors=True,
-                 resolve_attempts=8):
+                 resolve_attempts=8,
+                 overwrite=False):
 
         self.molecule_list = [utils.sanitize_path(mol) for mol in molecule_list]
         self.root_exp_directory = utils.sanitize_path(root_exp_directory, add_slash=True)
@@ -23,6 +24,7 @@ class GaussianExecutive:
         self.multiplicity = multiplicity
         self.log_errors = log_errors
         self.resolve_attempts = resolve_attempts
+        self.overwrite = overwrite
 
     def generate_dataset(self):
 
@@ -40,11 +42,15 @@ class GaussianExecutive:
                                              calculation=calc,
                                              multiplicity=self.multiplicity,
                                              resolve_attempts=self.resolve_attempts)
+                if os.path.isfile(gm.output_filepath) and self.overwrite:
+                    print('{0} output file for {1} already exists, skipping calculation.'.format(calc, mol_name))
+                    continue
+
                 try:
                     gm.run_gaussian_manager()
                 except exceptions.GaussianManagerError as error:
 
                     log_file = mol_exp_dir + 'error_log.txt'
                     with open(log_file, 'a') as file:
-                        file.write(error.args + '\n\n -------------------------------------- \n\n')
+                        file.write(str(error.args) + '\n\n -------------------------------------- \n\n')
                     continue
