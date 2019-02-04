@@ -55,7 +55,7 @@ class GaussianManager(object):
                     toolbox.start_gaussian_calculation(new_input_filepath, self.output_filepath)
                     break
                 except exceptions.GaussianToolboxError as error:
-                    code = error.args
+                    code = error.args[0]
                     if code == 'l101':
                         print('encountered input error with {}, resolving and attempting to restart calculation...'.format(new_input_filepath))
                         new_input_filepath = toolbox.resolve_input_error(self.input_filepath)
@@ -66,11 +66,17 @@ class GaussianManager(object):
                         new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath, maxcyc=maxcyc)
                         continue
                     else:
+                        print('encountered unknown error code {0} with {1}, logging...'.format(code, new_input_filepath))
                         error_message = ('Unable to resolve error code {0} for input file {1}, '
                                          + 'please look up appropriate code at '
                                          + '(https://docs.computecanada.ca/wiki/Gaussian_error_messages) '
                                          + 'and update molecule or GM signature as required').format(code, self.input_filepath)
                         raise exceptions.GaussianManagerError(error_message)
+
+            else:
+                error_message = 'resolve_counter ran out for {0} with error code {1}'.format(new_input_filepath, code)
+                print(error_message + ' logging...')
+                raise exceptions.GaussianManagerError(error_message)
 
     def _write_gm_output_geometries(self):
 

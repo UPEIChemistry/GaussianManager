@@ -59,9 +59,8 @@ class TestManagerHiddenMethods(TestGaussianManager):
                       self.mock_failed_gaussian_job)
             gm.input_filepath = l101_tsopt_input_filepath
             gm.output_filepath = l101_tsopt_output_filepath
-            with pytest.raises(exceptions.GaussianManagerError) as error:
+            with pytest.raises(exceptions.GaussianManagerError):
                 gm._run_gm_calculation()
-                assert 'l101' in error.args
 
     def test_write_gm_output_geometries_tsopt(self,
                                               instantiate_gm,
