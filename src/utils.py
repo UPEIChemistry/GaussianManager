@@ -133,6 +133,31 @@ def parse_output_lines_for_coordinates(lines):
 
     return sanitized_coord_lines
 
+def print_error_message(code=None, name=None, calc=None, message=None):
+    """Writes message to std output when GM encounters an error with Gaussian"""
+
+    if message is None:
+        message = 'encountered ({0}) running {1} on {2}'.format(code, calc, name)
+    print(message)
+
+def construct_unknown_error_message(code, name, calc):
+    """Creates the message to throw when GM encounters an unknown error"""
+
+    message = ('Unable to resolve error code ({0}) for molecule {1} '
+     + 'running calculation {2}, please look up appropriate code at '
+     + '(https://docs.computecanada.ca/wiki/Gaussian_error_messages) '
+     + 'and update molecule or GM signature as '
+     + 'required').format(code, name, calc)
+
+    return message
+
+def log_error(error, filepath):
+    """Write error.args[0] to a provided error log filepath"""
+
+    message = error.args[0]
+    with open(filepath, 'a') as file:
+        file.write(str(message) + '\n\n -------------------------------------- \n\n')
+
 def sanitize_path(path, add_slash=False):
     """Expand user in path and add final slash if not present and toggled"""
 

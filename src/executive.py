@@ -13,8 +13,7 @@ class GaussianExecutive:
                  basis_set,
                  multiplicity='-1 1',
                  log_errors=True,
-                 resolve_attempts=8,
-                 overwrite=False):
+                 resolve_attempts=8):
 
         self.molecule_list = [utils.sanitize_path(mol) for mol in molecule_list]
         self.root_exp_directory = utils.sanitize_path(root_exp_directory, add_slash=True)
@@ -23,8 +22,9 @@ class GaussianExecutive:
         self.basis_set = basis_set
         self.multiplicity = multiplicity
         self.log_errors = log_errors
+        if self.log_errors:
+            self.error_log = self.root_exp_directory + 'error_log.txt'
         self.resolve_attempts = resolve_attempts
-        self.overwrite = overwrite
 
     def generate_dataset(self):
 
@@ -36,21 +36,17 @@ class GaussianExecutive:
             for calc in self.calculation_list:
 
                 gm = manager.GaussianManager(molecule,
-                                             mol_exp_dir,
-                                             method=self.method,
-                                             basis_set=self.basis_set,
-                                             calculation=calc,
-                                             multiplicity=self.multiplicity,
-                                             resolve_attempts=self.resolve_attempts)
-                if os.path.isfile(gm.output_filepath) and self.overwrite:
-                    print('{0} output file for {1} already exists, skipping calculation.'.format(calc, mol_name))
-                    continue
-
+                                            mol_exp_dir,
+                                            method=self.method,
+                                            basis_set=self.basis_set,
+                                            calculation=calc,
+                                            multiplicity=self.multiplicity,
+                                            resolve_attempts=self.resolve_attempts)
                 try:
                     gm.run_gaussian_manager()
+                    if calc == 'tsopt':
+                        molecule = gm.ts_xyz_filepath
                 except exceptions.GaussianManagerError as error:
-
-                    log_file = mol_exp_dir + 'error_log.txt'
-                    with open(log_file, 'a') as file:
-                        file.write(str(error.args) + '\n\n -------------------------------------- \n\n')
-                    continue
+                    if self.log_errors:
+                        utils.log_error(error, self.error_log)
+                    break

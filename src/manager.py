@@ -1,5 +1,3 @@
-"""TO BE IMPLEMENTED"""
-
 from GaussianManager.src import exceptions, toolbox, utils
 import os
 import subprocess
@@ -27,7 +25,7 @@ class GaussianManager(object):
 
         self.input_filepath = self.experiment_directory + '{0}-input.com'.format(self.calculation)
         self.output_filepath = self.experiment_directory + '{0}-output.log'.format(self.calculation)
-        self.output_molecule_name = self.experiment_directory + os.path.basename(self.molecule_filepath)[:-4]
+        self.output_molecule_name = os.path.basename(self.molecule_filepath)[:-4]
 
     def run_gaussian_manager(self):
 
@@ -57,35 +55,34 @@ class GaussianManager(object):
                 except exceptions.GaussianToolboxError as error:
                     code = error.args[0]
                     if code == 'l101':
-                        print('encountered input error with {}, resolving and attempting to restart calculation...'.format(new_input_filepath))
+                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
                         new_input_filepath = toolbox.resolve_input_error(self.input_filepath)
                         continue
                     elif code == 'l123' or code == 'l103' or code == 'l502' or code == 'l9999':
-                        print('encountered convergence error with {}, resolving and attempting to restart calculation...'.format(new_input_filepath))
+                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
                         maxcyc = min(256 * counter, 2048)
-                        new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath, maxcyc=maxcyc)
+                        new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath,
+                                                                               maxcyc=maxcyc)
                         continue
                     else:
-                        print('encountered unknown error code {0} with {1}, logging...'.format(code, new_input_filepath))
-                        error_message = ('Unable to resolve error code {0} for input file {1}, '
-                                         + 'please look up appropriate code at '
-                                         + '(https://docs.computecanada.ca/wiki/Gaussian_error_messages) '
-                                         + 'and update molecule or GM signature as required').format(code, self.input_filepath)
+                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
+                        error_message = utils.construct_unknown_error_message(code,
+                                                                              self.output_molecule_name,
+                                                                              self.calculation)
                         raise exceptions.GaussianManagerError(error_message)
-
             else:
                 error_message = 'resolve_counter ran out for {0} with error code {1}'.format(new_input_filepath, code)
-                print(error_message + ' logging...')
+                utils.print_error_message(message=error_message)
                 raise exceptions.GaussianManagerError(error_message)
 
     def _write_gm_output_geometries(self):
 
         if self.calculation == 'tsopt':
-            self.ts_xyz_filepath = self.output_molecule_name + '_ts.xyz'
+            self.ts_xyz_filepath = self.experiment_directory + self.output_molecule_name + '_ts.xyz'
             toolbox.write_tsopt_geometry_from_output(self.output_filepath, self.ts_xyz_filepath)
         elif self.calculation == 'irc':
-            self.reactant_xyz_filepath = self.output_molecule_name + '_reactant.xyz'
-            self.product_xyz_filepath = self.output_molecule_name + '_product.xyz'
+            self.reactant_xyz_filepath = self.experiment_directory + self.output_molecule_name + '_reactant.xyz'
+            self.product_xyz_filepath =  self.experiment_directory + self.output_molecule_name + '_product.xyz'
             toolbox.write_irc_geometries_from_output(self.output_filepath,
                                                      self.reactant_xyz_filepath,
                                                      self.product_xyz_filepath)
