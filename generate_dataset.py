@@ -1,8 +1,9 @@
-from GaussianManager.src import executive
+from GaussianManager.src import executive, utils
 import os
 
-mol_list = [mol for mol in os.listdir('~/gaussian/raw_xyz_files/sn2_dataset/')]
-root_dir = '~/gaussian/experiments/sn2_dataset'
+xyz_path = '~/gaussian/raw_xyz_files/sn2_dataset/'
+mol_list = [xyz_path + mol for mol in os.listdir(utils.sanitize_path(xyz_path))]
+root_dir = utils.sanitize_path('~/gaussian/experiments/sn2_dataset', add_slash=True)
 calc_list = ['tsopt', 'irc']
 method = 'mp2'
 basis_set = '6-31G'

@@ -13,7 +13,7 @@ class GaussianExecutive:
                  basis_set,
                  multiplicity='-1 1',
                  log_errors=True,
-                 resolve_attempts=8):
+                 resolve_attempts=5):
 
         self.molecule_list = [utils.sanitize_path(mol) for mol in molecule_list]
         self.root_exp_directory = utils.sanitize_path(root_exp_directory, add_slash=True)
@@ -44,7 +44,7 @@ class GaussianExecutive:
                                               multiplicity=self.multiplicity,
                                               resolve_attempts=self.resolve_attempts)
                 if calc == 'irc':
-                    gm = manager.IRCManager(molecule,
+                    gm = manager.IRCRevManager(molecule,
                                             mol_exp_dir,
                                             method=self.method,
                                             basis_set=self.basis_set,

@@ -96,7 +96,7 @@ class TestTSOPTManager(TestGaussianManager):
             gm.output_filepath = successful_irc_output_filepath
             gm.run_manager()
 
-class TestIRCManager(TestGaussianManager):
+class TestIRCRevManager(TestGaussianManager):
 
     def test_write_output_geometry_irc(self,
                                        irc_gm,
@@ -125,6 +125,6 @@ class TestIRCManager(TestGaussianManager):
         with monkeypatch.context() as m:
             m.setattr('GaussianManager.src.utils.run_gaussian_bash_command',
                       self.mock_successful_gaussian_job)
-            gm = manager.IRCManager(molecule_filepath, exp_dir)
+            gm = manager.IRCRevManager(molecule_filepath, exp_dir)
             gm.output_filepath = successful_irc_output_filepath
             gm.run_manager()

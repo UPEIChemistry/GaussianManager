@@ -1,3 +1,5 @@
+"""Module for GaussianManager classes which help manage individual gaussian calculations"""
+
 from GaussianManager.src import exceptions, toolbox, utils
 import os
 import subprocess
@@ -50,7 +52,9 @@ class GaussianManager(object):
             new_input_filepath = self.input_filepath
             for counter in range(self.resolve_attempts):
                 try:
+                    print('starting  {0} calculation on {1}...'.format(self.calculation, self.output_molecule_name))
                     toolbox.start_gaussian_calculation(new_input_filepath, self.output_filepath)
+                    print('{0} calculation on {1} completed successfully'.format(self.calculation, self.output_molecule_name))
                     break
                 except exceptions.GaussianToolboxError as error:
                     code = error.args[0]
@@ -65,6 +69,8 @@ class GaussianManager(object):
                                                                                maxcyc=maxcyc)
                         continue
                     else:
+                        error_message = ('unknown code ({0}) encountered while running {1} '
+                                         + 'calculation on {2}').format(code, self.calculation, self.output_molecule_name)
                         utils.print_error_message(code, self.output_molecule_name, self.calculation)
                         error_message = utils.construct_unknown_error_message(code,
                                                                               self.output_molecule_name,
@@ -75,9 +81,10 @@ class GaussianManager(object):
                 utils.print_error_message(message=error_message)
                 raise exceptions.GaussianManagerError(error_message)
 
-    def _write_output_geometry(self):
+    def _write_output_geometry(self, suffix=''):
 
-        raise NotImplementedError
+        self.output_molecule_filepath = self.experiment_directory + self.output_molecule_name + suffix + '.xyz'
+        toolbox.write_geometry_from_output(self.output_filepath, self.output_molecule_filepath)
 
 
 class TSOPTManager(GaussianManager):
@@ -87,7 +94,6 @@ class TSOPTManager(GaussianManager):
                  experiment_directory,
                  method='mp2',
                  basis_set='6-31G',
-                 calculation='tsopt',
                  multiplicity='-1 1',
                  resolve_attempts=8):
 
@@ -95,7 +101,7 @@ class TSOPTManager(GaussianManager):
                          experiment_directory,
                          method,
                          basis_set,
-                         calculation,
+                         'tsopt',
                          multiplicity,
                          resolve_attempts)
 
@@ -111,18 +117,16 @@ class TSOPTManager(GaussianManager):
 
     def _write_output_geometry(self):
 
-        self.ts_xyz_filepath = self.experiment_directory + self.output_molecule_name + '_ts.xyz'
-        toolbox.write_tsopt_geometry_from_output(self.output_filepath, self.ts_xyz_filepath)
+        super()._write_output_geometry(suffix='_ts')
 
 
-class IRCManager(GaussianManager):
+class IRCRevManager(GaussianManager):
 
     def __init__(self,
                  molecule_filepath,
                  experiment_directory,
                  method='mp2',
                  basis_set='6-31G',
-                 calculation='irc',
                  multiplicity='-1 1',
                  resolve_attempts=8):
 
@@ -130,14 +134,33 @@ class IRCManager(GaussianManager):
                          experiment_directory,
                          method,
                          basis_set,
-                         calculation,
+                         'irc-rev',
                          multiplicity,
                          resolve_attempts)
 
     def _write_output_geometry(self):
 
-        self.reactant_xyz_filepath = self.experiment_directory + self.output_molecule_name + '_reactant.xyz'
-        self.product_xyz_filepath =  self.experiment_directory + self.output_molecule_name + '_product.xyz'
-        toolbox.write_irc_geometries_from_output(self.output_filepath,
-                                                    self.reactant_xyz_filepath,
-                                                    self.product_xyz_filepath)
+        super()._write_output_geometry(suffix='_reactant')
+
+
+class IRCFwdManager(GaussianManager):
+
+    def __init__(self,
+                 molecule_filepath,
+                 experiment_directory,
+                 method='mp2',
+                 basis_set='6-31G',
+                 multiplicity='-1 1',
+                 resolve_attempts=8):
+
+        super().__init__(molecule_filepath,
+                         experiment_directory,
+                         method,
+                         basis_set,
+                         'irc-fwd',
+                         multiplicity,
+                         resolve_attempts)
+
+    def _write_output_geometry(self):
+
+        super()._write_output_geometry(suffix='_product')

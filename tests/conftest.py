@@ -107,7 +107,7 @@ def tsopt_gm():
 def irc_gm():
 
     exp_dir = tempfile.mkdtemp()
-    gm = manager.IRCManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
+    gm = manager.IRCRevManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
                             experiment_directory=exp_dir)
 
     return gm

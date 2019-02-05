@@ -15,10 +15,14 @@ def generate_gaussian_input_file(molecule_filepath,
 
     #Assign default calculation_keywords
     if calculation_keywords is None:
+        common_kws = 'MAXPOINTS=64, STEPSIZE=0.1, CALCFC, VERYTIGHT, INT=ULTRAFINE'
+
         if calculation == 'tsopt':
-            calculation_keywords = 'OPT=(TS, CALCFC, NOEIGEN) SCF(maxcyc=256) FREQ'
-        elif calculation == 'irc':
-            calculation_keywords = 'IRC=CALCFC SCF(maxcyc=256)'
+            calculation_keywords = 'OPT=(TS, NOEIGEN, {}) SCF(maxcyc=256) FREQ'.format(common_kws)
+        elif calculation == 'irc-rev':
+            calculation_keywords = 'IRC=(REVERSE, {}) SCF(maxcyc=256)'.format(common_kws)
+        elif calculation == 'irc-fwd':
+            calculation_keywords = 'IRC=(FORWARD, {}) SCF(maxcyc=256)'.format(common_kws)
 
     #Sanitize the provided paths
     molecule_filepath = utils.sanitize_path(molecule_filepath)
@@ -48,13 +52,10 @@ def start_gaussian_calculation(input_filepath,
         output_filepath = utils.sanitize_path(output_filepath)
 
         try:
-            print('starting calculation on {} ...'.format(input_filepath))
             utils.run_gaussian_bash_command(input_filepath, output_filepath)
         except subprocess.CalledProcessError:
             error_code = utils.discover_gaussian_error_code(output_filepath)
             raise exceptions.GaussianToolboxError(error_code)
-        else:
-            print('calculation on {} completed succesfully'.format(input_filepath))
 
 def resolve_input_error(faulty_input_filepath):
     """Currently only makes sure that the final line has a single newline character on it"""
@@ -91,27 +92,14 @@ def resolve_convergence_error(faulty_input_filepath, maxcyc=512, output_to_parse
 
     return new_input_filepath
 
-def write_irc_geometries_from_output(output_filepath, reactant_filepath, product_filepath):
+def write_geometry_from_output(output_filepath, molecule_filepath):
 
-    #Sanitize and gather necessary lines for parser
     output_filepath = utils.sanitize_path(output_filepath)
     output_lines = utils.read_file_lines(output_filepath)
 
-    #Split irc output file into two seperate set of lines for parser
-    for i, line in enumerate(output_lines):
-        if ' Calculation of FORWARD path complete.' in line:
-            forward_path_idx = i
-            break
-
-    #Parse half-output for reactant coords, write reactant xyz file
-    reactant_name = os.path.basename(reactant_filepath)[:-4]
-    reactant_coords = utils.parse_output_lines_for_coordinates(output_lines[forward_path_idx + 1:])
-    utils.write_file_from_lines(reactant_filepath, reactant_coords, obabel_name=reactant_name)
-
-    #Parse half-output for product coordinates, write product xyz file
-    product_name = os.path.basename(product_filepath)[:-4]
-    product_coords = utils.parse_output_lines_for_coordinates(output_lines[:forward_path_idx + 1])
-    utils.write_file_from_lines(product_filepath, product_coords, obabel_name=product_name)
+    name = os.path.basename(molecule_filepath)[:-4]
+    coords = utils.parse_output_lines_for_coordinates(output_lines)
+    utils.write_file_from_lines(molecule_filepath, coords, obabel_name=name)
 
 def validate_tsopt_output(output_filepath):
 
@@ -122,14 +110,3 @@ def validate_tsopt_output(output_filepath):
                 break
             else:
                 raise exceptions.GaussianToolboxError('TSERROR')
-
-def write_tsopt_geometry_from_output(output_filepath, ts_filepath):
-
-    #Sanitize and gather necessary lines for parser
-    output_filepath = utils.sanitize_path(output_filepath)
-    output_lines = utils.read_file_lines(output_filepath)
-
-    #Write product xyz file
-    ts_name = os.path.basename(ts_filepath)[:-4]
-    ts_coords = utils.parse_output_lines_for_coordinates(output_lines)
-    utils.write_file_from_lines(ts_filepath, ts_coords, obabel_name=ts_name)
