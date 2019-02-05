@@ -35,7 +35,16 @@ class GaussianExecutive:
 
             for calc in self.calculation_list:
 
-                gm = manager.GaussianManager(molecule,
+                if calc == 'tsopt':
+                    gm = manager.TSOPTManager(molecule,
+                                              mol_exp_dir,
+                                              method=self.method,
+                                              basis_set=self.basis_set,
+                                              calculation=calc,
+                                              multiplicity=self.multiplicity,
+                                              resolve_attempts=self.resolve_attempts)
+                if calc == 'irc':
+                    gm = manager.IRCManager(molecule,
                                             mol_exp_dir,
                                             method=self.method,
                                             basis_set=self.basis_set,
@@ -43,7 +52,7 @@ class GaussianExecutive:
                                             multiplicity=self.multiplicity,
                                             resolve_attempts=self.resolve_attempts)
                 try:
-                    gm.run_gaussian_manager()
+                    gm.run_manager()
                     if calc == 'tsopt':
                         molecule = gm.ts_xyz_filepath
                 except exceptions.GaussianManagerError as error:

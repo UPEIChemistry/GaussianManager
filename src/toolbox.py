@@ -113,6 +113,16 @@ def write_irc_geometries_from_output(output_filepath, reactant_filepath, product
     product_coords = utils.parse_output_lines_for_coordinates(output_lines[:forward_path_idx + 1])
     utils.write_file_from_lines(product_filepath, product_coords, obabel_name=product_name)
 
+def validate_tsopt_output(output_filepath):
+
+    lines = utils.read_file_lines(output_filepath)
+    for line in lines:
+        if 'imaginary' in line:
+            if '1' in line:
+                break
+            else:
+                raise exceptions.GaussianToolboxError('TSERROR')
+
 def write_tsopt_geometry_from_output(output_filepath, ts_filepath):
 
     #Sanitize and gather necessary lines for parser
