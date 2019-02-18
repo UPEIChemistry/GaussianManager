@@ -1,166 +1,124 @@
-"""Module for GaussianManager classes which help manage individual gaussian calculations"""
+"""Module of GaussianManager classes which manage the creation of a single guassian input/output.
+     Capable of resolving common gaussian errors to ensure generated output is correct"""
 
-from GaussianManager.src import exceptions, toolbox, utils
+import calculations
+import exceptions
+from gaussian_files import InputFile, OutputFile, FreqOutputFile
 import os
-import subprocess
+import utils
 
 class GaussianManager(object):
 
     def __init__(self,
-                 molecule_filepath,
                  experiment_directory,
-                 method='mp2',
-                 basis_set='6-31G',
-                 calculation='tsopt',
-                 multiplicity='-1 1',
-                 resolve_attempts=8):
+                 molecule_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
 
         self.molecule_filepath = utils.sanitize_path(molecule_filepath)
+        self.molecule_name = os.path.basename(self.molecule_filepath)[:-4]
+
         self.experiment_directory = utils.sanitize_path(experiment_directory, add_slash=True)
         utils.make_dir(self.experiment_directory)
 
-        self.method = method
-        self.basis_set = basis_set
-        self.calculation = calculation
         self.multiplicity = multiplicity
+        self.calculation = calculation
         self.resolve_attempts = resolve_attempts
 
-        self.input_filepath = self.experiment_directory + '{0}-input.com'.format(self.calculation)
-        self.output_filepath = self.experiment_directory + '{0}-output.log'.format(self.calculation)
-        self.output_molecule_name = os.path.basename(self.molecule_filepath)[:-4]
+        self._create_base_input()
+        self._create_base_output()
 
-    def run_manager(self):
+    @staticmethod
+    def factory(experiment_directory,
+                molecule_filepath,
+                multiplicity,
+                calculation,
+                **kwargs):
 
-        self._write_input_file()
-        self._run_calculation()
-        self._write_output_geometry()
+        if calculation.name == calculations.TsoptCalc.__class__.__name__:
 
-    def _write_input_file(self):
+            gm = TsoptManager(experiment_directory,
+                              molecule_filepath,
+                              multiplicity,
+                              calculation)
 
-        toolbox.generate_gaussian_input_file(molecule_filepath=self.molecule_filepath,
-                                             input_filepath=self.input_filepath,
-                                             method=self.method,
-                                             basis_set=self.basis_set,
-                                             calculation=self.calculation,
-                                             multiplicity=self.multiplicity)
+        elif calculation.name == calculations.IrcFwdCalc.__class__.__name__:
 
-    def _run_calculation(self):
+            gm = IrcFwdManager(experiment_directory,
+                              molecule_filepath,
+                              multiplicity,
+                              calculation)
 
-        if self.resolve_attempts == 0:
-            toolbox.start_gaussian_calculation(self.input_filepath, self.output_filepath)
+        elif calculation.name == calculations.IrcRevCalc.__class__.__name__:
+
+            gm = IrcRevManager(experiment_directory,
+                              molecule_filepath,
+                              multiplicity,
+                              calculation)
+
+        return gm
+
+    def _create_base_input(self):
+
+        input_filepath = self.experiment_directory + '{}-input.com'.format(self.calculation.name)
+        molecule_coords = utils.get_coords_from_obabel_xyz(self.molecule_filepath)
+        self.input_file = InputFile(filepath=input_filepath,
+                                       calculation=self.calculation,
+                                       molecule_name=self.molecule_name,
+                                       multiplicity=self.multiplicity,
+                                       mol_coords=molecule_coords)
+
+    def _create_base_output(self):
+
+        output_filepath = self.experiment_directory + '{}-output.com'.format(self.calculation.name)
+        self.output_file = OutputFile(filepath=output_filepath, input_file=self.input_file)
+
+    def write_input(self):
+
+        self.input_file.write()
+
+    def write_output(self):
+
+        for _ in range(self.resolve_attempts):
+
+            try:
+                self.output_file.write()
+                break
+            except exceptions.GaussianOutputError as error:
+                self.resolve_convergence_error()
+                continue
+
         else:
-            new_input_filepath = self.input_filepath
-            for counter in range(self.resolve_attempts):
-                try:
-                    print('starting  {0} calculation on {1}...'.format(self.calculation, self.output_molecule_name))
-                    toolbox.start_gaussian_calculation(new_input_filepath, self.output_filepath)
-                    print('{0} calculation on {1} completed successfully'.format(self.calculation, self.output_molecule_name))
-                    break
-                except exceptions.GaussianToolboxError as error:
-                    code = error.args[0]
-                    if code == 'l101':
-                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
-                        new_input_filepath = toolbox.resolve_input_error(self.input_filepath)
-                        continue
-                    elif code == 'l123' or code == 'l103' or code == 'l502' or code == 'l9999':
-                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
-                        maxcyc = min(256 * counter, 2048)
-                        new_input_filepath = toolbox.resolve_convergence_error(self.input_filepath,
-                                                                               maxcyc=maxcyc)
-                        continue
-                    else:
-                        error_message = ('unknown code ({0}) encountered while running {1} '
-                                         + 'calculation on {2}').format(code, self.calculation, self.output_molecule_name)
-                        utils.print_error_message(code, self.output_molecule_name, self.calculation)
-                        error_message = utils.construct_unknown_error_message(code,
-                                                                              self.output_molecule_name,
-                                                                              self.calculation)
-                        raise exceptions.GaussianManagerError(error_message)
-            else:
-                error_message = 'resolve_counter ran out for {0} with error code {1}'.format(new_input_filepath, code)
-                utils.print_error_message(message=error_message)
-                raise exceptions.GaussianManagerError(error_message)
+            self.raise_error(error.args[0])
 
-    def _write_output_geometry(self, suffix=''):
+    def resolve_convergence_error(self):
 
-        self.output_molecule_filepath = self.experiment_directory + self.output_molecule_name + suffix + '.xyz'
-        toolbox.write_geometry_from_output(self.output_filepath, self.output_molecule_filepath)
+        output_coords = self.output_file.parse_xyz()
+        self.input_file.mol_coords = output_coords
+        self.input_file.write()
 
+    def raise_error(self, error_code):
 
-class TSOPTManager(GaussianManager):
+        raise exceptions.GaussianManagerError(error_code)
 
-    def __init__(self,
-                 molecule_filepath,
-                 experiment_directory,
-                 method='mp2',
-                 basis_set='6-31G',
-                 multiplicity='-1 1',
-                 resolve_attempts=8):
+class TsoptManager(GaussianManager):
 
-        super().__init__(molecule_filepath,
-                         experiment_directory,
-                         method,
-                         basis_set,
-                         'tsopt',
-                         multiplicity,
-                         resolve_attempts)
+    def _create_base_output(self):
 
-    def _run_calculation(self):
+        output_filepath = self.experiment_directory + '{}-output.com'.format(self.calculation.name)
+        self.output_file = FreqOutputFile(filepath=output_filepath, input_file=self.input_file)
 
-        super()._run_calculation()
-        try:
-            toolbox.validate_tsopt_output(self.output_filepath)
-        except exceptions.GaussianToolboxError:
-            error_message = 'Molecule {0} does not have a single imaginary frequency'.format(self.output_molecule_name)
-            print(error_message)
-            raise exceptions.GaussianManagerError(error_message)
+    def write_output(self):
 
-    def _write_output_geometry(self):
+        super().write_output()
+        if not utils.validate_single_imag_freq(self.output_file.parse_freq()):
+            self.raise_error('freq_error')
 
-        super()._write_output_geometry(suffix='_ts')
+class IrcFwdManager(GaussianManager):
 
+    pass
 
-class IRCRevManager(GaussianManager):
+class IrcRevManager(GaussianManager):
 
-    def __init__(self,
-                 molecule_filepath,
-                 experiment_directory,
-                 method='mp2',
-                 basis_set='6-31G',
-                 multiplicity='-1 1',
-                 resolve_attempts=8):
-
-        super().__init__(molecule_filepath,
-                         experiment_directory,
-                         method,
-                         basis_set,
-                         'irc-rev',
-                         multiplicity,
-                         resolve_attempts)
-
-    def _write_output_geometry(self):
-
-        super()._write_output_geometry(suffix='_reactant')
-
-
-class IRCFwdManager(GaussianManager):
-
-    def __init__(self,
-                 molecule_filepath,
-                 experiment_directory,
-                 method='mp2',
-                 basis_set='6-31G',
-                 multiplicity='-1 1',
-                 resolve_attempts=8):
-
-        super().__init__(molecule_filepath,
-                         experiment_directory,
-                         method,
-                         basis_set,
-                         'irc-fwd',
-                         multiplicity,
-                         resolve_attempts)
-
-    def _write_output_geometry(self):
-
-        super()._write_output_geometry(suffix='_product')
+    pass

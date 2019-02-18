@@ -1,9 +1,10 @@
-#TODO: Could add error logging directly to the error classes?
+class GaussianExecutiveError(Exception):
+    pass
 
 class GaussianManagerError(Exception):
     pass
 
-class GaussianToolboxError(Exception):
+class GaussianOutputError(Exception):
     pass
 
 class GaussianUtilsError(Exception):

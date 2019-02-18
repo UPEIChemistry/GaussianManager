@@ -1,61 +1,30 @@
-"""Class for supervising multiple GM instances to generate an entire dataset of TS molecules"""
+"""Module containing executive classes which overlook multiple GaussianManager instances
+    (i.e. multiple gaussian calculations) for a single molecule/reaction"""
 
-from GaussianManager.src import manager, utils, exceptions
-import os
+from calculations import TsoptCalc, IrcFwdCalc, IrcRevCalc
+import manager
+import utils
 
-class GaussianExecutive:
+class GaussianExecutive(object):
 
     def __init__(self,
-                 molecule_list,
-                 root_exp_directory,
-                 calculation_list,
-                 method,
-                 basis_set,
-                 multiplicity='-1 1',
-                 log_errors=True,
-                 resolve_attempts=5):
+                 expirement_directory,
+                 molecule_filepath,
+                 multiplicity,
+                 calculation_suite):
 
-        self.molecule_list = [utils.sanitize_path(mol) for mol in molecule_list]
-        self.root_exp_directory = utils.sanitize_path(root_exp_directory, add_slash=True)
-        self.calculation_list = calculation_list
-        self.method = method
-        self.basis_set = basis_set
+        self.molecule_filepath = utils.sanitize_path(molecule_filepath)
+        self.expirement_directory = utils.sanitize_path(expirement_directory, add_slash=True)
+        utils.make_dir(self.expirement_directory)
         self.multiplicity = multiplicity
-        self.log_errors = log_errors
-        if self.log_errors:
-            self.error_log = self.root_exp_directory + 'error_log.txt'
-        self.resolve_attempts = resolve_attempts
+        self.calculation_suite = calculation_suite
 
-    def generate_dataset(self):
+    def run_calculation_suite(self):
 
-        for molecule in self.molecule_list:
+        for calculation in self.calculation_suite:
 
-            mol_name = os.path.basename(molecule)[:-4]
-            mol_exp_dir = self.root_exp_directory + mol_name + '/'
-
-            for calc in self.calculation_list:
-
-                if calc == 'tsopt':
-                    gm = manager.TSOPTManager(molecule,
-                                              mol_exp_dir,
-                                              method=self.method,
-                                              basis_set=self.basis_set,
-                                              calculation=calc,
-                                              multiplicity=self.multiplicity,
-                                              resolve_attempts=self.resolve_attempts)
-                if calc == 'irc':
-                    gm = manager.IRCRevManager(molecule,
-                                            mol_exp_dir,
-                                            method=self.method,
-                                            basis_set=self.basis_set,
-                                            calculation=calc,
-                                            multiplicity=self.multiplicity,
-                                            resolve_attempts=self.resolve_attempts)
-                try:
-                    gm.run_manager()
-                    if calc == 'tsopt':
-                        molecule = gm.ts_xyz_filepath
-                except exceptions.GaussianManagerError as error:
-                    if self.log_errors:
-                        utils.log_error(error, self.error_log)
-                    break
+            gm_dir = self.expirement_directory + '{}/'.format(calculation)
+            gm = manager.GaussianManager.factory(gm_dir,
+                                                 self.molecule_filepath,
+                                                 self.multiplicity,
+                                                 calculation)
