@@ -1,9 +1,7 @@
 """Module containing executive classes which overlook multiple GaussianManager instances
     (i.e. multiple gaussian calculations) for a single molecule/reaction"""
 
-from calculations import TsoptCalc, IrcFwdCalc, IrcRevCalc
-import manager
-import utils
+from GaussianManager.src import calculations, manager, utils
 
 class GaussianExecutive(object):
 

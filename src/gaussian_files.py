@@ -1,8 +1,7 @@
-import exceptions
+from GaussianManager.src import exceptions, utils
 import os
 import matplotlib.pyplot as plt
 import subprocess
-import utils
 
 class InputFile(object):
 

@@ -1,4 +1,4 @@
-import exceptions
+from GaussianManager.src import exceptions
 import os
 import subprocess
 

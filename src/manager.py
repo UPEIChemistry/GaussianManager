@@ -1,11 +1,9 @@
 """Module of GaussianManager classes which manage the creation of a single guassian input/output.
      Capable of resolving common gaussian errors to ensure generated output is correct"""
 
-import calculations
-import exceptions
-from gaussian_files import InputFile, OutputFile, FreqOutputFile
+from GaussianManager.src import calculations, exceptions, utils
+from GaussianManager.src.gaussian_files import InputFile, OutputFile, FreqOutputFile
 import os
-import utils
 
 class GaussianManager(object):
 
