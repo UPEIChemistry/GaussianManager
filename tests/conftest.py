@@ -1,4 +1,4 @@
-from GaussianManager.src import manager, toolbox, utils, exceptions
+from GaussianManager.src import manager, utils, exceptions
 import pytest
 import tempfile
 
@@ -84,30 +84,3 @@ def l502_irc_output_filepath():
 def l9999_tsopt_output_filepath():
 
     return example_directory + 'l9999_tsopt_output.log'
-
-@pytest.fixture(scope='session')
-def base_gm():
-
-    exp_dir = tempfile.mkdtemp()
-    gm = manager.GaussianManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
-                                 experiment_directory=exp_dir)
-
-    return gm
-
-@pytest.fixture(scope='session')
-def tsopt_gm():
-
-    exp_dir = tempfile.mkdtemp()
-    gm = manager.TSOPTManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
-                              experiment_directory=exp_dir)
-
-    return gm
-
-@pytest.fixture(scope='session')
-def irc_gm():
-
-    exp_dir = tempfile.mkdtemp()
-    gm = manager.IRCRevManager(molecule_filepath=example_directory + 'xyz/F-CH3-OH.xyz',
-                            experiment_directory=exp_dir)
-
-    return gm
