@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 from GaussianManager.src import calculations, gaussian_files, manager, utils, exceptions
-=======
-from GaussianManager.src import manager, utils, exceptions
->>>>>>> 19ec37bdbccef55558e8aae48f1bc4727226408a
 import pytest
 import tempfile
 
