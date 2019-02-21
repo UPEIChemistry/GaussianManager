@@ -7,8 +7,6 @@ def get_args():
     parser = argparse.ArgumentParser(description='Run standard calculation suite on provided directory of molecules')
     parser.add_argument('-i', '--input', help='The input directory containing xyz files to run gaus calcs on')
     parser.add_argument('-o', '--output', help='the experimental root dir where data is written to')
-    parser.add_argument('-m', '--method', default='mp2', nargs='+', help='The level of theory to run calcs at')
-    parser.add_argument('-b', '--basis_set', default='6-31G', nargs='+', help='The basis set calcs are run using')
     args = parser.parse_args()
 
     return args
@@ -24,12 +22,19 @@ def main():
     error_log_path = root_dir + 'error_log.txt'
     geom_dir = root_dir + 'geometries/'
 
-    method = args.method
-    basis_set = args.basis_set
+    method_0 = 'MP2'
+    method_1 = 'B3LYP'
+    method_2 = 'M06'
+    method_3 = 'G4'
 
-    calc_list = [calculations.TsoptCalc(method, basis_set),
-                 calculations.IrcRevCalc(method, basis_set),
-                 calculations.IrcFwdCalc(method, basis_set)]
+    basis_0 = 'cc-pVDZ'
+    basis_1 = 'aug-cc-pVDZ'
+    basis_2 = 'aug-cc-pVTZ'
+    basis_3 = 'aug-cc-pVQZ'
+
+    calc_list = [calculations.TsoptCalc(method_0, basis_0),
+                 calculations.IrcRevCalc(method_0, basis_0),
+                 calculations.IrcFwdCalc(method_0, basis_0)]
 
     for mol in mol_list:
 

@@ -24,7 +24,7 @@ class GaussianExecutive(object):
         molecule = self.input_mol_filepath
         for calculation in self.calculation_suite:
 
-            gm_dir = self.expirement_directory + '{}/'.format(calculation.name)
+            gm_dir = self.expirement_directory + '{}/{}/'.format(calculation.method, calculation.name)
             gm = manager.GaussianManager.factory(gm_dir,
                                                  molecule,
                                                  self.multiplicity,

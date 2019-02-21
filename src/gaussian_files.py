@@ -106,6 +106,15 @@ class OutputFile(object):
 
 class TsoptOutputFile(OutputFile):
 
+    def __init__(self,
+                 filepath,
+                 input_file):
+
+        super().__init__(filepath,
+                         input_file)
+        self.freqs = None
+        self.freq_path = None
+
     def write_obabel_xyz(self):
 
         with self.input_file.molecule_name as mol_name:

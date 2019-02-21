@@ -6,12 +6,10 @@ class TestInputFile:
     def test_write_inputfile(self, input_file):
 
         inp = input_file.calculation
-        true_first = '# {}/{} {}, {}, MAXPOINTS={}, STEPSIZE={}) {}'.format(inp.method,
+        true_first = '# {}/{} {}, {}) {}'.format(inp.method,
                                                                             inp.basis_set,
                                                                             inp.calc_kws,
                                                                             inp.converge_threshold,
-                                                                            inp.max_points,
-                                                                            inp.step_size,
                                                                             inp.extra_kws)
         true_last = '\n'
         input_file.write()

@@ -15,8 +15,6 @@ class GaussianManager(object):
                  resolve_attempts=4):
 
         self.input_mol_filepath = utils.sanitize_path(input_mol_filepath)
-        self.molecule_name = os.path.basename(self.input_mol_filepath)[:-4]
-
         self.experiment_directory = utils.sanitize_path(experiment_directory, add_slash=True)
         utils.make_dir(self.experiment_directory)
 
@@ -24,8 +22,11 @@ class GaussianManager(object):
         self.calculation = calculation
         self.resolve_attempts = resolve_attempts
 
-        self._create_base_input()
-        self._create_base_output()
+        self.input_file = self._create_base_input()
+        self.output_file = self._create_base_output()
+
+        self.output_mol_name = os.path.basename(self.input_mol_filepath)[:-4]
+        self.output_mol_filepath = None
 
     @staticmethod
     def factory(experiment_directory,
@@ -34,19 +35,25 @@ class GaussianManager(object):
                 calculation,
                 **kwargs):
 
-        if calculation.name == calculations.TsoptCalc.__class__.__name__:
+        if calculation.name == calculations.TsoptCalc.__name__:
 
             gm = TsoptManager(experiment_directory,
                               input_mol_filepath,
                               multiplicity,
                               calculation)
 
-        else:
+        elif calculation.name == calculations.IrcRevCalc.__name__:
 
-            gm = GaussianManager(experiment_directory,
-                                 input_mol_filepath,
-                                 multiplicity,
-                                 calculation)
+            gm = IrcRevManager(experiment_directory,
+                               input_mol_filepath,
+                               multiplicity,
+                               calculation)
+        elif calculation.name == calculations.IrcFwdCalc.__name__:
+
+            gm = IrcFwdManager(experiment_directory,
+                               input_mol_filepath,
+                               multiplicity,
+                               calculation)
 
         return gm
 
@@ -54,16 +61,20 @@ class GaussianManager(object):
 
         input_filepath = self.experiment_directory + '{}-input.com'.format(self.calculation.name)
         molecule_coords = utils.get_coords_from_obabel_xyz(self.input_mol_filepath)
-        self.input_file = InputFile(filepath=input_filepath,
-                                       calculation=self.calculation,
-                                       molecule_name=self.molecule_name,
-                                       multiplicity=self.multiplicity,
-                                       mol_coords=molecule_coords)
+        input_file = InputFile(filepath=input_filepath,
+                               calculation=self.calculation,
+                               molecule_name=self.output_mol_name,
+                               multiplicity=self.multiplicity,
+                               mol_coords=molecule_coords)
+
+        return input_file
 
     def _create_base_output(self):
 
         output_filepath = self.experiment_directory + '{}-output.com'.format(self.calculation.name)
-        self.output_file = OutputFile.factory(filepath=output_filepath, input_file=self.input_file)
+        output_file = OutputFile.factory(filepath=output_filepath, input_file=self.input_file)
+
+        return output_file
 
     def run_manager(self):
 
@@ -116,6 +127,20 @@ class GaussianManager(object):
 
 class TsoptManager(GaussianManager):
 
+    def __init__(self,
+                 experiment_directory,
+                 input_mol_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
+
+        super().__init__(experiment_directory,
+                         input_mol_filepath,
+                         multiplicity,
+                         calculation,
+                         resolve_attempts)
+        self.output_mol_name += '_ts'
+
     def _create_base_output(self):
 
         output_filepath = self.experiment_directory + '{}-output.com'.format(self.calculation.name)
@@ -127,3 +152,35 @@ class TsoptManager(GaussianManager):
         self.output_file.write_freq()
         if not utils.validate_single_imag_freq(self.output_file.freqs):
             self.raise_error('freq_error')
+
+class IrcRevManager(GaussianManager):
+
+    def __init__(self,
+                 experiment_directory,
+                 input_mol_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
+
+        super().__init__(experiment_directory,
+                         input_mol_filepath,
+                         multiplicity,
+                         calculation,
+                         resolve_attempts)
+        self.output_mol_name += '_reactant'
+
+class IrcFwdManager(GaussianManager):
+
+    def __init__(self,
+                 experiment_directory,
+                 input_mol_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
+
+        super().__init__(experiment_directory,
+                         input_mol_filepath,
+                         multiplicity,
+                         calculation,
+                         resolve_attempts=4)
+        self.output_mol_name += '_product'
