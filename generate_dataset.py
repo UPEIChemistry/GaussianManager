@@ -1,3 +1,5 @@
+"""Script for running a set of xyz files through a standard calculation suite"""
+
 import argparse
 from GaussianManager.src import calculations, executive, exceptions, utils
 import os
@@ -22,19 +24,12 @@ def main():
     error_log_path = root_dir + 'error_log.txt'
     geom_dir = root_dir + 'geometries/'
 
-    method_0 = 'MP2'
-    method_1 = 'B3LYP'
-    method_2 = 'M06'
-    method_3 = 'G4'
-
-    basis_0 = 'cc-pVDZ'
-    basis_1 = 'aug-cc-pVDZ'
-    basis_2 = 'aug-cc-pVTZ'
-    basis_3 = 'aug-cc-pVQZ'
+    method_0, method_1, method_2, method_3 = 'MP2', 'B3LYP', 'M06', 'G4'
+    basis_0, basis_1, basis_2, basis_3 = 'cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ'
 
     calc_list = [calculations.TsoptCalc(method_0, basis_0),
-                 calculations.IrcRevCalc(method_0, basis_0),
-                 calculations.IrcFwdCalc(method_0, basis_0)]
+                 calculations.IrcCalc(method_0, basis_0, direction='reverse'),
+                 calculations.IrcCalc(method_0, basis_0, direction='forward')]
 
     for mol in mol_list:
 

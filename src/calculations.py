@@ -105,3 +105,5 @@ class IrcCalc(Calculation):
         super().__init__(method,
                          basis_set,
                          calc_line)
+
+        self.name += direction

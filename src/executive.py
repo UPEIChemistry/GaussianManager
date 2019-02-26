@@ -4,6 +4,14 @@
 from GaussianManager.src import calculations, exceptions, manager, utils
 
 class GaussianExecutive(object):
+    """Class responsible for calling and managing multiple GM instances for single molecules
+
+            Args:
+                expirement_directory (str): directory where generated input/output files are to be stored
+                input_mol_filepath (str): path to the xyz file containing molecule coords
+                multiplicity (str): the multiplicity for the molecule being studied
+                calculation_suite (list): list of calculation objects to subject molecule to
+        """
 
     def __init__(self,
                  expirement_directory,
@@ -20,6 +28,15 @@ class GaussianExecutive(object):
         self.output_mol_filepaths = []
 
     def run_calculation_suite(self):
+        """runs the full set of calculations on the input molecule by creating GM instances based
+            on which type of calcs are provided
+
+            Raises:
+                exceptions.GaussianExecutiveError: raised if GE encounters unresolvable errors thrown
+                    by gaussian. Error message contains gaussian specific code/message and the name of
+                    the calc responsible for the error
+        """
+
 
         molecule = self.input_mol_filepath
         for calculation in self.calculation_suite:

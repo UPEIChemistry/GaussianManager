@@ -6,6 +6,17 @@ from GaussianManager.src.gaussian_files import InputFile, OutputFile
 import os
 
 class GaussianManager(object):
+    """Super-class for managing single calculations for single molecules. Capable of generating
+            gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+
+        Args:
+            experiment_directory (str): directory to write GM input/outputs
+            input_mol_filepath (str): path to the xyz file containing input mol coords
+            multiplicity (str): multiplicity of input mol
+            calculation (Calculation object): Calc object for a specific gaussian calculation
+            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+                gaussian errors
+    """
 
     def __init__(self,
                  experiment_directory,
@@ -34,21 +45,33 @@ class GaussianManager(object):
                 multiplicity,
                 calculation,
                 **kwargs):
+        """Static factory method for GM which returns corresponding GM object based on calc provided
 
-        if calculation.name == calculations.TsoptCalc.__name__:
+            Args:
+                experiment_directory (str): directory to write GM input/outputs
+                input_mol_filepath (str): path to the xyz file containing input mol coords
+                multiplicity (str): multiplicity of input mol
+                calculation (Calculation object): Calc object for a specific gaussian calculation
+
+            Returns:
+                GaussianManager object: The corresponding GM object
+        """
+
+        if calculation.name == 'TsoptCalc':
 
             gm = TsoptManager(experiment_directory,
                               input_mol_filepath,
                               multiplicity,
                               calculation)
 
-        elif calculation.name == calculations.IrcRevCalc.__name__:
+        elif calculation.name == 'IrcCalcreverse':
 
             gm = IrcRevManager(experiment_directory,
                                input_mol_filepath,
                                multiplicity,
                                calculation)
-        elif calculation.name == calculations.IrcFwdCalc.__name__:
+
+        elif calculation.name == 'IrcCalcforward':
 
             gm = IrcFwdManager(experiment_directory,
                                input_mol_filepath,
