@@ -181,9 +181,9 @@ def get_ircrev_converge_metrics(path):
 def log_error(path, mol, e):
     """Logs the error message for a provided mol to a provided path"""
 
-    name = os.path.basename(mol)[:4]
     msg = e.args[0]
-    error_message = '{} on {}'.format(msg, name)
+    mol = os.path.basename(mol)[:-4]
+    error_message = '{} on {}'.format(msg, mol)
 
     print(error_message)
     with open(path, 'a') as file:

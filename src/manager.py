@@ -33,9 +33,9 @@ class GaussianManager(object):
         self.calculation = calculation
         self.resolve_attempts = resolve_attempts
 
+        self.output_mol_name = self._get_output_mol_name()
         self.input_file = self._create_base_input()
         self.output_file = self._create_base_output()
-        self.output_mol_name = self._get_output_mol_name()
 
         self.output_mol_filepath = None
 
@@ -87,7 +87,7 @@ class GaussianManager(object):
                 InputFile object
         """
 
-        input_filepath = self.experiment_directory + '{}-input.com'.format(self.calculation.name)
+        input_filepath = self.experiment_directory + 'input.com'
         molecule_coords = utils.get_coords_from_obabel_xyz(self.input_mol_filepath)
         input_file = InputFile(filepath=input_filepath,
                                calculation=self.calculation,
@@ -104,7 +104,7 @@ class GaussianManager(object):
                 OutputFile object
         """
 
-        output_filepath = self.experiment_directory + '{}-output.com'.format(self.calculation.name)
+        output_filepath = self.experiment_directory + 'output.com'
         output_file = OutputFile.factory(filepath=output_filepath,
                                          input_file=self.input_file,
                                          mol_name=self.output_mol_name)

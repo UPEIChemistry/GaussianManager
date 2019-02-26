@@ -97,15 +97,16 @@ class OutputFile(object):
         """
 
         calc_name = self.input_file.calculation.name
+        inp_mol = self.input_file.molecule_name[:-4]
 
         try:
-            print('writing {} output file for {}...'.format(calc_name, self.mol_name))
+            print('writing {} output file for {}...'.format(calc_name, inp_mol))
             utils.run_gaussian_bash_command(self.input_file.filepath, self.filepath)
         except subprocess.CalledProcessError:
             code = utils.discover_gaussian_error_code(self.filepath)
             print('encountered error ({}) while writing {} output for {}'.format(code,
                                                                                  calc_name,
-                                                                                 self.mol_name))
+                                                                                 inp_mol))
             raise exceptions.GaussianOutputError(code)
 
     def parse_xyz(self):
