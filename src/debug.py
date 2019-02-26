@@ -1,3 +1,5 @@
+"""Debug script for hooking into GM for extensive testing"""
+
 from GaussianManager.src import calculations, gaussian_files, manager, utils
 import tempfile
 
@@ -8,6 +10,6 @@ calc = calculations.TsoptCalc('mp2', '6-31G')
 mol_coords = utils.get_coords_from_obabel_xyz(path + 'xyz/F-CH3-OH.xyz')
 
 inp = gaussian_files.InputFile(inp_path, calc, 'F-CH3-OH', mol_coords, '-1 1')
-out = gaussian_files.OutputFile.factory(out_path, inp)
+out = gaussian_files.OutputFile.factory(out_path, inp, 'F-CH3-OH')
 
 out.display_covergence()

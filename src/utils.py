@@ -68,6 +68,7 @@ def get_coords_from_obabel_xyz(filepath):
     return coordinates
 
 def get_coords(path):
+    """parses the coordinates from the output file at path"""
 
     atom_num_dict = {'53': 'I',
                      '35': 'Br',
@@ -114,6 +115,7 @@ def get_coords(path):
     return sanit_coords
 
 def get_freqs(path):
+    """Parses the imag freqs from output file at path"""
 
     lines = get_file_lines(path)
     for line in lines:
@@ -134,6 +136,7 @@ def get_freqs(path):
     return freqs
 
 def validate_single_imag_freq(freqs):
+    """Checks a list of freqs for correct num of imag freqs"""
 
     if '1' in freqs[0]:
         return True
@@ -141,12 +144,14 @@ def validate_single_imag_freq(freqs):
         return False
 
 def write_frequencies(path, freqs):
+    """write a list of freqs to a path"""
 
     with open(path, 'w') as file:
         for line in freqs:
             file.write(line + '\n')
 
 def get_tsopt_converge_metrics(path):
+    """Parses a tsopt output file for the tsopt converge metrics"""
 
     lines = get_file_lines(path)
 
@@ -164,15 +169,17 @@ def get_tsopt_converge_metrics(path):
     return metrics_array
 
 def get_ircfwd_converge_metrics(path):
+    """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
 
 def get_ircrev_converge_metrics(path):
+    """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
 
 def log_error(path, mol, e):
-
+    """Logs the error message for a provided mol to a provided path"""
 
     name = os.path.basename(mol)[:4]
     msg = e.args[0]
@@ -183,6 +190,7 @@ def log_error(path, mol, e):
         file.write(error_message + '\n')
 
 def compile_geom(geom_dir, m_path):
+    """Copies the geometry from a provided molecule path to a provided geometry directory"""
 
     geom_dir = sanitize_path(geom_dir, add_slash=True)
     m_path = sanitize_path(m_path)
