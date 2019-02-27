@@ -64,19 +64,26 @@ class GaussianManager(object):
                               multiplicity,
                               calculation)
 
-        elif calculation.name == 'IrcCalcreverse':
+        else:
 
-            gm = IrcRevManager(experiment_directory,
-                               input_mol_filepath,
-                               multiplicity,
-                               calculation)
+            gm = GaussianManager(experiment_directory,
+                                 input_mol_filepath,
+                                 multiplicity,
+                                 calculation)
 
-        elif calculation.name == 'IrcCalcforward':
+        # elif calculation.name == 'IrcCalcreverse':
 
-            gm = IrcFwdManager(experiment_directory,
-                               input_mol_filepath,
-                               multiplicity,
-                               calculation)
+        #     gm = IrcRevManager(experiment_directory,
+        #                        input_mol_filepath,
+        #                        multiplicity,
+        #                        calculation)
+
+        # elif calculation.name == 'IrcCalcforward':
+
+        #     gm = IrcFwdManager(experiment_directory,
+        #                        input_mol_filepath,
+        #                        multiplicity,
+        #                        calculation)
 
         return gm
 
@@ -149,9 +156,14 @@ class GaussianManager(object):
             try:
                 self.output_file.write()
                 break
-            except exceptions.GaussianOutputError:
-                self.resolve_convergence_error()
-                continue
+            except exceptions.GaussianOutputError as e:
+                if 'l301' in e.args[0]:
+                    self.raise_error(e.args[0] + ' error with multiplicity')
+                elif 'l101' in e.args[0]:
+                    self.raise_error(e.args[0] + ' error with input file')
+                else:
+                    self.resolve_convergence_error()
+                    continue
 
         else:
             self.raise_error('counter ran out')
@@ -219,54 +231,54 @@ class TsoptManager(GaussianManager):
         if not utils.validate_single_imag_freq(self.output_file.freqs):
             self.raise_error('freq_error')
 
-class IrcRevManager(GaussianManager):
-    """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+# class IrcRevManager(GaussianManager):
+#     """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
+#         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
-    """
+#         Args:
+#             experiment_directory (str): directory to write GM input/outputs
+#             input_mol_filepath (str): path to the xyz file containing input mol coords
+#             multiplicity (str): multiplicity of input mol
+#             calculation (Calculation object): Calc object for a specific gaussian calculation
+#             resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+#                 gaussian errors
+#     """
 
-    def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
+#     def __init__(self,
+#                  experiment_directory,
+#                  input_mol_filepath,
+#                  multiplicity,
+#                  calculation,
+#                  resolve_attempts=4):
 
-        super().__init__(experiment_directory,
-                         input_mol_filepath,
-                         multiplicity,
-                         calculation,
-                         resolve_attempts)
+#         super().__init__(experiment_directory,
+#                          input_mol_filepath,
+#                          multiplicity,
+#                          calculation,
+#                          resolve_attempts)
 
-class IrcFwdManager(GaussianManager):
-    """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+# class IrcFwdManager(GaussianManager):
+#     """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
+#         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
-    """
+#         Args:
+#             experiment_directory (str): directory to write GM input/outputs
+#             input_mol_filepath (str): path to the xyz file containing input mol coords
+#             multiplicity (str): multiplicity of input mol
+#             calculation (Calculation object): Calc object for a specific gaussian calculation
+#             resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+#                 gaussian errors
+#     """
 
-    def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
+#     def __init__(self,
+#                  experiment_directory,
+#                  input_mol_filepath,
+#                  multiplicity,
+#                  calculation,
+#                  resolve_attempts=4):
 
-        super().__init__(experiment_directory,
-                         input_mol_filepath,
-                         multiplicity,
-                         calculation,
-                         resolve_attempts=4)
+#         super().__init__(experiment_directory,
+#                          input_mol_filepath,
+#                          multiplicity,
+#                          calculation,
+#                          resolve_attempts=4)
