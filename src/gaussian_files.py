@@ -10,7 +10,7 @@ class InputFile(object):
             Args:
                 filepath (str): path to the gaussian input file
                 calculation (Calculation object): The calc to be run by gaussian
-                molecule_name (str): the name of the moleucle
+                molecule_name (str): the name of the molecule
                 mol_coords (list): List of lines containing xyz coords for mol, should end with a
                     newline character
                 multiplicity (str): multiplicity of the provided molecule
@@ -29,15 +29,71 @@ class InputFile(object):
         self.mol_coords = mol_coords
         self.multiplicity = multiplicity
 
+    @staticmethod
+    def factory(self,
+                filepath,
+                calculation,
+                molecule_name,
+                mol_coords,
+                multiplicity):
+
+        if calculation.name == 'qst3':
+
+            inp = QST3InputFile(filepath,
+                                calculation,
+                                molecule_name,
+                                mol_coords,
+                                multiplicity)
+
+        else:
+
+            inp = InputFile(filepath,
+                            calculation,
+                            molecule_name,
+                            mol_coords,
+                            multiplicity)
+
+        return inp
+
     def write(self):
         """Write the input file in the proper gaussian format"""
+
+        self.mol_coords = utils.check_newline(self.mol_coords)
 
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
             file.write(self.multiplicity + '\n')
             file.write(''.join(line for line in self.mol_coords))
-            file.write('\n\n')
+            file.write('\n')
+
+class QST3InputFile(InputFile):
+    """Wrapper which represents a gaussian input file, allowing for better customization of
+            contained mol coords & calc kws
+
+            Args:
+                filepath (str): path to the gaussian input file
+                calculation (Calculation object): The calc to be run by gaussian
+                molecule_name (str): the name of the molecule
+                mol_coords (list): List of list of lines containing xyz coords for ts,
+                    product, and reactant, IN THAT ORDER. Lines should end with a newline character
+                multiplicity (str): multiplicity of the provided molecule
+    """
+
+    def write(self):
+        """Write the QST3 input file in the proper gaussian format"""
+
+        for i, _ in enumerate(self.mol_coords):
+            self.mol_coords[i] = utils.check_newline(self.mol_coords[i])
+
+        with open(self.filepath, 'w') as file:
+            file.write(self.calculation.get_calc_line() + '\n\n')
+
+            for coords, name in zip(self.mol_coords, ('ts, reactant, product')):
+                file.write(self.molecule_name + ' {}\n\n'.format(name))
+                file.write(self.multiplicity + '\n')
+                file.write(''.join(line for line in coords))
+                file.write('\n')
 
 class OutputFile(object):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
@@ -75,15 +131,15 @@ class OutputFile(object):
                 OutputFile object
         """
 
-        if input_file.calculation.name == 'TsoptCalc':
+        if input_file.calculation.name == 'ts' or input_file.calculation.name == 'qst3':
 
             out = TsoptOutputFile(filepath, input_file, mol_name)
 
-        elif input_file.calculation.name == 'IrcCalcforward':
+        elif input_file.calculation.name == 'irc_forward':
 
             out = IrcFwdOutputFile(filepath, input_file, mol_name)
 
-        elif input_file.calculation.name == 'IrcCalcreverse':
+        elif input_file.calculation.name == 'irc_reverse':
 
             out = IrcRevOutputFile(filepath, input_file, mol_name)
 

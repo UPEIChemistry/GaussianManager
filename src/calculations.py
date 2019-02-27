@@ -40,6 +40,8 @@ class TsoptCalc(Calculation):
             Args:
                 method (str): level of theory
                 basis_set (str): basis set for calc
+                goal (str, optional): Defaults to 'ts'. Which search algorithm to use, can either
+                    be {ts} or {qst3}
                 convergence (str, optional): Defaults to 'tight'. dictates restrictiveness of convergence
                     metrics. Options include {tight} and {verytight}
                 grid (str, optional): Defaults to 'superfine'. dictates fineness of integral grid for
@@ -51,19 +53,21 @@ class TsoptCalc(Calculation):
     def __init__(self,
                  method,
                  basis_set,
+                 goal='ts',
                  convergence='tight',
                  grid='superfine',
                  maxcyc=256):
 
-        calc_line = ('opt(ts, calcfc, noeigen, {conv}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(conv=convergence,
+        calc_line = ('opt({goal}, calcfc, noeigen, {conv}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
+                                                                              conv=convergence,
                                                                               grid=grid,
                                                                               cyc=maxcyc)
 
         super().__init__(method,
                          basis_set,
                          calc_line)
-        self.name = 'tsopt'
+        self.name = goal
 
 class IrcCalc(Calculation):
     """Calc for irc calculations with exposed commonly customizable calc kws

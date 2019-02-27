@@ -27,7 +27,7 @@ def main():
     method_0, method_1, method_2, method_3 = 'MP2', 'B3LYP', 'M06', 'G4'
     basis_0, basis_1, basis_2, basis_3 = 'cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ'
 
-    calc_list = [calculations.TsoptCalc(method_0, basis_0),
+    calc_list = [calculations.TsoptCalc(method_0, basis_0, goal='ts'),
                  calculations.IrcCalc(method_0, basis_0, direction='reverse'),
                  calculations.IrcCalc(method_0, basis_0, direction='forward')]
 

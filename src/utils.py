@@ -196,3 +196,11 @@ def compile_geom(geom_dir, m_path):
     m_path = sanitize_path(m_path)
 
     subprocess.run('cp {} {}'.format(m_path, geom_dir), check=True, shell=True)
+
+def check_newline(lines):
+    """If last line is the newline char, remove it and return lines, else do nothing"""
+
+    if lines[-1] != '\n':
+            lines = lines[:-1]
+
+    return lines

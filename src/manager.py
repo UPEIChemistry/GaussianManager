@@ -57,7 +57,7 @@ class GaussianManager(object):
                 GaussianManager object: The corresponding GM object
         """
 
-        if calculation.name == 'TsoptCalc':
+        if calculation.name == 'ts':
 
             gm = TsoptManager(experiment_directory,
                               input_mol_filepath,
