@@ -64,26 +64,26 @@ class GaussianManager(object):
                               multiplicity,
                               calculation)
 
-        else:
+        elif calculation.name == 'qst3':
 
-            gm = GaussianManager(experiment_directory,
-                                 input_mol_filepath,
-                                 multiplicity,
-                                 calculation)
+            gm = TsoptManager(experiment_directory,
+                              input_mol_filepath,
+                              multiplicity,
+                              calculation)
 
-        # elif calculation.name == 'IrcCalcreverse':
+        elif calculation.name == 'irc_reverse':
 
-        #     gm = IrcRevManager(experiment_directory,
-        #                        input_mol_filepath,
-        #                        multiplicity,
-        #                        calculation)
+            gm = IrcRevManager(experiment_directory,
+                               input_mol_filepath,
+                               multiplicity,
+                               calculation)
 
-        # elif calculation.name == 'IrcCalcforward':
+        elif calculation.name == 'irc_forward':
 
-        #     gm = IrcFwdManager(experiment_directory,
-        #                        input_mol_filepath,
-        #                        multiplicity,
-        #                        calculation)
+            gm = IrcFwdManager(experiment_directory,
+                               input_mol_filepath,
+                               multiplicity,
+                               calculation)
 
         return gm
 
@@ -118,20 +118,10 @@ class GaussianManager(object):
 
         return output_file
 
-    def _get_output_mol_name(self):
-        """Gets the output mol name based on provided calculation"""
+    def _get_output_mol_name(self, suffix=None):
+        """Gets the output mol name based on provided suffix"""
 
-        if self.calculation.name == 'TsoptCalc':
-            suffix = '_ts'
-        elif self.calculation.name == 'IrcCalcforward':
-            suffix = '_product'
-        elif self.calculation.name == 'IrcCalcreverse':
-            suffix = '_reactant'
-        else:
-            suffix = None
-
-        out = os.path.basename(self.input_mol_filepath)[:-4] + suffix
-        return out
+        return os.path.basename(self.input_mol_filepath)[:-4] + suffix
 
     def run_manager(self):
         """Convenience function which calls all GM fxns required for running calc on mol"""
@@ -220,6 +210,7 @@ class TsoptManager(GaussianManager):
                          multiplicity,
                          calculation,
                          resolve_attempts)
+        self.output_mol_name = self._get_output_mol_name(suffix='_ts')
 
     def write_output(self):
         """Runs gaussian to generate the output file for provided InputFile object. Attempts to
@@ -231,54 +222,56 @@ class TsoptManager(GaussianManager):
         if not utils.validate_single_imag_freq(self.output_file.freqs):
             self.raise_error('freq_error')
 
-# class IrcRevManager(GaussianManager):
-#     """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
-#         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+class IrcRevManager(GaussianManager):
+    """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
+        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-#         Args:
-#             experiment_directory (str): directory to write GM input/outputs
-#             input_mol_filepath (str): path to the xyz file containing input mol coords
-#             multiplicity (str): multiplicity of input mol
-#             calculation (Calculation object): Calc object for a specific gaussian calculation
-#             resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-#                 gaussian errors
-#     """
+        Args:
+            experiment_directory (str): directory to write GM input/outputs
+            input_mol_filepath (str): path to the xyz file containing input mol coords
+            multiplicity (str): multiplicity of input mol
+            calculation (Calculation object): Calc object for a specific gaussian calculation
+            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+                gaussian errors
+    """
 
-#     def __init__(self,
-#                  experiment_directory,
-#                  input_mol_filepath,
-#                  multiplicity,
-#                  calculation,
-#                  resolve_attempts=4):
+    def __init__(self,
+                 experiment_directory,
+                 input_mol_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
 
-#         super().__init__(experiment_directory,
-#                          input_mol_filepath,
-#                          multiplicity,
-#                          calculation,
-#                          resolve_attempts)
+        super().__init__(experiment_directory,
+                         input_mol_filepath,
+                         multiplicity,
+                         calculation,
+                         resolve_attempts)
+        self.output_mol_name = self._get_output_mol_name(suffix='_reactant')
 
-# class IrcFwdManager(GaussianManager):
-#     """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
-#         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+class IrcFwdManager(GaussianManager):
+    """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
+        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-#         Args:
-#             experiment_directory (str): directory to write GM input/outputs
-#             input_mol_filepath (str): path to the xyz file containing input mol coords
-#             multiplicity (str): multiplicity of input mol
-#             calculation (Calculation object): Calc object for a specific gaussian calculation
-#             resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-#                 gaussian errors
-#     """
+        Args:
+            experiment_directory (str): directory to write GM input/outputs
+            input_mol_filepath (str): path to the xyz file containing input mol coords
+            multiplicity (str): multiplicity of input mol
+            calculation (Calculation object): Calc object for a specific gaussian calculation
+            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+                gaussian errors
+    """
 
-#     def __init__(self,
-#                  experiment_directory,
-#                  input_mol_filepath,
-#                  multiplicity,
-#                  calculation,
-#                  resolve_attempts=4):
+    def __init__(self,
+                 experiment_directory,
+                 input_mol_filepath,
+                 multiplicity,
+                 calculation,
+                 resolve_attempts=4):
 
-#         super().__init__(experiment_directory,
-#                          input_mol_filepath,
-#                          multiplicity,
-#                          calculation,
-#                          resolve_attempts=4)
+        super().__init__(experiment_directory,
+                         input_mol_filepath,
+                         multiplicity,
+                         calculation,
+                         resolve_attempts=4)
+        self.output_mol_name = self._get_output_mol_name(suffix='_product')
