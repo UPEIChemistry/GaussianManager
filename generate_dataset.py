@@ -24,7 +24,6 @@ def main():
 
     root_dir = utils.sanitize_path(args.output, add_slash=True)
     error_log_path = root_dir + 'error_log.txt'
-    geom_dir = root_dir + 'geometries/'
 
     methods = ['MP2', 'B3LYP', 'M06', 'G4']
     basis_sets = ['cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ']
@@ -33,12 +32,13 @@ def main():
 
     for mol in mol_list:
 
-        exp_dir = root_dir + os.path.basename(mol)[:-4]
-        ex = executive.GaussianExecutive(exp_dir, mol, '-1 1', calc_list)
+        mol_name = utils.get_file_name(mol)
+        exp_dir = root_dir + mol_name
+        ex = executive.GaussianExecutive(mol, exp_dir, args.multiplicity, calc_list)
         try:
             ex.run_calculation_suite()
         except exceptions.GaussianExecutiveError as e:
-            msg = e.args[0] + ' on mol {}'.format(os.path.basename(mol)[:-4])
+            msg = e.args[0] + ' on mol {}'.format(mol_name)
             utils.log_error(error_log_path, msg)
             continue
 
