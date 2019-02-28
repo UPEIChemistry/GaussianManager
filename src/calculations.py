@@ -15,9 +15,9 @@ class Calculation(object):
     """
 
     def __init__(self,
-                method,
-                basis_set,
-                calc_line):
+                method: str,
+                basis_set: str,
+                calc_line: str):
 
         self.method = method
         self.basis_set = basis_set
@@ -25,7 +25,7 @@ class Calculation(object):
 
         self.name = 'calc'
 
-    def get_calc_line(self):
+    def get_calc_line(self) -> str:
         """Generates the string required for the config line for gaussian"""
 
         string = '# {}/{} {}'.format(self.method,
@@ -51,12 +51,12 @@ class TsoptCalc(Calculation):
     """
 
     def __init__(self,
-                 method,
-                 basis_set,
-                 goal='ts',
-                 convergence='tight',
-                 grid='superfine',
-                 maxcyc=256):
+                 method: str,
+                 basis_set: str,
+                 goal: str='ts',
+                 convergence: str='tight',
+                 grid: str='superfine',
+                 maxcyc: int=256):
 
         calc_line = ('opt({goal}, calcfc, noeigen, {conv}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
@@ -90,14 +90,14 @@ class IrcCalc(Calculation):
     """
 
     def __init__(self,
-                 method,
-                 basis_set,
-                 direction='reverse',
-                 convergence='tight',
-                 grid='superfine',
-                 maxcyc=256,
-                 max_points=64,
-                 step_size=5):
+                 method: str,
+                 basis_set: str,
+                 direction: str='reverse',
+                 convergence: str='tight',
+                 grid: str='superfine',
+                 maxcyc: int=256,
+                 max_points: int=64,
+                 step_size: int=5):
 
         calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc})').format(dir=direction,

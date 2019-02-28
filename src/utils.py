@@ -2,8 +2,9 @@ from GaussianManager.src import exceptions
 import numpy as np
 import os
 import subprocess
+from typing import List, Type, Union
 
-def sanitize_path(path, add_slash=False):
+def sanitize_path(path: str, add_slash: bool=False) -> str:
     """Expand user in path and add final slash if not present and toggled"""
 
     if add_slash:
@@ -13,7 +14,7 @@ def sanitize_path(path, add_slash=False):
 
     return path
 
-def make_dir(path, overwrite=False, verbose=False):
+def make_dir(path: str, overwrite: bool=False, verbose: bool=False):
         """Method for creating directories"""
 
         if os.path.isdir(path):
@@ -27,14 +28,15 @@ def make_dir(path, overwrite=False, verbose=False):
             if verbose:
                 print(path + ' created')
 
-def get_file_lines(path):
+def get_file_lines(path: str) -> List:
+    """Reads and returns lines from path"""
 
     with open(path, 'r') as file:
         lines = file.readlines()
 
     return lines
 
-def run_gaussian_bash_command(input_filepath, output_filepath):
+def run_gaussian_bash_command(input_filepath: str, output_filepath: str):
     """Loads the gaussian module and runs the subprocess.run() bash command for gaussian 2009"""
 
     subprocess.run("module load gaussian/g09.e01; g09 < {} >& {}".format(input_filepath,
@@ -42,7 +44,7 @@ def run_gaussian_bash_command(input_filepath, output_filepath):
                                                                          shell=True,
                                                                          check=True)
 
-def discover_gaussian_error_code(output_filepath):
+def discover_gaussian_error_code(output_filepath: str) -> str:
     """Searches a provided output file for a specific string on the 3rd last line which dictates
             The error code gaussian is throwing and returns the error code
     """
@@ -60,14 +62,14 @@ def print_error_message(code=None, name=None, calc=None, message=None):
         message = 'encountered ({0}) running {1} on {2}'.format(code, calc, name)
     print(message)
 
-def get_coords_from_obabel_xyz(filepath):
+def get_coords_from_obabel_xyz(filepath: str) -> List:
     """Returns the coordinate section of an obabel xyz file as a list of lines"""
 
     with open(filepath, 'r') as file:
             coordinates = file.readlines()[2:]
     return coordinates
 
-def get_coords(path):
+def get_coords(path: str) -> List:
     """parses the coordinates from the output file at path"""
 
     atom_num_dict = {'53': 'I',
@@ -114,7 +116,7 @@ def get_coords(path):
 
     return sanit_coords
 
-def get_freqs(path):
+def get_freqs(path: str) -> List:
     """Parses the imag freqs from output file at path"""
 
     lines = get_file_lines(path)
@@ -135,7 +137,7 @@ def get_freqs(path):
 
     return freqs
 
-def validate_single_imag_freq(freqs):
+def validate_single_imag_freq(freqs: List) -> bool:
     """Checks a list of freqs for correct num of imag freqs"""
 
     if '1' in freqs[0]:
@@ -143,14 +145,14 @@ def validate_single_imag_freq(freqs):
     else:
         return False
 
-def write_frequencies(path, freqs):
+def write_frequencies(path: str, freqs: List):
     """write a list of freqs to a path"""
 
     with open(path, 'w') as file:
         for line in freqs:
             file.write(line + '\n')
 
-def get_tsopt_converge_metrics(path):
+def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
     """Parses a tsopt output file for the tsopt converge metrics"""
 
     lines = get_file_lines(path)
@@ -168,35 +170,51 @@ def get_tsopt_converge_metrics(path):
 
     return metrics_array
 
-def get_ircfwd_converge_metrics(path):
+def get_ircfwd_converge_metrics(path: str) -> Type[np.ndarray]:
     """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
 
-def get_ircrev_converge_metrics(path):
+def get_ircrev_converge_metrics(path: str) -> Type[np.ndarray]:
     """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
 
-def log_error(path, msg):
+def log_error(path: str, msg: str):
     """Prints error message to console & logs the error message to a provided path"""
 
     print(msg)
     with open(path, 'a') as file:
         file.write(msg + '\n')
 
-def compile_geom(geom_dir, m_path):
-    """Copies the geometry from a provided molecule path to a provided geometry directory"""
+def copy_file(filepath: str, dest: str):
+    """Copies the geometry from a provided molecule path to a provided geometry directory
 
-    geom_dir = sanitize_path(geom_dir, add_slash=True)
-    m_path = sanitize_path(m_path)
+        Returns:
+            dest (str)
+    """
 
-    subprocess.run('cp {} {}'.format(m_path, geom_dir), check=True, shell=True)
+    filepath = sanitize_path(filepath)
+    dest = sanitize_path(dest, add_slash=True)
 
-def check_newline(lines):
+    subprocess.run('cp {} {}'.format(filepath, dest), check=True, shell=True)
+
+    return dest
+
+def check_newline(lines: List[str]) -> List[str]:
     """If last line is the newline char, remove it and return lines, else do nothing"""
 
     if lines[-1] != '\n':
             lines = lines[:-1]
 
     return lines
+
+def get_file_name(path: str) -> str:
+    """Removes the file extension & path to give filename"""
+
+    return os.path.splitext(os.path.basename(path))[0]
+
+def insert_suffix(path: str, suffix: str) -> str:
+    """Inserts a suffix before file ext of path"""
+
+    return os.path.splitext(path)[0] + suffix + os.path.splitext(path)[-1]
