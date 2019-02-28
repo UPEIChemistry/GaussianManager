@@ -178,16 +178,12 @@ def get_ircrev_converge_metrics(path):
 
     return np.zeros((5, 4))
 
-def log_error(path, mol, e):
-    """Logs the error message for a provided mol to a provided path"""
+def log_error(path, msg):
+    """Prints error message to console & logs the error message to a provided path"""
 
-    msg = e.args[0]
-    mol = os.path.basename(mol)[:-4]
-    error_message = '{} on {}'.format(msg, mol)
-
-    print(error_message)
+    print(msg)
     with open(path, 'a') as file:
-        file.write(error_message + '\n')
+        file.write(msg + '\n')
 
 def compile_geom(geom_dir, m_path):
     """Copies the geometry from a provided molecule path to a provided geometry directory"""

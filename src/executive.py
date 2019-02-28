@@ -22,10 +22,12 @@ class GaussianExecutive(object):
         self.input_mol_filepath = utils.sanitize_path(input_mol_filepath)
         self.expirement_directory = utils.sanitize_path(expirement_directory, add_slash=True)
         utils.make_dir(self.expirement_directory)
+
         self.multiplicity = multiplicity
         self.calculation_suite = calculation_suite
-
         self.output_mol_filepaths = []
+
+        self.error_log = self.expirement_directory + 'error_log.txt'
 
     def run_calculation_suite(self):
         """runs the full set of calculations on the input molecule by creating GM instances based
@@ -51,6 +53,7 @@ class GaussianExecutive(object):
                 gm.run_manager()
             except exceptions.GaussianManagerError as error:
                 message = 'encountered code ({}) with {}'.format(error.args[0], calculation.name)
+                utils.log_error(self.error_log, message)
                 raise exceptions.GaussianExecutiveError(message)
             else:
                 self.output_mol_filepaths.append(gm.output_mol_filepath)

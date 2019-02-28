@@ -38,7 +38,8 @@ def main():
         try:
             ex.run_calculation_suite()
         except exceptions.GaussianExecutiveError as e:
-            utils.log_error(error_log_path, mol, e)
+            msg = e.args[0] + ' on mol {}'.format(os.path.basename(mol)[:-4])
+            utils.log_error(error_log_path, msg)
             continue
         else:
             for m_path in ex.output_mol_filepaths:
