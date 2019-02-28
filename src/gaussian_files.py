@@ -2,6 +2,7 @@ from GaussianManager.src import calculations, exceptions, utils
 import os
 import matplotlib.pyplot as plt
 import subprocess
+from typing import List, Type, Union
 
 class InputFile(object):
     """Wrapper which represents a gaussian input file, allowing for better customization of
@@ -17,11 +18,11 @@ class InputFile(object):
     """
 
     def __init__(self,
-                 filepath,
-                 calculation,
-                 molecule_name,
-                 mol_coords,
-                 multiplicity):
+                 filepath: str,
+                 calculation: calculations.Calculation,
+                 molecule_name: str,
+                 mol_coords: List[str],
+                 multiplicity: str):
 
         self.filepath = filepath
         self.calculation = calculation
@@ -30,12 +31,25 @@ class InputFile(object):
         self.multiplicity = multiplicity
 
     @staticmethod
-    def factory(self,
-                filepath,
-                calculation,
-                molecule_name,
-                mol_coords,
-                multiplicity):
+    def factory(filepath: str,
+                calculation: calculations.Calculation,
+                molecule_name: str,
+                mol_coords: Union[List[str], List[List]],
+                multiplicity: str) -> Type[InputFile]:
+        """Static factory method which returns the proper input file based on provided calc
+
+            Args:
+                filepath (str): path to the gaussian input file
+                calculation (Calculation object): The calc to be run by gaussian
+                molecule_name (str): the name of the molecule
+                mol_coords (list): List of lines containing xyz coords for mol, should end with a
+                    newline character. IF CALC IS QST3: List of list of lines containing xyz coords for ts,
+                    reactant, and product, IN THAT ORDER. Lines should end with a newline character
+                multiplicity (str): multiplicity of the provided molecule
+
+            Returns:
+                OutputFile object
+        """
 
         if calculation.name == 'qst3':
 
@@ -76,7 +90,7 @@ class QST3InputFile(InputFile):
                 calculation (Calculation object): The calc to be run by gaussian
                 molecule_name (str): the name of the molecule
                 mol_coords (list): List of list of lines containing xyz coords for ts,
-                    product, and reactant, IN THAT ORDER. Lines should end with a newline character
+                    reactant, and product, IN THAT ORDER. Lines should end with a newline character
                 multiplicity (str): multiplicity of the provided molecule
     """
 
@@ -102,25 +116,25 @@ class OutputFile(object):
             Args:
                 filepath (str): path to the gaussian output file
                 input_file (InputFile object): input file corresponding to this output file
-                mol_name (str)
+                output_mol_path (str)
     """
 
     def __init__(self,
-                 filepath,
-                 input_file,
-                 mol_name):
+                 filepath: str,
+                 input_file: InputFile,
+                 output_mol_path: str):
 
         self.filepath = filepath
         self.input_file = input_file
-        self.mol_name = mol_name
+        self.output_mol_path = utils.sanitize_path(output_mol_path)
+        self.mol_name = utils.get_file_name(output_mol_path)
 
-        self.obabel_path = None
         self.molecule_coords = None
         self.converge_metrics = None
         self.converge_fig_dir = None
 
     @staticmethod
-    def factory(filepath, input_file, mol_name):
+    def factory(filepath: str, input_file: InputFile, output_mol_path) -> Type[OutputFile]:
         """Static factory method which returns the proper output file based on provided InputFile
 
             Args:
@@ -133,15 +147,15 @@ class OutputFile(object):
 
         if input_file.calculation.name == 'ts' or input_file.calculation.name == 'qst3':
 
-            out = TsoptOutputFile(filepath, input_file, mol_name)
+            out = TsoptOutputFile(filepath, input_file, output_mol_path)
 
         elif input_file.calculation.name == 'irc_forward':
 
-            out = IrcFwdOutputFile(filepath, input_file, mol_name)
+            out = IrcFwdOutputFile(filepath, input_file, output_mol_path)
 
         elif input_file.calculation.name == 'irc_reverse':
 
-            out = IrcRevOutputFile(filepath, input_file, mol_name)
+            out = IrcRevOutputFile(filepath, input_file, output_mol_path)
 
         return out
 
@@ -165,7 +179,7 @@ class OutputFile(object):
                                                                                  inp_mol))
             raise exceptions.GaussianOutputError(code)
 
-    def parse_xyz(self):
+    def parse_xyz(self) -> List[str]:
         """Searches the output file for the latest xyz coords for the output mol"""
 
         try:
@@ -181,12 +195,9 @@ class OutputFile(object):
         if self.molecule_coords is None:
             self.parse_xyz()
 
-        self.obabel_path = (utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
-                + self.mol_name
-                + '.xyz')
-        with open(self.obabel_path, 'w') as file:
-            file.write(str(len(self.input_file.mol_coords)) + '\n')
-            file.write(self.input_file.molecule_name + '\n')
+        with open(self.output_mol_path, 'w') as file:
+            file.write(str(len(self.molecule_coords)) + '\n')
+            file.write(self.mol_name + '\n')
             for line in self.molecule_coords:
                 file.write(line)
 
@@ -194,13 +205,13 @@ class OutputFile(object):
         """MUST BE OVERRIDDEN. Abstract method for parsing metrics from output file. Must be implemented for specific
             OutputFile subclasses, as each calculation produces a different output file"""
 
-        raise NotImplementedError
+        raise NotImplementedError('Using base OutputFile, must use subclass')
 
     def display_covergence(self, display_plot=False, save_plot=True):
         """MUST BE OVERIDDEN. Abstract method for displaying parsed metrics. Must be implemented
             for specific OutputFile subclasses, as each calc produces different output files"""
 
-        raise NotImplementedError
+        raise NotImplementedError('Using base OutputFile, must use subclass')
 
 class TsoptOutputFile(OutputFile):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
@@ -209,21 +220,21 @@ class TsoptOutputFile(OutputFile):
             Args:
                 filepath (str): path to the gaussian output file
                 input_file (InputFile object): input file corresponding to this output file
-                mol_name (str)
+                output_mol_path (str)
     """
 
     def __init__(self,
-                 filepath,
-                 input_file,
-                 mol_name):
+                 filepath: str,
+                 input_file: InputFile,
+                 output_mol_path: str):
 
         super().__init__(filepath,
                          input_file,
-                         mol_name)
+                         output_mol_path)
         self.freqs = None
         self.freq_path = None
 
-    def parse_freq(self):
+    def parse_freq(self) -> List:
         """Parse the vibrational frequencies from an output file"""
 
         self.freqs = utils.get_freqs(self.filepath)
@@ -241,14 +252,14 @@ class TsoptOutputFile(OutputFile):
                 + 'freqs.txt')
         utils.write_frequencies(self.freq_path, self.freqs)
 
-    def get_converge_metrics(self):
+    def get_converge_metrics(self) -> List:
         """Gets the 4 tsopt convergence metrics"""
 
         self.converge_metrics = utils.get_tsopt_converge_metrics(self.filepath)
 
         return self.converge_metrics
 
-    def display_covergence(self, display_plot=False, save_plot=True):
+    def display_covergence(self, display_plot: bool=False, save_plot: bool=True):
         """Uses matplotlib to write convergence curves to png files"""
 
         if self.converge_metrics is None:
@@ -279,7 +290,7 @@ class IrcFwdOutputFile(OutputFile):
             Args:
                 filepath (str): path to the gaussian output file
                 input_file (InputFile object): input file corresponding to this output file
-                mol_name (str)
+                output_mol_path (str)
     """
 
     def get_converge_metrics(self):
@@ -299,7 +310,7 @@ class IrcRevOutputFile(OutputFile):
             Args:
                 filepath (str): path to the gaussian output file
                 input_file (InputFile object): input file corresponding to this output file
-                mol_name (str)
+                output_mol_path (str)
     """
 
     def get_converge_metrics(self):
