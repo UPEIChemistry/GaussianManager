@@ -4,6 +4,7 @@
 from GaussianManager.src import calculations, exceptions, utils
 from GaussianManager.src.gaussian_files import InputFile, OutputFile
 import os
+from typing import List, Type, Union
 
 class GaussianManager(object):
     """Super-class for managing single calculations for single molecules. Capable of generating
@@ -19,32 +20,35 @@ class GaussianManager(object):
     """
 
     def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
+                 experiment_directory: str,
+                 input_mol_filepath: str,
+                 output_mol_filepath: str,
+                 multiplicity: str,
+                 calculation: calculations.Calculation,
+                 resolve_attempts: int=4):
 
-        self.input_mol_filepath = utils.sanitize_path(input_mol_filepath)
         self.experiment_directory = utils.sanitize_path(experiment_directory, add_slash=True)
         utils.make_dir(self.experiment_directory)
+
+        self.input_mol_filepath = utils.sanitize_path(input_mol_filepath)
+        self.output_mol_filepath = utils.sanitize_path(output_mol_filepath)
+        self.mol_name = self._get_mol_name()
 
         self.multiplicity = multiplicity
         self.calculation = calculation
         self.resolve_attempts = resolve_attempts
 
-        self.output_mol_name = self._get_output_mol_name()
         self.input_file = self._create_base_input()
         self.output_file = self._create_base_output()
 
-        self.output_mol_filepath = None
-
     @staticmethod
-    def factory(experiment_directory,
-                input_mol_filepath,
-                multiplicity,
-                calculation,
-                **kwargs):
+    def factory(experiment_directory: str,
+                input_mol_filepath: Union[str, List],
+                output_mol_filepath: str,
+                multiplicity: str,
+                calculation: calculations.Calculation,
+                resolve_attempts: int=4,
+                **kwargs) -> Type[GaussianManager]:
         """Static factory method for GM which returns corresponding GM object based on calc provided
 
             Args:
@@ -59,35 +63,47 @@ class GaussianManager(object):
 
         if calculation.name == 'ts':
 
+            out = utils.insert_suffix(output_mol_filepath, '_ts')
             gm = TsoptManager(experiment_directory,
                               input_mol_filepath,
+                              out,
                               multiplicity,
-                              calculation)
+                              calculation,
+                              resolve_attempts)
 
         elif calculation.name == 'qst3':
 
-            gm = TsoptManager(experiment_directory,
+            out = utils.insert_suffix(output_mol_filepath, '_ts')
+            gm = QST3Manager(experiment_directory,
                               input_mol_filepath,
+                              out,
                               multiplicity,
-                              calculation)
+                              calculation,
+                              resolve_attempts)
 
         elif calculation.name == 'irc_reverse':
 
+            out = utils.insert_suffix(output_mol_filepath, '_reactant')
             gm = IrcRevManager(experiment_directory,
                                input_mol_filepath,
+                               out,
                                multiplicity,
-                               calculation)
+                               calculation,
+                               resolve_attempts)
 
         elif calculation.name == 'irc_forward':
 
+            out = utils.insert_suffix(output_mol_filepath, '_product')
             gm = IrcFwdManager(experiment_directory,
                                input_mol_filepath,
+                               out,
                                multiplicity,
-                               calculation)
+                               calculation,
+                               resolve_attempts)
 
         return gm
 
-    def _create_base_input(self):
+    def _create_base_input(self) -> InputFile:
         """Creates InputFile objects based on args provided to GM
 
             Returns:
@@ -96,15 +112,15 @@ class GaussianManager(object):
 
         input_filepath = self.experiment_directory + 'input.com'
         molecule_coords = utils.get_coords_from_obabel_xyz(self.input_mol_filepath)
-        input_file = InputFile(filepath=input_filepath,
-                               calculation=self.calculation,
-                               molecule_name=self.output_mol_name,
-                               multiplicity=self.multiplicity,
-                               mol_coords=molecule_coords)
+        input_file = InputFile.factory(filepath=input_filepath,
+                                       calculation=self.calculation,
+                                       molecule_name=self.mol_name,
+                                       multiplicity=self.multiplicity,
+                                       mol_coords=molecule_coords)
 
         return input_file
 
-    def _create_base_output(self):
+    def _create_base_output(self) -> OutputFile:
         """Creates OutputFile objects based on args provided to GM
 
             Returns:
@@ -114,14 +130,14 @@ class GaussianManager(object):
         output_filepath = self.experiment_directory + 'output.com'
         output_file = OutputFile.factory(filepath=output_filepath,
                                          input_file=self.input_file,
-                                         mol_name=self.output_mol_name)
+                                         output_mol_path=self.output_mol_filepath)
 
         return output_file
 
-    def _get_output_mol_name(self, suffix=None):
+    def _get_mol_name(self) -> str :
         """Gets the output mol name based on provided suffix"""
 
-        return os.path.basename(self.input_mol_filepath)[:-4] + suffix
+        return utils.get_file_name(self.output_mol_filepath)
 
     def run_manager(self):
         """Convenience function which calls all GM fxns required for running calc on mol"""
@@ -162,7 +178,6 @@ class GaussianManager(object):
         """Parses output file to write output mol in obabel format"""
 
         self.output_file.write_obabel_xyz()
-        self.output_mol_filepath = self.output_file.obabel_path
 
     def write_convergence_metrics(self):
         """Calls into OutputFile object to parse convergence metrics from gaussian output"""
@@ -198,20 +213,6 @@ class TsoptManager(GaussianManager):
                 gaussian errors
     """
 
-    def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
-
-        super().__init__(experiment_directory,
-                         input_mol_filepath,
-                         multiplicity,
-                         calculation,
-                         resolve_attempts)
-        self.output_mol_name = self._get_output_mol_name(suffix='_ts')
-
     def write_output(self):
         """Runs gaussian to generate the output file for provided InputFile object. Attempts to
             do rudimentary error resolution when gaussian throws an exception. Also, will throw
@@ -221,6 +222,56 @@ class TsoptManager(GaussianManager):
         self.output_file.write_freq()
         if not utils.validate_single_imag_freq(self.output_file.freqs):
             self.raise_error('freq_error')
+
+class QST3Manager(TsoptManager):
+    """GM sub-class which manages single tsopt calculations for single molecules. Capable of
+        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+
+        Args:
+            experiment_directory (str): directory to write GM input/outputs
+            input_mol_filepath (str): path to the dir containing xyz files endings with '_ts.xyz',
+                '_reactant.xyz' and '_product.xyz'. Dirname should be the name of the reaction, as
+                this is what is used to name output xyz files
+            multiplicity (str): multiplicity of input mol
+            calculation (Calculation object): Calc object for a specific gaussian calculation
+            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+                gaussian errors
+    """
+
+    def _create_base_input(self) -> InputFile:
+        """Creates InputFile objects based on args provided to GM
+
+            Returns:
+                InputFile object
+        """
+
+        input_filepath = self.experiment_directory + 'input.com'
+
+        for directory, _, file in os.walk(self.input_mol_filepath):
+            filepath = utils.sanitize_path(directory, add_slash=True) + file
+            if 'ts' in filepath:
+                ts_coords = utils.get_coords_from_obabel_xyz(filepath)
+            elif 'reactant' in filepath:
+                reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
+            elif 'product' in filepath:
+                product_coords = utils.get_coords_from_obabel_xyz(filepath)
+
+        if ts_coords is None or reactant_coords is None or product_coords is None:
+            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
+
+        molecule_coords = [ts_coords, reactant_coords, product_coords]
+        input_file = InputFile.factory(filepath=input_filepath,
+                                       calculation=self.calculation,
+                                       molecule_name=self.mol_name,
+                                       multiplicity=self.multiplicity,
+                                       mol_coords=molecule_coords)
+
+        return input_file
+
+    def _get_mol_name(self) -> str:
+        """Gets the output mol name based on provided suffix"""
+
+        return os.path.basename(self.input_mol_filepath)
 
 class IrcRevManager(GaussianManager):
     """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
@@ -235,20 +286,6 @@ class IrcRevManager(GaussianManager):
                 gaussian errors
     """
 
-    def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
-
-        super().__init__(experiment_directory,
-                         input_mol_filepath,
-                         multiplicity,
-                         calculation,
-                         resolve_attempts)
-        self.output_mol_name = self._get_output_mol_name(suffix='_reactant')
-
 class IrcFwdManager(GaussianManager):
     """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
@@ -261,17 +298,3 @@ class IrcFwdManager(GaussianManager):
             resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
                 gaussian errors
     """
-
-    def __init__(self,
-                 experiment_directory,
-                 input_mol_filepath,
-                 multiplicity,
-                 calculation,
-                 resolve_attempts=4):
-
-        super().__init__(experiment_directory,
-                         input_mol_filepath,
-                         multiplicity,
-                         calculation,
-                         resolve_attempts=4)
-        self.output_mol_name = self._get_output_mol_name(suffix='_product')
