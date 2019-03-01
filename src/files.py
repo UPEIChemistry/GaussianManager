@@ -249,7 +249,7 @@ class TsoptOutputFile(OutputFile):
 
         self.freq_path = (utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
                 + self.mol_name
-                + 'freqs.txt')
+                + '_freqs.txt')
         utils.write_frequencies(self.freq_path, self.freqs)
 
     def get_converge_metrics(self) -> List:
