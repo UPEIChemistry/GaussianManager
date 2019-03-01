@@ -35,7 +35,7 @@ class InputFile(object):
                 calculation: calculations.Calculation,
                 molecule_name: str,
                 mol_coords: Union[List[str], List[List]],
-                multiplicity: str) -> Type[InputFile]:
+                multiplicity: str):
         """Static factory method which returns the proper input file based on provided calc
 
             Args:
@@ -134,7 +134,7 @@ class OutputFile(object):
         self.converge_fig_dir = None
 
     @staticmethod
-    def factory(filepath: str, input_file: InputFile, output_mol_path) -> Type[OutputFile]:
+    def factory(filepath: str, input_file: InputFile, output_mol_path):
         """Static factory method which returns the proper output file based on provided InputFile
 
             Args:

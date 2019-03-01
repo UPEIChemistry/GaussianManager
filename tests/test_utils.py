@@ -3,10 +3,10 @@ import pytest
 import subprocess
 import tempfile
 
-def test_run_bash_command_throw_error(input_path, output_path):
+def test_run_bash_command_throw_error():
 
     with pytest.raises(subprocess.CalledProcessError):
-        utils.run_gaussian_bash_command(input_path, output_path)
+        utils.run_gaussian_bash_command('input_path', 'output_path')
 
 def test_discover_error_code(l123_output):
 
@@ -21,13 +21,13 @@ def test_get_obabel_coords(molecule):
 def test_get_coords(ts_output_path):
 
     c = utils.get_coords(ts_output_path)
-    assert '-1.630599   -0.032062   -0.039435' in c[0]
-    assert '2.692562   -0.899094    0.096715' in c[-1]
+    assert '-1.594915   -0.172227   -0.052327' in c[0]
+    assert '2.757059   -0.878419    0.094712' in c[-1]
 
 def test_get_freqs(ts_output_path):
 
     f = utils.get_freqs(ts_output_path)
-    assert 1 in f[0] and -257.5473 in f[1] and 3714.8817 in f[-1]
+    assert 1 == f[0] and -257.5473 == f[1] and 3714.8817 == f[-1]
 
 def test_get_converge(ts_output_path):
 
@@ -45,4 +45,4 @@ def test_get_name(molecule):
 def test_insert_suffix(molecule):
 
     n = utils.insert_suffix(molecule, '_ts')
-    assert n == 'OH-chloroform_ts.xyz'
+    assert n == '/home/riley/dev/python/GaussianManager/tests/example/OH-chloroform_ts.xyz'

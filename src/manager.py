@@ -48,7 +48,7 @@ class GaussianManager(object):
                 multiplicity: str,
                 calculation: calculations.Calculation,
                 resolve_attempts: int=4,
-                **kwargs) -> Type[GaussianManager]:
+                **kwargs):
         """Static factory method for GM which returns corresponding GM object based on calc provided
 
             Args:

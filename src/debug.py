@@ -3,13 +3,6 @@
 from GaussianManager.src import calculations, files, manager, utils
 import tempfile
 
-path = '/home/riley/dev/python/GaussianManager/tests/example/'
-inp_path = tempfile.mkstemp()
-out_path = path + 'l9999_tsopt_output.log'
-calc = calculations.TsoptCalc('mp2', '6-31G')
-mol_coords = utils.get_coords_from_obabel_xyz(path + 'xyz/F-CH3-OH.xyz')
-
-inp = files.InputFile(inp_path, calc, 'F-CH3-OH', mol_coords, '-1 1')
-out = files.OutputFile.factory(out_path, inp, 'F-CH3-OH')
-
-out.display_covergence()
+path = '/home/riley/dev/python/GaussianManager/tests/example/OH-chloroform.xyz'
+c = utils.insert_suffix(path, '_ts')
+f = 'foo'

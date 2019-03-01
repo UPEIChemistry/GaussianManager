@@ -132,15 +132,15 @@ def get_freqs(path: str) -> List:
     for line in crude_freqs:
         if 'Frequencies' in line:
             parts = line.split()
-            freqs.extend((parts[-3], parts[-2], parts[-1]))
-    freqs.insert(0, num_imag_freq)
+            freqs.extend((float(parts[-3]), float(parts[-2]), float(parts[-1])))
+    freqs.insert(0, int(num_imag_freq))
 
     return freqs
 
 def validate_single_imag_freq(freqs: List) -> bool:
     """Checks a list of freqs for correct num of imag freqs"""
 
-    if '1' in freqs[0]:
+    if 1 == freqs[0]:
         return True
     else:
         return False

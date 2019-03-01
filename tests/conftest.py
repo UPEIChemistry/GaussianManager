@@ -2,7 +2,7 @@ from GaussianManager.src import calculations, files, manager, utils, exceptions
 import pytest
 import tempfile
 
-example = '../test/example/'
+example = '/home/riley/dev/python/GaussianManager/tests/example/'
 exp_dir = example + 'exp/mol/method/'
 
 ts_dir = exp_dir + 'ts/'
