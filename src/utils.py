@@ -153,7 +153,10 @@ def write_frequencies(path: str, freqs: List):
             file.write(line + '\n')
 
 def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
-    """Parses a tsopt output file for the tsopt converge metrics"""
+    """Parses a tsopt output file for the tsopt converge metrics.
+
+        Returns:
+            (np.ndarray object): Array object of shape (num_iterations, 4)"""
 
     lines = get_file_lines(path)
 
