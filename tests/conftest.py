@@ -3,7 +3,7 @@ import pytest
 import tempfile
 
 example = '/home/riley/dev/python/GaussianManager/tests/example/'
-exp_dir = example + 'exp/mol/method/'
+exp_dir = example + 'exp/OH-chloroform/mp2/'
 
 ts_dir = exp_dir + 'ts/'
 irc_r_dir = exp_dir + 'irc_reverse/'
@@ -18,7 +18,7 @@ def blank_file():
 @pytest.fixture(scope='session')
 def molecule():
 
-    return example + 'OH-chloroform.xyz'
+    return example + 'xyz/OH-chloroform.xyz'
 
 @pytest.fixture(scope='session')
 def ts_calc():

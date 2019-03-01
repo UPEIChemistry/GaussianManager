@@ -127,7 +127,7 @@ class GaussianManager(object):
                 OutputFile object
         """
 
-        output_filepath = self.experiment_directory + 'output.com'
+        output_filepath = self.experiment_directory + 'output.log'
         output_file = OutputFile.factory(filepath=output_filepath,
                                          input_file=self.input_file,
                                          output_mol_path=self.output_mol_filepath)

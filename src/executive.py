@@ -25,12 +25,12 @@ class GaussianExecutive(object):
 
         self.output_dir = utils.sanitize_path(output_dir, add_slash=True)
         self.geom_dir = self.output_dir + 'geometries/'
-        utils.make_dir(self.output_dir)
+        utils.make_dir(self.geom_dir)
 
         if os.path.isfile(input_path):
             self.input_path = utils.copy_file(input_path,
-                                                 self.geom_dir
-                                                 + utils.get_file_name(input_path))
+                                              self.geom_dir
+                                              + utils.get_file_name(input_path) + '.xyz')
         elif os.path.isdir(input_path):
             for p in [utils.sanitize_path(path, add_slash=True) + file for path, _, file in os.walk(input_path)]:
                 utils.copy_file(p, self.geom_dir)
@@ -49,6 +49,7 @@ class GaussianExecutive(object):
                     by gaussian. Error message contains gaussian specific code/message and the name of
                     the calc responsible for the error
         """
+
 
         for calculation in self.calculation_suite:
 

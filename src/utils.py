@@ -150,7 +150,7 @@ def write_frequencies(path: str, freqs: List):
 
     with open(path, 'w') as file:
         for line in freqs:
-            file.write(line + '\n')
+            file.write(str(line) + '\n')
 
 def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
     """Parses a tsopt output file for the tsopt converge metrics.
@@ -198,7 +198,7 @@ def copy_file(filepath: str, dest: str):
     """
 
     filepath = sanitize_path(filepath)
-    dest = sanitize_path(dest, add_slash=True)
+    dest = sanitize_path(dest)
 
     subprocess.run('cp {} {}'.format(filepath, dest), check=True, shell=True)
 

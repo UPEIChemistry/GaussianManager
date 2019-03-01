@@ -1,4 +1,5 @@
 from GaussianManager.src import utils, exceptions
+import os
 import pytest
 import subprocess
 import tempfile
@@ -45,4 +46,4 @@ def test_get_name(molecule):
 def test_insert_suffix(molecule):
 
     n = utils.insert_suffix(molecule, '_ts')
-    assert n == '/home/riley/dev/python/GaussianManager/tests/example/OH-chloroform_ts.xyz'
+    assert os.path.basename(n) == 'OH-chloroform_ts.xyz'
