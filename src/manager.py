@@ -2,7 +2,7 @@
      Capable of resolving common gaussian errors to ensure generated output is correct"""
 
 from GaussianManager.src import calculations, exceptions, utils
-from GaussianManager.src.gaussian_files import InputFile, OutputFile
+from GaussianManager.src.files import InputFile, OutputFile
 import os
 from typing import List, Type, Union
 
