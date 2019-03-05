@@ -87,8 +87,8 @@ class QST3InputFile(InputFile):
                 filepath (str): path to the gaussian input file
                 calculation (Calculation object): The calc to be run by gaussian
                 molecule_name (str): the name of the molecule
-                mol_coords (list): List of list of lines containing xyz coords for ts,
-                    reactant, and product, IN THAT ORDER. Lines should end with a newline character
+                mol_coords (list): List of list of lines containing xyz coords for reactant,
+                product, and ts **IN THAT ORDER**. Lines should end with a newline character
                 multiplicity (str): multiplicity of the provided molecule
     """
 
@@ -98,11 +98,11 @@ class QST3InputFile(InputFile):
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
 
-            for coords, name in zip(self.mol_coords, ('ts, reactant, product')):
+            for coords, name in zip(self.mol_coords, ('reactant', 'product', 'ts')):
                 file.write(self.molecule_name + ' {}\n\n'.format(name))
                 file.write(self.multiplicity + '\n')
                 file.write(''.join(line for line in coords))
-                file.write('\n\n')
+                file.write('\n')
 
 class OutputFile(object):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater

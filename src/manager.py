@@ -261,7 +261,7 @@ class QST3Manager(TsoptManager):
         if ts_coords is None or reactant_coords is None or product_coords is None:
             raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
-        molecule_coords = [ts_coords, reactant_coords, product_coords]
+        molecule_coords = [reactant_coords, product_coords, ts_coords]
         input_file = InputFile.factory(filepath=input_filepath,
                                        calculation=self.calculation,
                                        molecule_name=self.mol_name,
