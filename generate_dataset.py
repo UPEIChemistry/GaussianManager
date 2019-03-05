@@ -52,10 +52,10 @@ def get_calc_list(methods: List, basis_sets: List):
                  calculations.IrcCalc(methods[0], basis_sets[0], direction='reverse'),
                  calculations.IrcCalc(methods[0], basis_sets[0], direction='forward')]
 
-    # for method, basis in zip(methods[1:], basis_sets[1:]):
-    #     calc_list.append(calculations.TsoptCalc(method, basis, goal='qst3'))
-    #     calc_list.append(calculations.IrcCalc(method, basis, direction='reverse'))
-    #     calc_list.append(calculations.IrcCalc(method, basis, direction='forward'))
+    for method, basis in zip(methods[1:], basis_sets[1:]):
+        calc_list.append(calculations.TsoptCalc(method, basis, goal='qst3'))
+        calc_list.append(calculations.IrcCalc(method, basis, direction='reverse'))
+        calc_list.append(calculations.IrcCalc(method, basis, direction='forward'))
 
     return calc_list
 
