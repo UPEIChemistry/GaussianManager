@@ -247,14 +247,16 @@ class QST3Manager(TsoptManager):
 
         input_filepath = self.experiment_directory + 'input.com'
 
-        for directory, _, file in os.walk(self.input_mol_filepath):
-            filepath = utils.sanitize_path(directory, add_slash=True) + file
-            if 'ts' in filepath:
-                ts_coords = utils.get_coords_from_obabel_xyz(filepath)
-            elif 'reactant' in filepath:
-                reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
-            elif 'product' in filepath:
-                product_coords = utils.get_coords_from_obabel_xyz(filepath)
+        for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
+
+            for f in files:
+                filepath = utils.sanitize_path(d, add_slash=True) + f
+                if '_ts.xyz' in filepath:
+                    ts_coords = utils.get_coords_from_obabel_xyz(filepath)
+                elif '_reactant.xyz' in filepath:
+                    reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
+                elif '_product.xyz' in filepath:
+                    product_coords = utils.get_coords_from_obabel_xyz(filepath)
 
         if ts_coords is None or reactant_coords is None or product_coords is None:
             raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
