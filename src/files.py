@@ -72,14 +72,12 @@ class InputFile(object):
     def write(self):
         """Write the input file in the proper gaussian format"""
 
-        self.mol_coords = utils.check_newline(self.mol_coords)
-
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
             file.write(self.multiplicity + '\n')
             file.write(''.join(line for line in self.mol_coords))
-            file.write('\n')
+            file.write('\n\n')
 
 class QST3InputFile(InputFile):
     """Wrapper which represents a gaussian input file, allowing for better customization of
@@ -97,9 +95,6 @@ class QST3InputFile(InputFile):
     def write(self):
         """Write the QST3 input file in the proper gaussian format"""
 
-        for i, _ in enumerate(self.mol_coords):
-            self.mol_coords[i] = utils.check_newline(self.mol_coords[i])
-
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
 
@@ -107,7 +102,7 @@ class QST3InputFile(InputFile):
                 file.write(self.molecule_name + ' {}\n\n'.format(name))
                 file.write(self.multiplicity + '\n')
                 file.write(''.join(line for line in coords))
-                file.write('\n')
+                file.write('\n\n')
 
 class OutputFile(object):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
@@ -166,11 +161,12 @@ class OutputFile(object):
                 exceptions.GaussianOutputError: Raised if gaussian throws an error during the calc
         """
 
+        meth = self.input_file.calculation.method
         calc_name = self.input_file.calculation.name
-        inp_mol = self.input_file.molecule_name[:-4]
+        inp_mol = self.input_file.molecule_name
 
         try:
-            print('writing {} output file for {}...'.format(calc_name, inp_mol))
+            print('writing {} {} output file for {}...'.format(meth, calc_name, inp_mol))
             utils.run_gaussian_bash_command(self.input_file.filepath, self.filepath)
         except subprocess.CalledProcessError:
             code = utils.discover_gaussian_error_code(self.filepath)

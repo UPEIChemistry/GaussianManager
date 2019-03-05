@@ -46,4 +46,4 @@ def test_get_name(molecule):
 def test_insert_suffix(molecule):
 
     n = utils.insert_suffix(molecule, '_ts')
-    assert os.path.basename(n) == 'OH-chloroform_ts.xyz'
+    assert os.path.basename(n) == 'OH-chloromethane_ts.xyz'
