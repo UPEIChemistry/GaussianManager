@@ -30,7 +30,7 @@ class GaussianExecutive(object):
         if os.path.isfile(input_path):
             self.input_path = utils.copy_file(input_path,
                                               self.geom_dir
-                                              + utils.get_file_name(input_path) + '.xyz')
+                                              + utils.get_file_name(input_path) + '_ts.xyz')
         elif os.path.isdir(input_path):
             for p in [utils.sanitize_path(path, add_slash=True) + file for path, _, file in os.walk(input_path)]:
                 utils.copy_file(p, self.geom_dir)

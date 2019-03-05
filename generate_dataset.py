@@ -13,11 +13,12 @@ def get_args() -> argparse.Namespace:
                                                + 'unwanted structures being pulled in'))
     parser.add_argument('-o', '--output', help='the experimental root dir where data is written to')
     parser.add_argument('-m', '--multiplicity', default='-1 1')
+    parser.add_argument('-c', '--calc-suite', default='full', help='Options include "full", "single", and "half" ')
     args = parser.parse_args()
 
     return args
 
-def main(inp: str, out: str, multiplicity: str):
+def main(inp: str, out: str, multiplicity: str, scope='full'):
     """Run script"""
 
     for d, _, f  in os.walk(utils.sanitize_path(inp)):
@@ -27,10 +28,10 @@ def main(inp: str, out: str, multiplicity: str):
     root_dir = utils.sanitize_path(out, add_slash=True)
     error_log_path = root_dir + 'error_log.txt'
 
-    methods = ['mp2', 'b3lyp', 'm06', 'g4']
+    methods = ['mp2', 'b3lyp', 'm06-l', 'cbs-qb3']
     basis_sets = ['cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ']
 
-    calc_list = get_calc_list(methods, basis_sets)
+    calc_list = get_calc_list(methods, basis_sets, scope)
 
     for mol in mol_list:
 
@@ -44,22 +45,26 @@ def main(inp: str, out: str, multiplicity: str):
             utils.log_error(error_log_path, msg, verbose=True)
             continue
 
-def get_calc_list(methods: List, basis_sets: List):
+def get_calc_list(methods: List, basis_sets: List, scope: str):
     """12 calcs in total, in sets of 3. First set is (ts, irc_r, irc_f) the next three are
         (qst3, irc_r, irc_f)"""
 
     calc_list = [calculations.TsoptCalc(methods[0], basis_sets[0], goal='ts'),
                  calculations.IrcCalc(methods[0], basis_sets[0], direction='reverse'),
                  calculations.IrcCalc(methods[0], basis_sets[0], direction='forward')]
+    if scope == 'single':
+        return calc_list
 
     for method, basis in zip(methods[1:], basis_sets[1:]):
         calc_list.append(calculations.TsoptCalc(method, basis, goal='qst3'))
         calc_list.append(calculations.IrcCalc(method, basis, direction='reverse'))
         calc_list.append(calculations.IrcCalc(method, basis, direction='forward'))
+        if scope == 'half':
+            return calc_list
 
     return calc_list
 
 if __name__ == "__main__":
 
     args = get_args()
-    main(args.input, args.output, args.multiplicity)
+    main(args.input, args.output, args.multiplicity, args.scope)

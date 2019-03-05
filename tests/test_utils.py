@@ -41,7 +41,7 @@ def test_get_converge(ts_output_path):
 def test_get_name(molecule):
 
     n = utils.get_file_name(molecule)
-    assert n == 'OH-chloroform'
+    assert n == 'OH-chloromethane'
 
 def test_insert_suffix(molecule):
 

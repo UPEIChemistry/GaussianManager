@@ -223,6 +223,6 @@ def get_file_name(path: str) -> str:
     return os.path.splitext(os.path.basename(path))[0]
 
 def insert_suffix(path: str, suffix: str) -> str:
-    """Inserts a suffix before file ext of path"""
+    """Inserts a suffix before file ext of path, will remove existing suffixes (split before '_')"""
 
-    return os.path.splitext(path)[0] + suffix + os.path.splitext(path)[-1]
+    return (os.path.splitext(path)[0]).split('_')[0] + suffix + os.path.splitext(path)[-1]
