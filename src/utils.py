@@ -81,8 +81,9 @@ def get_coords(path: str) -> List:
                      '14': 'Si',
                      '9' : 'F',
                      '8' : 'O',
-                     '7': 'N',
+                     '7' : 'N',
                      '6' : 'C',
+                     '4' : 'B',
                      '1' : 'H'}
 
     lines = get_file_lines(path)
@@ -97,7 +98,8 @@ def get_coords(path: str) -> List:
             beginning_idx = i
             break
     if end_idx is None or beginning_idx is None:
-        raise exceptions.GaussianUtilsError('unable to find key phrases in lines to sanitize coordinates')
+        raise exceptions.GaussianUtilsError(('unable to find key phrases in {} '
+                                            + 'to sanitize coordinates').format(path))
     crude_coords = lines[-beginning_idx: -end_idx - 1]
 
     sanit_coords = []
@@ -112,7 +114,8 @@ def get_coords(path: str) -> List:
                 sanit_coords.append(line)
                 break
         else:
-            raise exceptions.GaussianUtilsError('Attempting to parse unsupported atom type')
+            raise exceptions.GaussianUtilsError(('Attempted to parse unsupported atom '
+                                                 + 'type {}').format(line[:3]))
 
     return sanit_coords
 
@@ -183,10 +186,12 @@ def get_ircrev_converge_metrics(path: str) -> Type[np.ndarray]:
 
     return np.zeros((5, 4))
 
-def log_error(path: str, msg: str):
+def log_error(path: str, msg: str, verbose=False):
     """Prints error message to console & logs the error message to a provided path"""
 
-    print(msg)
+    if verbose:
+        print(msg)
+
     with open(path, 'a') as file:
         file.write(msg + '\n')
 

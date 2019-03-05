@@ -41,7 +41,7 @@ def main(inp: str, out: str, multiplicity: str):
             ex.run_calculation_suite()
         except exceptions.GaussianExecutiveError as e:
             msg = e.args[0] + ' on mol {}'.format(mol_name)
-            utils.log_error(error_log_path, msg)
+            utils.log_error(error_log_path, msg, verbose=True)
             continue
 
 def get_calc_list(methods: List, basis_sets: List):
