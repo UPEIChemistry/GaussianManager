@@ -105,12 +105,6 @@ venv.bak/
 
 ##Custom Ignore Filters
 
-# XYZ files
-*.xyz
-
-# TXT files
-*.txt
-
 # SMI files
 *.smi
 
