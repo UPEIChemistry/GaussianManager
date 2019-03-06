@@ -3,6 +3,7 @@
 import argparse
 from GaussianManager.src import calculations, executive, exceptions, utils
 import os
+import time
 from typing import List
 
 def get_args() -> argparse.Namespace:
@@ -21,12 +22,13 @@ def get_args() -> argparse.Namespace:
 def main(inp: str, out: str, multiplicity: str, scope='full'):
     """Run script"""
 
+    start = time.time()
     for d, _, f  in os.walk(utils.sanitize_path(inp)):
         mol_list = [utils.sanitize_path(d, add_slash=True) + file for
                     file in f if os.path.splitext(file)[-1] == '.xyz']
 
     root_dir = utils.sanitize_path(out, add_slash=True)
-    error_log_path = root_dir + 'error_log.txt'
+    log_path = root_dir + 'log.txt'
 
     methods = ['mp2', 'b3lyp', 'm06-l', 'cbs-qb3']
     basis_sets = ['cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ']
@@ -42,8 +44,11 @@ def main(inp: str, out: str, multiplicity: str, scope='full'):
             ex.run_calculation_suite()
         except exceptions.GaussianExecutiveError as e:
             msg = e.args[0] + ' on mol {}'.format(mol_name)
-            utils.log_error(error_log_path, msg, verbose=True)
+            utils.log_error(log_path, msg, verbose=True)
             continue
+    end = time.time()
+    t_msg = 'time of run: ' + str(end - start) + ' s'
+    utils.log_error(log_path, t_msg, verbose=True)
 
 def get_calc_list(methods: List, basis_sets: List, scope: str):
     """12 calcs in total, in sets of 3. First set is (ts, irc_r, irc_f) the next three are
