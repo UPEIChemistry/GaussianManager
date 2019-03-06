@@ -39,6 +39,7 @@ def get_file_lines(path: str) -> List:
 def run_gaussian_bash_command(input_filepath: str, output_filepath: str):
     """Loads the gaussian module and runs the subprocess.run() bash command for gaussian 2009"""
 
+    #Load gaussian module, run the command
     subprocess.run("module load gaussian/g09.e01; g09 < {} >& {}".format(input_filepath,
                                                                          output_filepath),
                                                                          shell=True,
@@ -48,23 +49,19 @@ def discover_gaussian_error_code(output_filepath: str) -> str:
     """Searches a provided output file for a specific string on the 3rd last line which dictates
             The error code gaussian is throwing and returns the error code
     """
-
+    #Parses out the link code from the third last line of the output file
     with open(output_filepath, 'r') as file:
         error_line = file.readlines()[-3]
+
+    #e.g. pulls out l123 from */g09.e01/l123.exe *
     error_code = error_line.split('.exe')[0].split('/')[-1]
 
     return error_code
 
-def print_error_message(code=None, name=None, calc=None, message=None):
-    """Writes message to std output when GM encounters an error with Gaussian"""
-
-    if message is None:
-        message = 'encountered ({0}) running {1} on {2}'.format(code, calc, name)
-    print(message)
-
 def get_coords_from_obabel_xyz(filepath: str) -> List:
     """Returns the coordinate section of an obabel xyz file as a list of lines"""
 
+    #Obabel xyz's have num atoms and molecule name as the first two lines, the rest are coords
     with open(filepath, 'r') as file:
             coordinates = file.readlines()[2:]
     return coordinates
@@ -72,6 +69,7 @@ def get_coords_from_obabel_xyz(filepath: str) -> List:
 def get_coords(path: str) -> List:
     """parses the coordinates from the output file at path"""
 
+    #Link atomic symbol to atomic number for swapping
     atom_num_dict = {'53': 'I',
                      '35': 'Br',
                      '34': 'Se',
@@ -90,29 +88,46 @@ def get_coords(path: str) -> List:
     beginning_idx = None
     end_idx = None
 
+    #Loop backwards through the output file until you find the key phrases
     for i, l in enumerate(reversed(lines)):
 
+        #The second key phrase
         if end_idx is None and 'Distance matrix (angstroms):' in l:
             end_idx = i
+
+        #The first key phrase
         if 'Input orientation:' in l:
             beginning_idx = i
             break
+
+    #Make sure key phrases are actually in output file
     if end_idx is None or beginning_idx is None:
         raise exceptions.GaussianUtilsError(('unable to find key phrases in {} '
                                             + 'to sanitize coordinates').format(path))
+
+    #Slice out the coords from key phrases
     crude_coords = lines[-beginning_idx: -end_idx - 1]
 
+    #Pull out all of the extra bits from the coordinates
     sanit_coords = []
     for line in crude_coords:
+
+        #Pull out unneccesary lines
         if "---------------" in line or "Coordinates" in line or "Number" in line:
             continue
+
+        #Pull out just the atomic num & coords
         line = line[15:]
         line = line[:3] + '                  ' + line[20:]
+
+        #Loop through dict to swap atomic num for atomic symbol
         for key, value in atom_num_dict.items():
             if key in line[:3]:
                 line = value + line[3:]
                 sanit_coords.append(line)
                 break
+
+        #Makeu sure no unsupported atoms in mol
         else:
             raise exceptions.GaussianUtilsError(('Attempted to parse unsupported atom '
                                                  + 'type {}').format(line[:3]))
@@ -123,19 +138,25 @@ def get_freqs(path: str) -> List:
     """Parses the imag freqs from output file at path"""
 
     lines = get_file_lines(path)
+
+    #Loop through file until key phrases found
     for line in lines:
         if 'imaginary frequencies (negative Signs)' in line:
             start_idx = lines.index(line)
         elif 'Thermochemistry' in line:
             end_idx = lines.index(line)
-    crude_freqs = lines[start_idx:end_idx]
 
+    #Slice between key phrases, pull out the number of imag freqs from first line
+    crude_freqs = lines[start_idx:end_idx]
     num_imag_freq = crude_freqs[0][10:13].replace(' ', '')
+
+    #Sanitize freqs to get only the value as a float
     freqs = []
     for line in crude_freqs:
         if 'Frequencies' in line:
             parts = line.split()
             freqs.extend((float(parts[-3]), float(parts[-2]), float(parts[-1])))
+
     freqs.insert(0, int(num_imag_freq))
 
     return freqs
@@ -159,15 +180,19 @@ def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
     """Parses a tsopt output file for the tsopt converge metrics.
 
         Returns:
-            (np.ndarray object): Array object of shape (num_iterations, 4)"""
+            (np.ndarray object): Array object of shape (num_iterations, 4)
+                where the metrics are in order: max force, rms force, max displacement,
+                rms displacement"""
 
     lines = get_file_lines(path)
 
+    #Find key phrases and sanitize on the go, storing values in
     iterations = []
     for idx, line in enumerate(lines):
         if 'Converged?' in line:
             iterations.append(lines[idx + 1: idx + 5])
 
+    #Parse out the numbers and add them to ndarray
     metrics_array = np.zeros((len(iterations), 4))
     for i, itr in enumerate(iterations):
         for j, line in enumerate(itr):

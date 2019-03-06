@@ -72,6 +72,7 @@ class InputFile(object):
     def write(self):
         """Write the input file in the proper gaussian format"""
 
+        #Write file lines according to gaussian requirements
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
@@ -95,9 +96,11 @@ class QST3InputFile(InputFile):
     def write(self):
         """Write the QST3 input file in the proper gaussian format"""
 
+        #Write lines according to qst3 requirements for gaussian
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
 
+            #Mol coords have to specified r -> p -> ts, otherwise gaussian will complain
             for coords, name in zip(self.mol_coords, ('reactant', 'product', 'ts')):
                 file.write(self.molecule_name + ' {}\n\n'.format(name))
                 file.write(self.multiplicity + '\n')
@@ -124,6 +127,7 @@ class OutputFile(object):
         self.output_mol_path = utils.sanitize_path(output_mol_path)
         self.mol_name = utils.get_file_name(output_mol_path)
 
+        #Define attributes which will be assigned later
         self.molecule_coords = None
         self.converge_metrics = None
         self.converge_fig_dir = None
@@ -168,6 +172,8 @@ class OutputFile(object):
         try:
             print('writing {} {} output file for {}...'.format(meth, calc_name, inp_mol))
             utils.run_gaussian_bash_command(self.input_file.filepath, self.filepath)
+
+        #Catch when gaussian errors out, parse error code and raise it
         except subprocess.CalledProcessError:
             code = utils.discover_gaussian_error_code(self.filepath)
             print('encountered error ({}) while writing {} output for {}'.format(code,
@@ -180,6 +186,8 @@ class OutputFile(object):
 
         try:
             self.molecule_coords = utils.get_coords(self.filepath)
+
+        #Raised if there are no coordinates to find, or if there's an unknown atom being parsed
         except exceptions.GaussianUtilsError as e:
             raise exceptions.GaussianOutputError(e.args[0])
         else:
@@ -188,9 +196,11 @@ class OutputFile(object):
     def write_obabel_xyz(self):
         """Converts the xyz coords contained within the output file to obabel format"""
 
+        #Make sure self has coords parsed already
         if self.molecule_coords is None:
             self.parse_xyz()
 
+        #Write mol in obabel format
         with open(self.output_mol_path, 'w') as file:
             file.write(str(len(self.molecule_coords)) + '\n')
             file.write(self.mol_name + '\n')
@@ -227,6 +237,8 @@ class TsoptOutputFile(OutputFile):
         super().__init__(filepath,
                          input_file,
                          output_mol_path)
+
+        #Define attributes to be overwritten later
         self.freqs = None
         self.freq_path = None
 
@@ -240,9 +252,11 @@ class TsoptOutputFile(OutputFile):
     def write_freq(self):
         """Write frequencies to a txt file"""
 
+        #Make sure self has freqs already parsed
         if self.freqs is None:
             self.parse_freq()
 
+        #Define where to write the freqs to
         self.freq_path = (utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
                 + self.mol_name
                 + '_freqs.txt')
@@ -258,18 +272,24 @@ class TsoptOutputFile(OutputFile):
     def display_covergence(self, display_plot: bool=False, save_plot: bool=True):
         """Uses matplotlib to write convergence curves to png files"""
 
+        #Make sure self already has parsed converge_metrics
         if self.converge_metrics is None:
             self.get_converge_metrics()
 
+        #Define where to store the figures
         self.converge_fig_dir = utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
+
+        #Set interactive to off so the figures aren't displayed during the run
         plt.ioff()
 
+        #Define a figure, create a plot in that figure, then save the figure
         plt.figure()
         plt.plot(self.converge_metrics[:, :2])
         plt.legend(['max_force', 'rms_force'])
         if save_plot:
             plt.savefig(self.converge_fig_dir + 'force_convergence.png', bbox_inches='tight')
 
+        #Define another figure, create plot and save figure
         plt.figure()
         plt.plot(self.converge_metrics[:, 2:])
         plt.legend(['max_displacement', 'rms_displacement'])

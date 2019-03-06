@@ -28,6 +28,7 @@ class Calculation(object):
     def get_calc_line(self) -> str:
         """Generates the string required for the config line for gaussian"""
 
+        #Standard required calculation line required for gaussian
         string = '# {}/{} {}'.format(self.method,
                                      self.basis_set,
                                      self.calc_line)
@@ -58,6 +59,7 @@ class TsoptCalc(Calculation):
                  grid: str='superfine',
                  maxcyc: int=256):
 
+        #Line specific to ts-opt calcs
         calc_line = ('opt({goal}, calcfc, noeigen, {conv}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
                                                                               conv=convergence,
@@ -99,6 +101,7 @@ class IrcCalc(Calculation):
                  max_points: int=64,
                  step_size: int=5):
 
+        #line specific to irc calcs
         calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc})').format(dir=direction,
                                                                         pts=max_points,

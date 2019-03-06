@@ -24,21 +24,23 @@ class GaussianExecutive(object):
                  calculation_suite: List[calculations.Calculation]):
 
         self.output_dir = utils.sanitize_path(output_dir, add_slash=True)
+        self.error_log = self.output_dir + 'error_log.txt'
         self.geom_dir = self.output_dir + 'geometries/'
         utils.make_dir(self.geom_dir)
 
+        #Copy the input mol into the geom_dir for GE to pull from
         if os.path.isfile(input_path):
             self.input_path = utils.copy_file(input_path,
                                               self.geom_dir
                                               + utils.get_file_name(input_path) + '_ts.xyz')
+
+        #Copies all of the files from the input dir to the geom_dir for GE
         elif os.path.isdir(input_path):
             for p in [utils.sanitize_path(path, add_slash=True) + file for path, _, file in os.walk(input_path)]:
                 utils.copy_file(p, self.geom_dir)
 
         self.multiplicity = multiplicity
         self.calculation_suite = calculation_suite
-
-        self.error_log = self.output_dir + 'error_log.txt'
 
     def run_calculation_suite(self):
         """runs the full set of calculations on the input molecule by creating GM instances based
@@ -53,6 +55,7 @@ class GaussianExecutive(object):
 
         for calculation in self.calculation_suite:
 
+            #Give appropriate sub dir for gm, instantiate gm object for each calc
             gm_dir = self.output_dir + '{}/{}/'.format(calculation.method, calculation.name)
             gm = manager.GaussianManager.factory(gm_dir,
                                                  self.input_path,
@@ -62,6 +65,8 @@ class GaussianExecutive(object):
 
             try:
                 gm.run_manager()
+
+            #Raised if gm cannot resolve any errors thrown by gaussian
             except exceptions.GaussianManagerError as error:
                 message = 'encountered code ({}) with {}'.format(error.args[0], calculation.name)
                 utils.log_error(self.error_log, message)

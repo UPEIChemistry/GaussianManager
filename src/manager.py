@@ -163,14 +163,19 @@ class GaussianManager(object):
                 self.output_file.write()
                 break
             except exceptions.GaussianOutputError as e:
+
+                #l301 is a mismatching of electrons & multiplicity usually
                 if 'l301' in e.args[0]:
                     self.raise_error(e.args[0] + ' error with multiplicity')
+
+                #l101 is some sort of input error, usually spacing is off
                 elif 'l101' in e.args[0]:
                     self.raise_error(e.args[0] + ' error with input file')
                 else:
                     self.resolve_convergence_error()
                     continue
 
+        #Raised if gm cannot resolve the error in time
         else:
             self.raise_error('counter ran out')
 
@@ -187,6 +192,7 @@ class GaussianManager(object):
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
 
+        #Simply pull the farthest geometry from the output file before it errored out and resubmit
         try:
             output_coords = self.output_file.parse_xyz()
         except exceptions.GaussianOutputError as e:
@@ -218,6 +224,7 @@ class TsoptManager(GaussianManager):
             do rudimentary error resolution when gaussian throws an exception. Also, will throw
             an error if gaussian creates a ts which doesn't have a single imag freq"""
 
+        #Same as parent method, but adds freq parsing/checking
         super().write_output()
         self.output_file.write_freq()
         if not utils.validate_single_imag_freq(self.output_file.freqs):
@@ -247,8 +254,10 @@ class QST3Manager(TsoptManager):
 
         input_filepath = self.experiment_directory + 'input.com'
 
+        #input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
         for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
 
+            #Loop through files and pull out ts, reactant & product coords
             for f in files:
                 filepath = utils.sanitize_path(d, add_slash=True) + f
                 if '_ts.xyz' in filepath:
@@ -258,6 +267,7 @@ class QST3Manager(TsoptManager):
                 elif '_product.xyz' in filepath:
                     product_coords = utils.get_coords_from_obabel_xyz(filepath)
 
+        #Make sure enough coords have been parsed
         if ts_coords is None or reactant_coords is None or product_coords is None:
             raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
