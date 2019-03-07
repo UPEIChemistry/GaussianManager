@@ -40,7 +40,7 @@ def run_gaussian_bash_command(input_filepath: str, output_filepath: str):
     """Loads the gaussian module and runs the subprocess.run() bash command for gaussian 2009"""
 
     #Load gaussian module, run the command
-    subprocess.run("module load gaussian/g09.e01; g09 < {} >& {}".format(input_filepath,
+    subprocess.run("g09 < {} >& {}".format(input_filepath,
                                                                          output_filepath),
                                                                          shell=True,
                                                                          check=True)

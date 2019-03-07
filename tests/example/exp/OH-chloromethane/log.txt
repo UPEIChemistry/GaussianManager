@@ -1,0 +1,3 @@
+time of calc: 0.6240549087524414 s
+time of calc: 0.628387451171875 s
+time of calc: 0.6320676803588867 s

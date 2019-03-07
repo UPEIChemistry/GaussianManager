@@ -3,6 +3,7 @@
 
 from GaussianManager.src import calculations, exceptions, manager, utils
 import os
+import time
 from typing import List, Union
 
 class GaussianExecutive(object):
@@ -24,7 +25,7 @@ class GaussianExecutive(object):
                  calculation_suite: List[calculations.Calculation]):
 
         self.output_dir = utils.sanitize_path(output_dir, add_slash=True)
-        self.error_log = self.output_dir + 'error_log.txt'
+        self.log = self.output_dir + 'log.txt'
         self.geom_dir = self.output_dir + 'geometries/'
         utils.make_dir(self.geom_dir)
 
@@ -52,6 +53,7 @@ class GaussianExecutive(object):
                     the calc responsible for the error
         """
 
+        start = time.time()
 
         for calculation in self.calculation_suite:
 
@@ -69,5 +71,10 @@ class GaussianExecutive(object):
             #Raised if gm cannot resolve any errors thrown by gaussian
             except exceptions.GaussianManagerError as error:
                 message = 'encountered code ({}) with {}'.format(error.args[0], calculation.name)
-                utils.log_error(self.error_log, message)
+                utils.log_error(self.log, message)
                 raise exceptions.GaussianExecutiveError(message)
+
+            finally:
+                end = time.time()
+                t_msg = 'time of calc: ' + str(end - start) + ' s'
+                utils.log_error(self.log, t_msg)
