@@ -76,5 +76,6 @@ class GaussianExecutive(object):
 
             finally:
                 end = time.time()
-                t_msg = 'time of calc: ' + str(end - start) + ' s'
+                t_msg = ('time of calc {} on mol {}: '.format(calculation, utils.get_file_name(self.input_path))
+                         + str(end - start) + ' s')
                 utils.log_error(self.log, t_msg)

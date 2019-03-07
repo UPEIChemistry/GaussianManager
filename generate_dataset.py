@@ -8,13 +8,17 @@ from typing import List
 
 def get_args() -> argparse.Namespace:
 
-    parser = argparse.ArgumentParser(description='Run standard calculation suite on provided directory of molecules')
+    parser = argparse.ArgumentParser(description=('***CURRENTLY INPUT AND OUTPUT DIRS CANNOT HAVE '
+                                                  + 'UNDERSCORES IN PATH, GM WILL CRASH '
+                                                  + 'OTHERWISE*** Run standard calculation suite on'
+                                                  + ' provided directory of molecules'))
     parser.add_argument('-i', '--input', help=('The input directory containing xyz files to run '
                                                + 'gaus calcs on, should be terminal to avoid '
                                                + 'unwanted structures being pulled in'))
     parser.add_argument('-o', '--output', help='the experimental root dir where data is written to')
     parser.add_argument('-m', '--multiplicity', default='-1 1')
-    parser.add_argument('-s', '--scope', default='full', help='Options include "full", "single", and "half" ')
+    parser.add_argument('-s', '--scope', default='full', help=('Options include "full", "single", '
+                                                               + 'and "half"'))
     args = parser.parse_args()
 
     return args
@@ -55,10 +59,11 @@ def main(inp: str, out: str, multiplicity: str, scope='full'):
             utils.log_error(log_path, msg, verbose=True)
             continue
 
-    #Log how long the run took
-    end = time.time()
-    t_msg = 'time of run: ' + str(end - start) + ' s'
-    utils.log_error(log_path, t_msg, verbose=True)
+        #Log how long the suite took on mol
+        finally:
+            end = time.time()
+            t_msg = 'time of run on mol {}: '.format(mol) + str(end - start) + ' s'
+            utils.log_error(log_path, t_msg, verbose=True)
 
 def get_calc_list(methods: List, basis_sets: List, scope: str):
     """12 calcs in total, in sets of 3. First set is (ts, irc_r, irc_f) the next three are
