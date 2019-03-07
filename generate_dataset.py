@@ -14,7 +14,7 @@ def get_args() -> argparse.Namespace:
                                                + 'unwanted structures being pulled in'))
     parser.add_argument('-o', '--output', help='the experimental root dir where data is written to')
     parser.add_argument('-m', '--multiplicity', default='-1 1')
-    parser.add_argument('-c', '--calc-suite', default='full', help='Options include "full", "single", and "half" ')
+    parser.add_argument('-s', '--scope', default='full', help='Options include "full", "single", and "half" ')
     args = parser.parse_args()
 
     return args
