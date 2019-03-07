@@ -32,7 +32,7 @@ def main(inp: str, out: str, multiplicity: str, scope='full'):
     for d, _, f  in os.walk(utils.sanitize_path(inp)):
 
         #Grab all files which are .xyz files
-        mol_list = [utils.sanitize_path(d, add_slash=True) + file for
+        mol_list = [os.path.join((utils.sanitize_path(d, add_slash=True), file)) for
                     file in f if os.path.splitext(file)[-1] == '.xyz']
 
     #set paths
