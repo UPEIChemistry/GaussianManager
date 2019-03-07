@@ -107,6 +107,8 @@ class QST3InputFile(InputFile):
                 file.write(''.join(line for line in coords))
                 file.write('\n')
 
+            file.write('\n')
+
 class OutputFile(object):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
             customization of output file internals
