@@ -42,7 +42,10 @@ def main(inp: str, out: str, multiplicity: str, scope='full'):
     #Define calc parameters
     methods = ['mp2', 'b3lyp', 'm06-l', 'cbs-qb3']
     basis_sets = ['cc-pVDZ', 'aug-cc-pVDZ', 'aug-cc-pVTZ', 'aug-cc-pVQZ']
-    calc_list = get_calc_list(methods, basis_sets, scope)
+    calc_list = [calculations.TsoptCalc(methods[1], basis_sets[1], goal='qst3'),
+                 calculations.IrcCalc(methods[1], basis_sets[1], direction='reverse'),
+                 calculations.IrcCalc(methods[1], basis_sets[1], direction='forward')]
+    #calc_list = get_calc_list(methods, basis_sets, scope)
 
     #Create executive object for each mol to run each calc on mol
     for mol in mol_list:
