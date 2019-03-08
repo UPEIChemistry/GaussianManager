@@ -1,4 +1,4 @@
-# mp2/cc-pVDZ irc(forward, calcfc, maxpoints=64, stepsize=5, tight) integral(grid=superfine) scf(maxcyc=256)
+# mp2/cc-PVDZ irc(forward, calcfc, maxpoints=64, stepsize=5, tight) integral(grid=superfine) scf(maxcyc=256)
 
 OH-chloromethane_product
 

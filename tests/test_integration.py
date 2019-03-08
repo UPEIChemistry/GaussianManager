@@ -11,7 +11,7 @@ def mock_gaussian(inp, out):
 def test_gm_module(monkeypatch, molecule):
 
     mols = [molecule]
-    out = tempfile.mkdtemp()
+    out = '/home/riley/dev/python/GaussianManager/tests/example/exp'
     calcs = [calculations.TsoptCalc('mp2', 'cc-PVDZ', goal='ts'),
              calculations.IrcCalc('mp2', 'cc-PVDZ', direction='reverse'),
              calculations.IrcCalc('mp2', 'cc-PVDZ', direction='forward')]

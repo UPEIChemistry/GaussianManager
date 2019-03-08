@@ -1,4 +1,4 @@
-# mp2/cc-pVDZ irc(reverse, calcfc, maxpoints=64, stepsize=5, tight) integral(grid=superfine) scf(maxcyc=256)
+# mp2/cc-PVDZ irc(reverse, calcfc, maxpoints=64, stepsize=5, tight) integral(grid=superfine) scf(maxcyc=256)
 
 OH-chloromethane_reactant
 

@@ -1,4 +1,4 @@
-# mp2/cc-pVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superfine) scf(maxcyc=256) freq
+# mp2/cc-PVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superfine) scf(maxcyc=256) freq
 
 OH-chloromethane_ts
 

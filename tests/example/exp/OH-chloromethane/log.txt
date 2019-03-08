@@ -1,3 +1,12 @@
 time of calc: 0.6240549087524414 s
 time of calc: 0.628387451171875 s
 time of calc: 0.6320676803588867 s
+mp2 ts on OH-chloromethane took 13 s
+mp2 irc_reverse on OH-chloromethane took 38 s
+mp2 irc_forward on OH-chloromethane took 56 s
+mp2 ts on OH-chloromethane took 0 s
+mp2 irc_reverse on OH-chloromethane took 0 s
+mp2 irc_forward on OH-chloromethane took 0 s
+mp2 ts on OH-chloromethane took 0 s
+mp2 irc_reverse on OH-chloromethane took 0 s
+mp2 irc_forward on OH-chloromethane took 0 s

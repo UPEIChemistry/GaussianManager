@@ -25,7 +25,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
         mol_name, geom_dir, mol_log = _get_mol_specs(mol, out)
 
         for calc in calcs:
-            mol_in, mol_out = _get_in_out(calc, geom_dir, mol, mol_name)
+            mol_in, mol_out = _get_in_out(calc, geom_dir, mol)
             gm = _get_gm(out, mol_name, mol_in, mol_out, multi, calc)
             try:
                 gm.run_manager()
@@ -101,11 +101,12 @@ def _resolve_calcs(kws, methods, basis_sets):
 
     return calcs
 
-def _get_in_out(calc, geom_dir, mol, mol_name):
+def _get_in_out(calc, geom_dir, mol):
 
+    mol_name = os.path.basename(mol)
     mol_in = geom_dir + utils.insert_suffix(mol_name, '_ts')
 
-    if calc.name == 'tsopt' or calc.name == 'qst3':
+    if calc.name == 'ts' or calc.name == 'qst3':
         mol_in = utils.copy_file(mol, mol_in)
         mol_out = mol_in
     elif calc.name == 'gopt_reverse':
