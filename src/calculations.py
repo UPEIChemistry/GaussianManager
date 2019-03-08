@@ -72,11 +72,25 @@ class TsoptCalc(Calculation):
         self.name = goal
 
 class GoptCalc(Calculation):
-    """"""
+    """Calc for tsopt calculations with exposed commonly customizable calc kws
+
+        Args:
+            method (str): level of theory
+            basis_set (str): basis set for calc
+            direction (str, optional): Defaults to 'reverse'. Choose {reverse} for reactants
+                and {forward} for products
+            convergence (str, optional): Defaults to 'tight'. dictates restrictiveness of convergence
+                metrics. Options include {tight} and {verytight}
+            grid (str, optional): Defaults to 'superfine'. dictates fineness of integral grid for
+                DFT methods. Optionsl include {finegrid}, {superfine} and {ultrafine}
+            maxcyc (int, optional): Defaults to 256. how many cycles scf calc should use when finding
+                the energy of a stationary point
+    """
 
     def __init__(self,
                  method: str,
                  basis_set: str,
+                 direction: str='reverse',
                  convergence: str='tight',
                  grid: str='superfine',
                  maxcyc: int=256):
@@ -90,7 +104,7 @@ class GoptCalc(Calculation):
         super().__init__(method,
                          basis_set,
                          calc_line)
-        self.name = 'gopt'
+        self.name = 'gopt_{}'.format(direction)
 
 class IrcCalc(Calculation):
     """Calc for irc calculations with exposed commonly customizable calc kws
