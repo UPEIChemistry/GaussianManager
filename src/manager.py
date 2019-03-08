@@ -63,43 +63,28 @@ class GaussianManager(object):
 
         if calculation.name == 'ts':
 
-            out = utils.insert_suffix(output_mol_filepath, '_ts')
-            gm = TsoptManager(experiment_directory,
-                              input_mol_filepath,
-                              out,
-                              multiplicity,
-                              calculation,
-                              resolve_attempts)
+            gm = TsoptManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                              multiplicity, calculation, resolve_attempts)
 
         elif calculation.name == 'qst3':
 
-            out = utils.insert_suffix(output_mol_filepath, '_ts')
-            gm = QST3Manager(experiment_directory,
-                              input_mol_filepath,
-                              out,
-                              multiplicity,
-                              calculation,
-                              resolve_attempts)
+            gm = QST3Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                              multiplicity, calculation, resolve_attempts)
 
         elif calculation.name == 'irc_reverse':
 
-            out = utils.insert_suffix(output_mol_filepath, '_reactant')
-            gm = IrcRevManager(experiment_directory,
-                               input_mol_filepath,
-                               out,
-                               multiplicity,
-                               calculation,
-                               resolve_attempts)
+            gm = IrcRevManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                               multiplicity, calculation, resolve_attempts)
 
         elif calculation.name == 'irc_forward':
 
-            out = utils.insert_suffix(output_mol_filepath, '_product')
-            gm = IrcFwdManager(experiment_directory,
-                               input_mol_filepath,
-                               out,
-                               multiplicity,
-                               calculation,
-                               resolve_attempts)
+            gm = IrcFwdManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                               multiplicity, calculation, resolve_attempts)
+
+        elif calculation.name == 'gopt_reverse' or calculation.name == 'gopt_forward':
+
+            gm = GaussianManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                                 multiplicity, calculation, resolve_attempts)
 
         return gm
 
