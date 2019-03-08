@@ -10,3 +10,6 @@ mp2 irc_forward on OH-chloromethane took 0 s
 mp2 ts on OH-chloromethane took 0 s
 mp2 irc_reverse on OH-chloromethane took 0 s
 mp2 irc_forward on OH-chloromethane took 0 s
+mp2 ts on OH-chloromethane took 0 s
+mp2 irc_reverse on OH-chloromethane took 0 s
+mp2 irc_forward on OH-chloromethane took 0 s

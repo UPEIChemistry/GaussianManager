@@ -23,6 +23,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
     for mol in mols:
         mol_name, geom_dir, mol_log = _get_mol_specs(mol, out)
+        utils.make_dir(geom_dir)
 
         for calc in calcs:
             mol_in, mol_out = _get_in_out(calc, geom_dir, mol)
