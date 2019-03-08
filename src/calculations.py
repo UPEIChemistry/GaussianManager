@@ -71,6 +71,27 @@ class TsoptCalc(Calculation):
                          calc_line)
         self.name = goal
 
+class GoptCalc(Calculation):
+    """"""
+
+    def __init__(self,
+                 method: str,
+                 basis_set: str,
+                 convergence: str='tight',
+                 grid: str='superfine',
+                 maxcyc: int=256):
+
+        #Line specific to ts-opt calcs
+        calc_line = ('opt({conv}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(conv=convergence,
+                                                                         grid=grid,
+                                                                         cyc=maxcyc)
+
+        super().__init__(method,
+                         basis_set,
+                         calc_line)
+        self.name = 'gopt'
+
 class IrcCalc(Calculation):
     """Calc for irc calculations with exposed commonly customizable calc kws
 
