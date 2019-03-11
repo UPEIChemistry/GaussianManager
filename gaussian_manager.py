@@ -58,12 +58,12 @@ def _get_args():
                                                           + ' they should be run. Possible keywords'
                                                           + ' include (tsopt), (irc_rev), (irc_fwd),'
                                                           + ' (qst3), (gopt_rev), and (gopt_fwd)'),
-                        default=['tsopt', 'irc_rev', 'gopt_rev', 'irc_fwd', 'gopt_fwd'])
+                        default=['single'])
     parser.add_argument('-m', '--methods', nargs='+', default=['mp2'],
                         help=('List of theory levels to run the calc list at for each mol, typically'
                               + ' only a single item in this list, as the entire calc list is run'
                               + ' for each level of theory specified'))
-    parser.add_argument('-b', '--basis-sets', nargs='+', default=['aug-cc-PVDZ'],
+    parser.add_argument('-b', '--basis-sets', nargs='+', default=['6-31G'],
                         help=('Basis set for calcs. len(methods) == len(basis_sets) must be True'))
 
     return parser.parse_args()
@@ -87,7 +87,9 @@ def _resolve_calcs(kws, methods, basis_sets):
     calcs = []
     for method, basis in zip(methods, basis_sets):
         for kw in kws:
-            if kw == 'tsopt':
+            if kw == 'full' or kw == 'half' or kw == 'single':
+                return _get_default_calcs(kw)
+            elif kw == 'tsopt':
                 calcs.append(calculations.TsoptCalc(method, basis, goal='ts'))
             elif kw == 'qst3':
                 calcs.append(calculations.TsoptCalc(method, basis, goal='qst3'))
@@ -99,6 +101,34 @@ def _resolve_calcs(kws, methods, basis_sets):
                 calcs.append(calculations.GoptCalc(method, basis, direction='reverse'))
             elif kw == 'gopt_fwd':
                 calcs.append(calculations.GoptCalc(method, basis, direction='forward'))
+
+    return calcs
+
+def _get_default_calcs(kw: str):
+
+    mbs = [('mp2', 'cc-PVDZ'), ('b3lyp', 'cc-PVDZ'), ('b3lyp', 'aug-cc-PVDZ'),
+           ('m06l', 'aug-cc-PVDZ'), ('m06l', 'aug-cc-PVTZ'), ('cbs-qb3', 'aug-cc-PVQZ')]
+
+    calcs = [calculations.TsoptCalc(mbs[0][0], mbs[0][1], goal='ts'),
+             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='reverse'),
+             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='reverse'),
+             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction= 'forward'),
+             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='forward')]
+
+    if kw == 'single':
+        return calcs
+
+    for i, mb in enumerate(mbs):
+
+        if i:
+            continue
+
+        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
+        calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='reverse'))
+        calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='forward'))
+
+        if kw == 'half':
+            return calcs
 
     return calcs
 
