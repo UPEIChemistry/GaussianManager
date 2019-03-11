@@ -9,7 +9,7 @@ from typing import Type, List, Union
 
 def run(mols: List, out: str, calcs: List, multi: str):
     """Main method of gaussian_manager interface for creating GM objects and running calculations
-        on provided mols
+        on provided list of mols
 
         Args:
             mols (list): The list of mol filepaths to run calcs on
