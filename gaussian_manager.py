@@ -2,6 +2,7 @@
 
 import argparse
 from GaussianManager.src import calculations, exceptions, manager, utils
+import math
 import os
 import time
 from typing import Type, List, Union
@@ -189,17 +190,35 @@ def _get_mol_specs(mol, out):
     return mol_name, geom_dir, mol_log
 
 def _record_time(start, mol_name, log, calc=None):
-    """Logs the time of a calc"""
+    """Logs the time of a calc
+
+        Args:
+            start (float): Start time in seconds
+            mol_name (str)
+            log (str)
+            calc (Bool)
+    """
+
+    timer_h = int(time.time() - start) / 3600
+    hours = math.floor(timer_h)
+    minutes = timer_h % 60
+    seconds = (minutes / 60) % 60
 
     #Calc is None if we're logging how long a mol took
     if calc is None:
-        msg = 'total calc time for {} is {} s'.format(mol_name, str(int(time.time() - start)))
+        msg = 'total calc time for {} is {} hr(s), {} min(s), and {} second(s)'.format(mol_name,
+                                                                                         hours,
+                                                                                         minutes,
+                                                                                         seconds)
     else:
-        msg = '{} {} on {} took {} s'.format(calc.method,
-                                             calc.name,
-                                             mol_name,
-                                             str(int(time.time() - start)))
-    utils.log_error(log, msg)
+        msg = '{} {} on {} took {} hr(s), {} min(s), and {} second(s)'.format(calc.method,
+                                                                              calc.name,
+                                                                              mol_name,
+                                                                              hours,
+                                                                              minutes,
+                                                                              seconds)
+
+    utils.log_error(log, msg, verbose=True)
 
 if __name__ == "__main__":
 
