@@ -17,17 +17,18 @@ def run(mols: List, out: str, calcs: List, multi: str):
             multi (str): Multiplicity of mols, currently all mols must have the same charge/multiplicity
     """
 
-    start = time.time()
     out = utils.sanitize_path(out, add_slash=True)
     exp_log = out + 'log.txt'
 
     #Loop through mols, apply the same calcs for every mol
     for mol in mols:
+        m_start = time.time()
         mol_name, geom_dir, mol_log = _get_mol_specs(mol, out)
         utils.make_dir(geom_dir)
 
         #Loop through calculation objects created from user/default specifications
         for calc in calcs:
+            c_start = time.time()
             mol_in, mol_out = _get_in_out(calc, geom_dir, mol)
             gm = _get_gm(out, mol_name, mol_in, mol_out, multi, calc)
             try:
@@ -44,10 +45,10 @@ def run(mols: List, out: str, calcs: List, multi: str):
                 utils.log_error(exp_log, msg, verbose=False)
             finally:
                 #Log time of calc to mol dir
-                _record_time(start, mol_name, mol_log, calc)
+                _record_time(c_start, mol_name, mol_log, calc)
 
         #Log time of entire mol calc to exp dir
-        _record_time(start, mol_name, exp_log)
+        _record_time(m_start, mol_name, exp_log)
 
 def _get_args():
     """Get args from command line"""
@@ -130,7 +131,7 @@ def _get_default_calcs(kw: str):
 
     for i, mb in enumerate(mbs):
 
-        if i:
+        if i == 0:
             continue
 
         calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
