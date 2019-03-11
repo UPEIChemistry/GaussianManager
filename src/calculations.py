@@ -133,8 +133,8 @@ class IrcCalc(Calculation):
                  convergence: str='tight',
                  grid: str='superfine',
                  maxcyc: int=256,
-                 max_points: int=64,
-                 step_size: int=5):
+                 max_points: int=2,
+                 step_size: int=10):
 
         #line specific to irc calcs
         calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '

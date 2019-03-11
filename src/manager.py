@@ -146,9 +146,13 @@ class GaussianManager(object):
 
             try:
                 self.output_file.write()
-                utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
                 break
+
             except exceptions.GaussianOutputError as e:
+
+                #l123 is thrown by irc non-convergence, but we've nerfed ircs so they don't converge
+                if 'l123' in e.args[0]:
+                    break
 
                 #l301 is a mismatching of electrons & multiplicity usually
                 if 'l301' in e.args[0]:
@@ -169,6 +173,7 @@ class GaussianManager(object):
         """Parses output file to write output mol in obabel format"""
 
         self.output_file.write_obabel_xyz()
+        utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
 
     def write_convergence_metrics(self):
         """Calls into OutputFile object to parse convergence metrics from gaussian output"""
