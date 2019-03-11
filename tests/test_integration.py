@@ -8,10 +8,13 @@ def mock_gaussian(inp, out):
 
     print("gaussian mocked!")
 
+def get_params(mol=None):
+
+    return [mol], '/home/riley/dev/python/GaussianManager/tests/example/exp'
+
 def test_gm_module(monkeypatch, molecule):
 
-    mols = [molecule]
-    out = '/home/riley/dev/python/GaussianManager/tests/example/exp'
+    mols, out = get_params(molecule)
     calcs = [calculations.TsoptCalc('mp2', 'cc-PVDZ', goal='ts'),
              calculations.IrcCalc('mp2', 'cc-PVDZ', direction='reverse'),
              calculations.IrcCalc('mp2', 'cc-PVDZ', direction='forward')]
@@ -20,13 +23,46 @@ def test_gm_module(monkeypatch, molecule):
         m.setattr('GaussianManager.src.utils.run_gaussian_bash_command', mock_gaussian)
         gaussian_manager.run(mols, out, calcs, '-1 1')
 
-def test_gm_script(monkeypatch, molecule):
+def test_gm_script_default_single(monkeypatch, molecule):
 
-    out = tempfile.mkdtemp()
+    _, out = get_params()
 
     with monkeypatch.context() as m:
         m.setattr('GaussianManager.src.utils.run_gaussian_bash_command', mock_gaussian)
         subprocess.run(('python ~/dev/python/GaussianManager/gaussian_manager.py '
-                        + '-i {}, -o {}, -c tsopt, irc_rev, irc_fwd').format(molecule, out),
+                        + '-i {} -o {}').format(molecule, out),
+                       shell=True,
+                       check=True)
+
+# def test_gm_script_half(monkeypatch, molecule):
+
+#     _, out = get_params()
+
+#     with monkeypatch.context() as m:
+#         m.setattr('GaussianManager.src.utils.run_gaussian_bash_command', mock_gaussian)
+#         subprocess.run(('python ~/dev/python/GaussianManager/gaussian_manager.py '
+#                         + '-i {} -o {} -c half').format(molecule, out),
+#                        shell=True,
+#                        check=True)
+
+# def test_gm_script_full(monkeypatch, molecule):
+
+#     _, out = get_params()
+
+#     with monkeypatch.context() as m:
+#         m.setattr('GaussianManager.src.utils.run_gaussian_bash_command', mock_gaussian)
+#         subprocess.run(('python ~/dev/python/GaussianManager/gaussian_manager.py '
+#                         + '-i {} -o {} -c full').format(molecule, out),
+#                        shell=True,
+#                        check=True)
+
+def test_gm_script_override_calc_kw(monkeypatch, molecule):
+
+    _, out = get_params()
+
+    with monkeypatch.context() as m:
+        m.setattr('GaussianManager.src.utils.run_gaussian_bash_command', mock_gaussian)
+        subprocess.run(('python ~/dev/python/GaussianManager/gaussian_manager.py '
+                        + '-i {} -o {} -c tsopt, irc_rev, irc_fwd').format(molecule, out),
                        shell=True,
                        check=True)

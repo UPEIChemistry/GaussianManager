@@ -71,7 +71,7 @@ def _get_args():
                         help=('List of theory levels to run the calc list at for each mol, typically'
                               + ' only a single item in this list, as the entire calc list is run'
                               + ' for each level of theory specified'))
-    parser.add_argument('-b', '--basis-sets', nargs='+', default=['6-31G'],
+    parser.add_argument('-b', '--basis-sets', nargs='+', default=['cc-PVDZ'],
                         help=('Basis set for calcs. len(methods) == len(basis_sets) must be True'))
 
     return parser.parse_args()
