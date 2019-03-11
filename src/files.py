@@ -146,15 +146,17 @@ class OutputFile(object):
                 OutputFile object
         """
 
-        if input_file.calculation.name == 'ts' or input_file.calculation.name == 'qst3':
+        name = input_file.calculation.name
+
+        if name == 'ts' or name == 'qst3' or name =='gopt_reverse' or name == 'gopt_forward':
 
             out = TsoptOutputFile(filepath, input_file, output_mol_path)
 
-        elif input_file.calculation.name == 'irc_forward':
+        elif name == 'irc_forward':
 
             out = IrcFwdOutputFile(filepath, input_file, output_mol_path)
 
-        elif input_file.calculation.name == 'irc_reverse':
+        elif name == 'irc_reverse':
 
             out = IrcRevOutputFile(filepath, input_file, output_mol_path)
 

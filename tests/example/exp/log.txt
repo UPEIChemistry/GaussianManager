@@ -4,3 +4,19 @@ total calc time for OH-chloromethane is 59 s
 total calc time for OH-chloromethane is 0 s
 total calc time for OH-chloromethane is 0 s
 total calc time for OH-chloromethane is 0 s
+total calc time for OH-chloromethane is 1 s
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_forward on OH-chloromethane
+total calc time for OH-chloromethane is 0 s
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 ts on OH-chloromethane
+GM encountered unresolvable error/code (counter ran out) running mp2 irc_reverse on OH-chloromethane
+total calc time for OH-chloromethane is 0 s
