@@ -146,6 +146,7 @@ class GaussianManager(object):
 
             try:
                 self.output_file.write()
+                utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
                 break
             except exceptions.GaussianOutputError as e:
 
