@@ -130,10 +130,7 @@ def _get_default_calcs(kw: str):
     if kw == 'single':
         return calcs
 
-    for i, mb in enumerate(mbs):
-
-        if i == 0:
-            continue
+    for mb in mbs[1:]:
 
         calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
         calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='reverse'))
