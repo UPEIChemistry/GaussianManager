@@ -21,24 +21,32 @@ def run(mols: List, out: str, calcs: List, multi: str):
     out = utils.sanitize_path(out, add_slash=True)
     exp_log = out + 'log.txt'
 
+    #Loop through mols, apply the same calcs for every mol
     for mol in mols:
         mol_name, geom_dir, mol_log = _get_mol_specs(mol, out)
         utils.make_dir(geom_dir)
 
+        #Loop through calculation objects created from user/default specifications
         for calc in calcs:
             mol_in, mol_out = _get_in_out(calc, geom_dir, mol)
             gm = _get_gm(out, mol_name, mol_in, mol_out, multi, calc)
             try:
                 gm.run_manager()
+
+            #Raised if GM cannot solve any errors thrown by gaussian
             except exceptions.GaussianManagerError as e:
                 msg = ('GM encountered unresolvable error/code '
                        + '({}) running {} {} on {}').format(e.args[0], calc.method, calc.name,
                                                             mol_name)
+
+                #Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)
                 utils.log_error(exp_log, msg, verbose=False)
             finally:
+                #Log time of calc to mol dir
                 _record_time(start, mol_name, mol_log, calc)
 
+        #Log time of entire mol calc to exp dir
         _record_time(start, mol_name, exp_log)
 
 def _get_args():
@@ -83,6 +91,7 @@ def _sanit_molpath(paths):
     return mols
 
 def _resolve_calcs(kws, methods, basis_sets):
+    """Checks provided calcs args to create list of calculation objects"""
 
     calcs = []
     for method, basis in zip(methods, basis_sets):
@@ -105,6 +114,7 @@ def _resolve_calcs(kws, methods, basis_sets):
     return calcs
 
 def _get_default_calcs(kw: str):
+    """Resolves the default/convenience calc keywords"""
 
     mbs = [('mp2', 'cc-PVDZ'), ('b3lyp', 'cc-PVDZ'), ('b3lyp', 'aug-cc-PVDZ'),
            ('m06l', 'aug-cc-PVDZ'), ('m06l', 'aug-cc-PVTZ'), ('cbs-qb3', 'aug-cc-PVQZ')]
@@ -133,6 +143,7 @@ def _get_default_calcs(kw: str):
     return calcs
 
 def _get_in_out(calc, geom_dir, mol):
+    """Determines where the in/output mol files live/should live based on calc"""
 
     mol_name = os.path.basename(mol)
     mol_in = geom_dir + utils.insert_suffix(mol_name, '_ts')
@@ -155,6 +166,7 @@ def _get_in_out(calc, geom_dir, mol):
     return mol_in, mol_out
 
 def _get_gm(out, mol_name, mol_in, mol_out, multi, calc):
+    """Calls GM factory method"""
 
     gm_dir = out + '{}/{}/{}/'.format(mol_name, calc.method, calc.name)
     gm = manager.GaussianManager.factory(gm_dir,
@@ -166,6 +178,7 @@ def _get_gm(out, mol_name, mol_in, mol_out, multi, calc):
     return gm
 
 def _get_mol_specs(mol, out):
+    """Gives basis variable outputs based on provided mol filepath"""
 
     mol_name = utils.get_file_name(mol)
     mol_dir = out + '{}/'.format(mol_name)
@@ -175,7 +188,9 @@ def _get_mol_specs(mol, out):
     return mol_name, geom_dir, mol_log
 
 def _record_time(start, mol_name, log, calc=None):
+    """Logs the time of a calc"""
 
+    #Calc is None if we're logging how long a mol took
     if calc is None:
         msg = 'total calc time for {} is {} s'.format(mol_name, str(int(time.time() - start)))
     else:
