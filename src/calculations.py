@@ -46,7 +46,7 @@ class TsoptCalc(Calculation):
                 convergence (str, optional): Defaults to 'tight'. dictates restrictiveness of convergence
                     metrics. Options include {tight} and {verytight}
                 grid (str, optional): Defaults to 'superfine'. dictates fineness of integral grid for
-                    DFT methods. Optionsl include {finegrid}, {superfine} and {ultrafine}
+                    DFT methods. Options include {finegrid}, {superfine} and {ultrafine}
                 maxcyc (int, optional): Defaults to 256. how many cycles scf calc should use when finding
                     the energy of a stationary point
     """

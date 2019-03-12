@@ -105,6 +105,10 @@ venv.bak/
 
 ##Custom Ignore Filters
 
+# xml/iml files
+*.xml
+*.iml
+
 # SMI files
 *.smi
 

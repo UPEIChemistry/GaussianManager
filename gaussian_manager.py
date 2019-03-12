@@ -147,9 +147,12 @@ def _get_in_out(calc, geom_dir, mol):
     mol_name = os.path.basename(mol)
     mol_in = geom_dir + utils.insert_suffix(mol_name, '_ts')
 
-    if calc.name == 'ts' or calc.name == 'qst3':
+    if calc.name == 'ts':
         mol_in = utils.copy_file(mol, mol_in)
         mol_out = mol_in
+    elif calc.name == 'qst3':
+        mol_in = geom_dir
+        mol_out = geom_dir + utils.insert_suffix(mol_name, '_ts')
     elif calc.name == 'gopt_reverse':
         mol_in = geom_dir + utils.insert_suffix(mol_name, '_reactant')
         mol_out = mol_in
