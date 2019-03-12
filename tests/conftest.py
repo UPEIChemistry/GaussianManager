@@ -2,13 +2,18 @@ from GaussianManager.src import calculations, files, manager, utils, exceptions
 import pytest
 import tempfile
 
-example = '/home/riley/dev/python/GaussianManager/tests/example/'
+example = '/home/riley/gaussian/experiments/gm_testing/'
 exp_dir = example + 'exp/OH-chloromethane/mp2/'
 
 ts_dir = exp_dir + 'ts/'
 irc_r_dir = exp_dir + 'irc_reverse/'
 irc_f_dir = exp_dir + 'irc_forward/'
 qst3_dir = exp_dir + 'qst3/'
+
+@pytest.fixture(scope='session')
+def experiment_directory():
+
+    return example + 'exp/'
 
 @pytest.fixture(scope='session')
 def blank_file():
