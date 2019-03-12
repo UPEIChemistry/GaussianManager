@@ -85,14 +85,12 @@ def get_coords(path: str) -> List:
                      '1' : 'H'}
 
     lines = get_file_lines(path)
-    beginning_idx = None
-    end_idx = None
 
     #Loop backwards through the output file until you find the key phrases
     for i, l in enumerate(reversed(lines)):
 
         #The second key phrase
-        if end_idx is None and 'Distance matrix (angstroms):' in l:
+        if 'Distance matrix (angstroms):' in l:
             end_idx = i
 
         #The first key phrase
@@ -100,13 +98,11 @@ def get_coords(path: str) -> List:
             beginning_idx = i
             break
 
-    #Make sure key phrases are actually in output file
-    if end_idx is None or beginning_idx is None:
-        raise exceptions.GaussianUtilsError(('unable to find key phrases in {} '
-                                            + 'to sanitize coordinates').format(path))
-
     #Slice out the coords from key phrases
-    crude_coords = lines[-beginning_idx: -end_idx - 1]
+    try:
+        crude_coords = lines[-beginning_idx: -end_idx - 1]
+    except NameError:
+        raise exceptions.GaussianUtilsError('no coords to pull in {} '.format(path))
 
     #Pull out all of the extra bits from the coordinates
     sanit_coords = []
