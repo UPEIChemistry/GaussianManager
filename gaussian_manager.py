@@ -196,24 +196,14 @@ def _record_time(start, mol_name, log, calc=None):
             calc (Bool)
     """
 
-    timer_h = int(time.time() - start) / 3600
-    hours = math.floor(timer_h)
-    minutes = timer_h % 60
-    seconds = (minutes / 60) % 60
+    m, s = divmod(int(time.time() - start), 60)
+    h, m = divmod(m, 60)
 
     #Calc is None if we're logging how long a mol took
     if calc is None:
-        msg = 'total calc time for {} is {} hr(s), {} min(s), and {} second(s)'.format(mol_name,
-                                                                                         hours,
-                                                                                         minutes,
-                                                                                         seconds)
+        msg = 'total calc time for {} was {}:{}:{}'.format(mol_name, h, m, s)
     else:
-        msg = '{} {} on {} took {} hr(s), {} min(s), and {} second(s)'.format(calc.method,
-                                                                              calc.name,
-                                                                              mol_name,
-                                                                              hours,
-                                                                              minutes,
-                                                                              seconds)
+        msg = '{} {} on {} took {}:{}:{}'.format(calc.method, calc.name, mol_name, h, m, s)
 
     utils.log_error(log, msg, verbose=True)
 

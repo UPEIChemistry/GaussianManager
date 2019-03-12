@@ -1,7 +1,7 @@
  Entering Gaussian System, Link 0=g09
  Initial command:
- /opt/software/gaussian/g09.e01/l1.exe "/localscratch/rjackson.12297310.0/Gau-500.inp" -scrdir="/localscratch/rjackson.12297310.0/"
- Entering Link 1 = /opt/software/gaussian/g09.e01/l1.exe PID=       501.
+ /opt/software/gaussian/g09.e01/l1.exe "/localscratch/rjackson.18103347.0/Gau-32633.inp" -scrdir="/localscratch/rjackson.18103347.0/"
+ Entering Link 1 = /opt/software/gaussian/g09.e01/l1.exe PID=     32634.
   
  Copyright (c) 1988,1990,1992,1993,1995,1998,2003,2009,2015,
             Gaussian, Inc.  All Rights Reserved.
@@ -74,10 +74,10 @@
  
  ******************************************
  Gaussian 09:  EM64L-G09RevE.01 30-Nov-2015
-                 5-Mar-2019 
+                12-Mar-2019 
  ******************************************
  ----------------------------------------------------------------------
- # mp2/cc-pVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superfine)
+ # mp2/cc-PVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superfine)
   scf(maxcyc=256) freq
  ----------------------------------------------------------------------
  1/5=1,7=10,10=4,11=1,18=20,38=1/1,3;
@@ -586,7 +586,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  2.03D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000    0.000000
          Rot=    1.000000    0.000002   -0.000017    0.000354 Ang=   0.04 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -785,7 +785,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.96D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000    0.000000    0.000000
          Rot=    1.000000   -0.000077    0.000026    0.000321 Ang=  -0.04 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -984,7 +984,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.89D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000    0.000000    0.000000
          Rot=    1.000000   -0.000173    0.000001    0.000102 Ang=  -0.02 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -1185,7 +1185,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.88D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000   -0.000000   -0.000000
          Rot=    0.990841   -0.135035    0.000342   -0.000005 Ang= -15.52 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -1384,7 +1384,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.90D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000    0.000000    0.000000
          Rot=    0.996787   -0.080103    0.000023   -0.000320 Ang=  -9.19 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -1584,7 +1584,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.86D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000   -0.000000
          Rot=    0.992324    0.123665   -0.000033   -0.000026 Ang=  14.21 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -1784,7 +1784,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.80D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000    0.000000   -0.000000
          Rot=    0.995218   -0.097673    0.000736   -0.000080 Ang= -11.21 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -1983,7 +1983,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.92D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000   -0.000000    0.000000
          Rot=    0.996602    0.082359   -0.000473    0.000685 Ang=   9.45 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -2181,7 +2181,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.98D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000    0.000000
          Rot=    0.999891    0.014721   -0.000155    0.000668 Ang=   1.69 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -2380,7 +2380,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.97D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000    0.000000    0.000000
          Rot=    0.993615   -0.112822    0.000855   -0.000059 Ang= -12.96 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -2577,7 +2577,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.91D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000    0.000000    0.000000
          Rot=    0.998540    0.053999    0.000998   -0.000317 Ang=   6.19 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -2776,7 +2776,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.93D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000   -0.000000
          Rot=    0.988565    0.150791   -0.000296    0.000471 Ang=  17.35 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -2974,7 +2974,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000    0.000000   -0.000000
          Rot=    0.997436   -0.071564   -0.000034   -0.000186 Ang=  -8.21 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -3171,7 +3171,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000    0.000000
          Rot=    0.999992    0.003876   -0.000104    0.000045 Ang=   0.44 deg.
  ExpMin= 1.22D-01 ExpMax= 1.28D+05 ExpMxC= 1.24D+03 IAcc=3 IRadAn=         5 AccDes= 0.00D+00
@@ -3368,7 +3368,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000    0.000000    0.000000
          Rot=    0.999995    0.003052   -0.000004   -0.000008 Ang=   0.35 deg.
  Keep R1 ints in memory in canonical form, NReq=3411511.
@@ -3556,7 +3556,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000   -0.000000
          Rot=    0.999999   -0.001123   -0.000000    0.000002 Ang=  -0.13 deg.
  Keep R1 ints in memory in canonical form, NReq=3411511.
@@ -3744,7 +3744,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000    0.000000   -0.000000
          Rot=    1.000000   -0.000798   -0.000001    0.000001 Ang=  -0.09 deg.
  Keep R1 ints in memory in canonical form, NReq=3411511.
@@ -3932,7 +3932,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=     0.000000    0.000000   -0.000000
          Rot=    1.000000    0.000266    0.000000   -0.000000 Ang=   0.03 deg.
  Keep R1 ints in memory in canonical form, NReq=3411511.
@@ -4228,8 +4228,8 @@
  ZZZY=             -0.4477 XXYY=            -94.4881 XXZZ=           -104.1222 YYZZ=            -12.3442
  XXYZ=             -1.1812 YYXZ=              0.4258 ZZXY=             -0.5433
  N-N= 8.940214540826D+01 E-N=-1.553471531827D+03  KE= 5.745259515726D+02
- 1\1\GINC-GRA796\FTS\RMP2-FC\CC-pVDZ\C1H4Cl1O1(1-)\RJACKSON\05-Mar-2019
- \0\\# mp2/cc-pVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superf
+ 1\1\GINC-CDR674\FTS\RMP2-FC\CC-pVDZ\C1H4Cl1O1(1-)\RJACKSON\12-Mar-2019
+ \0\\# mp2/cc-PVDZ opt(ts, calcfc, noeigen, tight) integral(grid=superf
  ine) scf(maxcyc=256) freq\\OH-chloromethane_ts\\-1,1\Cl,-1.5949154587,
  -0.1722270499,-0.0523271219\C,0.3370809195,0.0375138559,0.0245526166\H
  ,0.6248096177,-0.4666696977,0.9461526522\H,0.7966257219,-0.3947659299,
@@ -4240,12 +4240,13 @@
  01 [X(C1H4Cl1O1)]\\@
 
 
- THERE'S NOTHING SO GREAT AS THE GREAT OUTDOORS.
+  THE LARGE PRINT GIVETH,
+  AND THE SMALL PRINT TAKETH AWAY.
 
-                                       -- ZIGGY
- Job cpu time:       0 days  0 hours  2 minutes 17.9 seconds.
+                     -- TOM WAITS
+ Job cpu time:       0 days  0 hours  2 minutes 49.1 seconds.
  File lengths (MBytes):  RWF=    214 Int=      0 D2E=      0 Chk=      2 Scr=      1
- Normal termination of Gaussian 09 at Tue Mar  5 10:20:52 2019.
+ Normal termination of Gaussian 09 at Tue Mar 12 02:08:14 2019.
  Link1:  Proceeding to internal job step number  2.
  ---------------------------------------------------------------------
  #N Geom=AllCheck Guess=TCheck SCRF=Check GenChk RMP2(FC)/CC-pVDZ Freq
@@ -4266,7 +4267,7 @@
  7/8=1,10=1,12=2,25=1,44=2/1,2,3,16;
  1/5=1,7=10,10=4,11=1,30=1/3;
  99//99;
- Structure from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Structure from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  -------------------
  OH-chloromethane_ts
  -------------------
@@ -4385,7 +4386,7 @@
  One-electron integrals computed using PRISM.
  NBasis=    66 RedAO= T EigKep=  1.94D-02  NBF=    66
  NBsUse=    66 1.00D-06 EigRej= -1.00D+00 NBFU=    66
- Initial guess from the checkpoint file:  "/localscratch/rjackson.12297310.0/Gau-501.chk"
+ Initial guess from the checkpoint file:  "/localscratch/rjackson.18103347.0/Gau-32634.chk"
  B after Tr=    -0.000000   -0.000000    0.000000
          Rot=    1.000000   -0.000000    0.000000   -0.000000 Ang=   0.00 deg.
  Keep R1 ints in memory in canonical form, NReq=3411511.
@@ -4863,7 +4864,7 @@
  --------------------------------------------------------------------------------
  GradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGradGrad
 
- 1\1\GINC-GRA796\Freq\RMP2-FC\CC-pVDZ\C1H4Cl1O1(1-)\RJACKSON\05-Mar-201
+ 1\1\GINC-CDR674\Freq\RMP2-FC\CC-pVDZ\C1H4Cl1O1(1-)\RJACKSON\12-Mar-201
  9\0\\#N Geom=AllCheck Guess=TCheck SCRF=Check GenChk RMP2(FC)/CC-pVDZ 
  Freq\\OH-chloromethane_ts\\-1,1\Cl,-1.5949154587,-0.1722270499,-0.0523
  271219\C,0.3370809195,0.0375138559,0.0245526166\H,0.6248096177,-0.4666
@@ -4927,12 +4928,9 @@
  0047,-0.00000014,0.00000015\\\@
 
 
- THE TRULY SUCCESSFUL PERFORMANCE OF RESEARCHES IN
- INORGANIC CHEMISTRY IS POSSIBLE ONLY TO ONE WHO IS NOT
- ONLY A THEORETICAL CHEMIST, BUT ALSO AN ACCOMPLISHED
- ANALYST AND, MOREOVER, NOT MERELY A PRACTICALLY TRAINED,
- MECHANICAL WORKER, BUT A THINKING CREATIVE ARTIST.
-   --  CLEMENS WINKLER, BER. 33, 1697(1900)
- Job cpu time:       0 days  0 hours  0 minutes 35.9 seconds.
+ THE MORE ACCURATE THE CALCULATIONS BECOME, THE MORE THE CONCEPTS
+ TEND TO VANISH INTO THIN AIR.
+     -- R.S. MULLIKEN, J.C.P. 43,S2(1965)
+ Job cpu time:       0 days  0 hours  0 minutes 43.6 seconds.
  File lengths (MBytes):  RWF=    214 Int=      0 D2E=      0 Chk=      2 Scr=      1
- Normal termination of Gaussian 09 at Tue Mar  5 10:21:28 2019.
+ Normal termination of Gaussian 09 at Tue Mar 12 02:08:58 2019.
