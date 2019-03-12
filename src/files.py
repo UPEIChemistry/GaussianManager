@@ -53,19 +53,15 @@ class InputFile(object):
 
         if calculation.name == 'qst3':
 
-            inp = QST3InputFile(filepath,
-                                calculation,
-                                molecule_name,
-                                mol_coords,
-                                multiplicity)
+            inp = QST3InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
+
+        elif calculation.name == 'qst2':
+
+            inp = QST2InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
 
         else:
 
-            inp = InputFile(filepath,
-                            calculation,
-                            molecule_name,
-                            mol_coords,
-                            multiplicity)
+            inp = InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
 
         return inp
 
@@ -108,6 +104,19 @@ class QST3InputFile(InputFile):
                 file.write('\n')
 
             file.write('\n')
+
+class QST2InputFile(QST3InputFile):
+    """Wrapper which represents a gaussian input file, allowing for better customization of
+            contained mol coords & calc kws
+
+            Args:
+                filepath (str): path to the gaussian input file
+                calculation (Calculation object): The calc to be run by gaussian
+                molecule_name (str): the name of the molecule
+                mol_coords (list): List of list of lines containing xyz coords for reactant and
+                product **IN THAT ORDER**. Lines should end with a newline character
+                multiplicity (str): multiplicity of the provided molecule
+    """
 
 class OutputFile(object):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater

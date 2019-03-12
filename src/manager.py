@@ -276,6 +276,54 @@ class QST3Manager(TsoptManager):
 
         return os.path.basename(self.input_mol_filepath)
 
+class QST2Manager(QST3Manager):
+    """GM sub-class which manages single tsopt calculations for single molecules. Capable of
+        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+
+        Args:
+            experiment_directory (str): directory to write GM input/outputs
+            input_mol_filepath (str): path to the dir containing xyz files endings with
+                '_reactant.xyz' and '_product.xyz'. Dirname should be the name of the reaction, as
+                this is what is used to name output xyz files
+            multiplicity (str): multiplicity of input mol
+            calculation (Calculation object): Calc object for a specific gaussian calculation
+            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
+                gaussian errors
+    """
+
+    def _create_base_input(self) -> InputFile:
+        """Creates InputFile objects based on args provided to GM
+
+            Returns:
+                InputFile object
+        """
+
+        input_filepath = self.experiment_directory + 'input.com'
+
+        #input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
+        for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
+
+            #Loop through files and pull out ts, reactant & product coords
+            for f in files:
+                filepath = utils.sanitize_path(d, add_slash=True) + f
+                if '_reactant.xyz' in filepath:
+                    reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
+                elif '_product.xyz' in filepath:
+                    product_coords = utils.get_coords_from_obabel_xyz(filepath)
+
+        #Make sure enough coords have been parsed
+        if reactant_coords is None or product_coords is None:
+            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
+
+        molecule_coords = [reactant_coords, product_coords]
+        input_file = InputFile.factory(filepath=input_filepath,
+                                       calculation=self.calculation,
+                                       molecule_name=self.mol_name,
+                                       multiplicity=self.multiplicity,
+                                       mol_coords=molecule_coords)
+
+        return input_file
+
 class IrcRevManager(GaussianManager):
     """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
         generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
