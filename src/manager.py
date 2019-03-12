@@ -54,8 +54,11 @@ class GaussianManager(object):
             Args:
                 experiment_directory (str): directory to write GM input/outputs
                 input_mol_filepath (str): path to the xyz file containing input mol coords
+                output_mol_filepath (str): path to where the output mol is written
                 multiplicity (str): multiplicity of input mol
                 calculation (Calculation object): Calc object for a specific gaussian calculation
+                resolve_attempts (int, optional): Defaults to 4. The number of times GM will attempt to resolve simple
+                    gaussian errors
 
             Returns:
                 GaussianManager object: The corresponding GM object
