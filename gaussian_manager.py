@@ -74,7 +74,7 @@ def _get_args():
                               + ' only a single item in this list, as the entire calc list is run'
                               + ' for each level of theory specified'))
     parser.add_argument('-b', '--basis-sets', nargs='+', default=['cc-PVDZ'],
-                        help=('Basis set for calcs. len(methods) == len(basis_sets) must be True'))
+                        help='Basis set for calcs. len(methods) == len(basis_sets) must be True')
 
     return parser.parse_args()
 
@@ -146,11 +146,12 @@ def _get_in_out(calc, geom_dir, mol):
 
     mol_name = os.path.basename(mol)
     mol_in = geom_dir + utils.insert_suffix(mol_name, '_ts')
+    mol_out = None
 
     if calc.name == 'ts':
         mol_in = utils.copy_file(mol, mol_in)
         mol_out = mol_in
-    elif calc.name == 'qst3':
+    elif calc.name == 'qst3' or calc.name == 'qst2':
         mol_in = geom_dir
         mol_out = geom_dir + utils.insert_suffix(mol_name, '_ts')
     elif calc.name == 'gopt_reverse':
@@ -164,6 +165,9 @@ def _get_in_out(calc, geom_dir, mol):
         mol_out = geom_dir + utils.insert_suffix(mol_name, '_reactant')
     elif calc.name == 'irc_forward':
         mol_out = geom_dir + utils.insert_suffix(mol_name, '_product')
+
+    if mol_in is None or mol_out is None:
+        raise exceptions.GaussianManagerError('Unknown calc kw, cannot find where to put output molecule')
 
     return mol_in, mol_out
 

@@ -1,7 +1,4 @@
 from GaussianManager.src import files, exceptions, utils
-import pytest
-import subprocess
-import tempfile
 
 class TestInputFile:
 
