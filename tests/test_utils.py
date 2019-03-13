@@ -1,8 +1,7 @@
-from GaussianManager.src import utils, exceptions
+from src import utils, exceptions
 import os
 import pytest
 import subprocess
-import tempfile
 
 def test_run_bash_command_throw_error():
 

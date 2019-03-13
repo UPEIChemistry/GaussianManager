@@ -1,10 +1,11 @@
 """Module of GaussianManager classes which manage the creation of a single guassian input/output.
      Capable of resolving common gaussian errors to ensure generated output is correct"""
 
-from GaussianManager.src import calculations, exceptions, utils
-from GaussianManager.src.files import InputFile, OutputFile
+import calculations, exceptions, utils
+from files import InputFile, OutputFile
+
 import os
-from typing import List, Type, Union
+from typing import List, Union
 
 class GaussianManager(object):
     """Super-class for managing single calculations for single molecules. Capable of generating

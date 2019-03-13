@@ -1,4 +1,4 @@
-from GaussianManager.src import exceptions
+import exceptions
 import numpy as np
 import os
 import subprocess

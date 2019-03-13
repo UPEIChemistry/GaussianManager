@@ -1,13 +1,11 @@
-from GaussianManager import gaussian_manager
-from GaussianManager.src import calculations, utils
-import os
-import pytest
-import subprocess
-import tempfile
+import gaussian_manager
+from src import calculations
+
 
 def mock_gaussian(inp, out):
 
     print("gaussian mocked!")
+
 
 def test_gm_module(monkeypatch, molecule, experiment_directory):
 

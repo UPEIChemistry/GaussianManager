@@ -1,11 +1,10 @@
 """Main user interface for GM, used as a script to submit a list of calcs to run on a list of mols"""
 
 import argparse
-from GaussianManager.src import calculations, exceptions, manager, utils
-import math
+from src import manager, exceptions, utils, calculations
 import os
 import time
-from typing import Type, List, Union
+from typing import List
 
 def run(mols: List, out: str, calcs: List, multi: str):
     """Main method of gaussian_manager interface for creating GM objects and running calculations

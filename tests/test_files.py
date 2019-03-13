@@ -1,4 +1,4 @@
-from GaussianManager.src import files, exceptions, utils
+from src import files, utils
 
 class TestInputFile:
 

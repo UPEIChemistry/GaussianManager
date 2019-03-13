@@ -1,4 +1,4 @@
-from GaussianManager.src import calculations, files, manager, utils, exceptions
+from src import calculations
 import pytest
 import tempfile
 
