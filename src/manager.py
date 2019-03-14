@@ -6,10 +6,13 @@ common gaussian errors to ensure generated output is correct
 import calculations
 import exceptions
 import utils
-from files import InputFile, OutputFile
+from inputs import InputFile
+from outputs import OutputFile
 
 import os
-from typing import List, Union
+from typing import List, Union, Type, TypeVar
+
+T = TypeVar('T', bound='GaussianManager')
 
 
 class GaussianManager(object):
@@ -42,7 +45,7 @@ class GaussianManager(object):
                 output_mol_filepath: str,
                 multiplicity: str,
                 calculation: calculations.Calculation,
-                resolve_attempts: int = 4):
+                resolve_attempts: int = 4) -> Type[T]:
         """
         Static factory method for GM which returns corresponding GM object based on calc provided
 
@@ -87,7 +90,7 @@ class GaussianManager(object):
 
         return gm
 
-    def _create_base_input(self) -> InputFile:
+    def _create_base_input(self) -> Type[InputFile]:
         """Creates InputFile objects based on args provided to GM
 
             Returns:
@@ -104,7 +107,7 @@ class GaussianManager(object):
 
         return input_file
 
-    def _create_base_output(self) -> OutputFile:
+    def _create_base_output(self) -> Type[OutputFile]:
         """Creates OutputFile objects based on args provided to GM
 
             Returns:
@@ -118,7 +121,7 @@ class GaussianManager(object):
 
         return output_file
 
-    def _get_mol_name(self) -> str :
+    def _get_mol_name(self) -> str:
         """Gets the output mol name based on provided suffix"""
 
         return utils.get_file_name(self.output_mol_filepath)
@@ -148,7 +151,7 @@ class GaussianManager(object):
 
             except exceptions.GaussianOutputError as e:
 
-                # l123 is thrown by irc non-convergence, but we've nerfed ircs so they don't converge
+                # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
                     break
 
@@ -159,6 +162,10 @@ class GaussianManager(object):
                 # l101 is some sort of input error, usually spacing is off
                 elif 'l101' in e.args[0]:
                     self.raise_error(e.args[0] + ' error with input file')
+
+                # l202 is a proximity error, meaning two atoms are too close together
+                elif 'l202' in e.args[0]:
+                    self.raise_error(e.args[0] + 'error with proximity')
                 else:
                     self.resolve_convergence_error()
                     continue

@@ -4,7 +4,7 @@ import argparse
 from src import manager, exceptions, utils, calculations
 import os
 import time
-from typing import List
+from typing import List, Type, Union
 
 
 def run(mols: List, out: str, calcs: List, multi: str):
@@ -37,9 +37,16 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
             # Raised if GM cannot solve any errors thrown by gaussian
             except exceptions.GaussianManagerError as e:
-                msg = ('GM encountered unresolvable error/code '
-                       + '({}) running {} {} on {}').format(e.args[0], calc.method, calc.name,
-                                                            mol_name)
+
+                # Stop mol run if either error is encountered with ts calcs
+                if calc.name == 'ts':
+                    if 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0]:
+                        break
+
+                msg = 'GM encountered unresolvable error/code ({}) running {} {} on {}'.format(e.args[0],
+                                                                                               calc.method,
+                                                                                               calc.name,
+                                                                                               mol_name)
 
                 # Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)
@@ -95,7 +102,9 @@ def _sanit_molpath(paths):
     return mols
 
 
-def _resolve_calcs(kws, methods, basis_sets):
+def _resolve_calcs(kws, methods, basis_sets) -> List[Union[calculations.TsoptCalc,
+                                                           calculations.IrcCalc,
+                                                           calculations.GoptCalc]]:
     """Checks provided calcs args to create list of calculation objects"""
 
     calcs = []
@@ -119,7 +128,7 @@ def _resolve_calcs(kws, methods, basis_sets):
     return calcs
 
 
-def _get_default_calcs(kw: str):
+def _get_default_calcs(kw: str) -> List[Union[calculations.TsoptCalc, calculations.IrcCalc, calculations.GoptCalc]]:
     """Resolves the default/convenience calc keywords"""
 
     mbs = [('mp2', 'cc-PVDZ'), ('b3lyp', 'cc-PVDZ'), ('b3lyp', 'aug-cc-PVDZ'),
@@ -128,7 +137,7 @@ def _get_default_calcs(kw: str):
     calcs = [calculations.TsoptCalc(mbs[0][0], mbs[0][1], goal='ts'),
              calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='reverse'),
              calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='reverse'),
-             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction= 'forward'),
+             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='forward'),
              calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='forward')]
 
     if kw == 'single':
@@ -177,7 +186,15 @@ def _get_in_out(calc, geom_dir, mol):
     return mol_in, mol_out
 
 
-def _get_gm(out, mol_name, mol_in, mol_out, multi, calc):
+def _get_gm(out: str, mol_name: str, mol_in: str, mol_out: str,
+            multi: str, calc: Union[calculations.TsoptCalc,
+                                    calculations.IrcCalc,
+                                    calculations.GoptCalc]) -> Union[Type[manager.GaussianManager],
+                                                                     Type[manager.TsoptManager],
+                                                                     Type[manager.QST2Manager],
+                                                                     Type[manager.QST3Manager],
+                                                                     Type[manager.IrcRevManager],
+                                                                     Type[manager.IrcFwdManager]]:
     """Calls GM factory method"""
 
     gm_dir = out + '{}/{}/{}/'.format(mol_name, calc.method, calc.name)

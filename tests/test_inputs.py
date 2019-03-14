@@ -1,4 +1,4 @@
-from src import files, utils
+from src import inputs, utils
 
 
 class TestInputFile:
@@ -8,7 +8,7 @@ class TestInputFile:
         n = utils.get_file_name(molecule)
         c = utils.get_coords_from_obabel_xyz(molecule)
 
-        i = files.InputFile.factory(blank_file, ts_calc, n, c, '-1 1')
+        i = inputs.InputFile.factory(blank_file, ts_calc, n, c, '-1 1')
         i.write()
         lines = utils.get_file_lines(blank_file)
 
@@ -25,7 +25,7 @@ class TestInputFile:
              utils.get_coords_from_obabel_xyz(molecule),
              utils.get_coords_from_obabel_xyz(molecule)]
 
-        i = files.InputFile.factory(blank_file, qst3_calc, n, c, '-1 1')
+        i = inputs.InputFile.factory(blank_file, qst3_calc, n, c, '-1 1')
         i.write()
         _ = utils.get_file_lines(blank_file)
 
