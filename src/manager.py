@@ -1,24 +1,18 @@
-"""Module of GaussianManager classes which manage the creation of a single guassian input/output.
-     Capable of resolving common gaussian errors to ensure generated output is correct"""
+"""
+Module of GaussianManager classes which manage the creation of a single guassian input/output. Capable of resolving
+common gaussian errors to ensure generated output is correct
+"""
 
-import calculations, exceptions, utils
+import calculations
+import exceptions
+import utils
 from files import InputFile, OutputFile
 
 import os
 from typing import List, Union
 
-class GaussianManager(object):
-    """Super-class for managing single calculations for single molecules. Capable of generating
-            gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
-    """
+class GaussianManager(object):
 
     def __init__(self,
                  experiment_directory: str,
@@ -26,7 +20,7 @@ class GaussianManager(object):
                  output_mol_filepath: str,
                  multiplicity: str,
                  calculation: calculations.Calculation,
-                 resolve_attempts: int=4):
+                 resolve_attempts: int = 4):
 
         self.experiment_directory = utils.sanitize_path(experiment_directory, add_slash=True)
         utils.make_dir(self.experiment_directory)
@@ -48,23 +42,21 @@ class GaussianManager(object):
                 output_mol_filepath: str,
                 multiplicity: str,
                 calculation: calculations.Calculation,
-                resolve_attempts: int=4,
-                **kwargs):
-        """Static factory method for GM which returns corresponding GM object based on calc provided
+                resolve_attempts: int = 4):
+        """
+        Static factory method for GM which returns corresponding GM object based on calc provided
 
-            Args:
-                experiment_directory (str): directory to write GM input/outputs
-                input_mol_filepath (str): path to the xyz file containing input mol coords
-                output_mol_filepath (str): path to where the output mol is written
-                multiplicity (str): multiplicity of input mol
-                calculation (Calculation object): Calc object for a specific gaussian calculation
-                resolve_attempts (int, optional): Defaults to 4. The number of times GM will attempt to resolve simple
-                    gaussian errors
+        :param experiment_directory: directory to write GM input/outputs
+        :param input_mol_filepath:  path to the xyz file containing input mol coords
+        :param output_mol_filepath: path to where the output mol is written
+        :param multiplicity: multiplicity of input mol
+        :param calculation: Calc object for a specific gaussian calculation
+        :param resolve_attempts: Defaults to 4. The number of times GM will attempt to resolve simple gaussian errors
 
-            Returns:
-                GaussianManager object: The corresponding GM object
+        :return: GaussianManager instance
         """
 
+        gm = None
         if calculation.name == 'ts':
 
             gm = TsoptManager(experiment_directory, input_mol_filepath, output_mol_filepath,
@@ -73,7 +65,7 @@ class GaussianManager(object):
         elif calculation.name == 'qst3':
 
             gm = QST3Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                              multiplicity, calculation, resolve_attempts)
+                             multiplicity, calculation, resolve_attempts)
 
         elif calculation.name == 'irc_reverse':
 
@@ -89,6 +81,9 @@ class GaussianManager(object):
 
             gm = GaussianManager(experiment_directory, input_mol_filepath, output_mol_filepath,
                                  multiplicity, calculation, resolve_attempts)
+
+        if gm is None:
+            raise exceptions.GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
 
         return gm
 
@@ -136,7 +131,6 @@ class GaussianManager(object):
         self.write_obabel_output()
         self.write_convergence_metrics()
 
-
     def write_input(self):
         """Writes gaussian input file for provided GM args"""
 
@@ -154,22 +148,22 @@ class GaussianManager(object):
 
             except exceptions.GaussianOutputError as e:
 
-                #l123 is thrown by irc non-convergence, but we've nerfed ircs so they don't converge
+                # l123 is thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
                     break
 
-                #l301 is a mismatching of electrons & multiplicity usually
+                # l301 is a mismatching of electrons & multiplicity usually
                 if 'l301' in e.args[0]:
                     self.raise_error(e.args[0] + ' error with multiplicity')
 
-                #l101 is some sort of input error, usually spacing is off
+                # l101 is some sort of input error, usually spacing is off
                 elif 'l101' in e.args[0]:
                     self.raise_error(e.args[0] + ' error with input file')
                 else:
                     self.resolve_convergence_error()
                     continue
 
-        #Raised if gm cannot resolve the error in time
+        # Raised if gm cannot resolve the error in time
         else:
             self.raise_error('counter ran out')
 
@@ -187,7 +181,7 @@ class GaussianManager(object):
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
 
-        #Simply pull the farthest geometry from the output file before it errored out and resubmit
+        # Simply pull the farthest geometry from the output file before it errored out and resubmit
         try:
             output_coords = self.output_file.parse_xyz()
         except exceptions.GaussianOutputError as e:
@@ -196,63 +190,53 @@ class GaussianManager(object):
             self.input_file.mol_coords = output_coords
             self.input_file.write()
 
-    def raise_error(self, error_code):
+    def raise_error(self, error_code: str) -> None:
         """raises a GaussianManagerError with a provided error_code"""
 
         raise exceptions.GaussianManagerError(error_code)
 
-class TsoptManager(GaussianManager):
-    """GM sub-class which manages single tsopt calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
+class TsoptManager(GaussianManager):
+    """
+    GM sub-class which manages single tsopt calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
     def write_output(self):
-        """Runs gaussian to generate the output file for provided InputFile object. Attempts to
-            do rudimentary error resolution when gaussian throws an exception. Also, will throw
-            an error if gaussian creates a ts which doesn't have a single imag freq"""
+        """
+        Runs gaussian to generate the output file for provided InputFile object. Attempts to
+        do rudimentary error resolution when gaussian throws an exception. Also, will throw
+        an error if gaussian creates a ts which doesn't have a single imag freq
+        """
 
-        #Same as parent method, but adds freq parsing/checking
+        # Same as parent method, but adds freq parsing/checking
         super().write_output()
         self.output_file.write_freq()
         if not utils.validate_single_imag_freq(self.output_file.freqs):
             self.raise_error('freq_error')
 
-class QST3Manager(TsoptManager):
-    """GM sub-class which manages single tsopt calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the dir containing xyz files endings with '_ts.xyz',
-                '_reactant.xyz' and '_product.xyz'. Dirname should be the name of the reaction, as
-                this is what is used to name output xyz files
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
+class QST3Manager(TsoptManager):
+    """
+    GM sub-class which manages single tsopt calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
     def _create_base_input(self) -> InputFile:
-        """Creates InputFile objects based on args provided to GM
+        """
+        Creates InputFile objects based on args provided to GM
 
-            Returns:
-                InputFile object
+        Returns:
+            InputFile object
         """
 
         input_filepath = self.experiment_directory + 'input.com'
+        ts_coords, reactant_coords, product_coords = None, None, None
 
-        #input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
+        # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
         for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
 
-            #Loop through files and pull out ts, reactant & product coords
+            # Loop through files and pull out ts, reactant & product coords
             for f in files:
                 filepath = utils.sanitize_path(d, add_slash=True) + f
                 if '_ts.xyz' in filepath:
@@ -262,7 +246,7 @@ class QST3Manager(TsoptManager):
                 elif '_product.xyz' in filepath:
                     product_coords = utils.get_coords_from_obabel_xyz(filepath)
 
-        #Make sure enough coords have been parsed
+        # Make sure enough coords have been parsed
         if ts_coords is None or reactant_coords is None or product_coords is None:
             raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
@@ -280,34 +264,28 @@ class QST3Manager(TsoptManager):
 
         return os.path.basename(self.input_mol_filepath)
 
-class QST2Manager(QST3Manager):
-    """GM sub-class which manages single tsopt calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the dir containing xyz files endings with
-                '_reactant.xyz' and '_product.xyz'. Dirname should be the name of the reaction, as
-                this is what is used to name output xyz files
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
+class QST2Manager(QST3Manager):
+    """
+    GM sub-class which manages single tsopt calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
     def _create_base_input(self) -> InputFile:
-        """Creates InputFile objects based on args provided to GM
+        """
+        Creates InputFile objects based on args provided to GM
 
-            Returns:
-                InputFile object
+        Returns:
+            InputFile object
         """
 
         input_filepath = self.experiment_directory + 'input.com'
 
-        #input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
+        reactant_coords, product_coords = None, None
+        # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
         for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
 
-            #Loop through files and pull out ts, reactant & product coords
+            # Loop through files and pull out ts, reactant & product coords
             for f in files:
                 filepath = utils.sanitize_path(d, add_slash=True) + f
                 if '_reactant.xyz' in filepath:
@@ -315,7 +293,7 @@ class QST2Manager(QST3Manager):
                 elif '_product.xyz' in filepath:
                     product_coords = utils.get_coords_from_obabel_xyz(filepath)
 
-        #Make sure enough coords have been parsed
+        # Make sure enough coords have been parsed
         if reactant_coords is None or product_coords is None:
             raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
@@ -328,28 +306,16 @@ class QST2Manager(QST3Manager):
 
         return input_file
 
-class IrcRevManager(GaussianManager):
-    """GM sub-class which manages single irc-rev calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
+class IrcRevManager(GaussianManager):
+    """
+    GM sub-class which manages single irc-rev calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-class IrcFwdManager(GaussianManager):
-    """GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
-        generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
 
-        Args:
-            experiment_directory (str): directory to write GM input/outputs
-            input_mol_filepath (str): path to the xyz file containing input mol coords
-            multiplicity (str): multiplicity of input mol
-            calculation (Calculation object): Calc object for a specific gaussian calculation
-            resolve_attempts (int, optional): Defaults to 4. Num of times GM attempts to fix
-                gaussian errors
+class IrcFwdManager(GaussianManager):
+    """
+    GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """

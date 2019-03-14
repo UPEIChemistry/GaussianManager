@@ -2,6 +2,10 @@ class GaussianExecutiveError(Exception):
     pass
 
 
+class GaussianFileError(Exception):
+    pass
+
+
 class GaussianManagerError(Exception):
     pass
 

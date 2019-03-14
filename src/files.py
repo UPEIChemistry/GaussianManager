@@ -1,21 +1,12 @@
-from GaussianManager.src import calculations, exceptions, utils
-import os
+from src import calculations, exceptions, utils
 import matplotlib.pyplot as plt
+from numpy import ndarray
+import os
 import subprocess
-from typing import List, Type, Union
+from typing import List, Union, Type
+
 
 class InputFile(object):
-    """Wrapper which represents a gaussian input file, allowing for better customization of
-            contained mol coords & calc kws
-
-            Args:
-                filepath (str): path to the gaussian input file
-                calculation (Calculation object): The calc to be run by gaussian
-                molecule_name (str): the name of the molecule
-                mol_coords (list): List of lines containing xyz coords for mol, should end with a
-                    newline character
-                multiplicity (str): multiplicity of the provided molecule
-    """
 
     def __init__(self,
                  filepath: str,
@@ -23,7 +14,16 @@ class InputFile(object):
                  molecule_name: str,
                  mol_coords: List[str],
                  multiplicity: str):
+        """
+        Wrapper which represents a gaussian input file, allowing for better customization of
+        contained mol coords & calc kws
 
+        :param filepath: path to the gaussian input file
+        :param calculation: The calc to be run by gaussian
+        :param molecule_name: the name of the molecule
+        :param mol_coords: List of lines containing xyz coords for mol, should end with a
+        :param multiplicity: multiplicity of the provided molecule
+        """
         self.filepath = filepath
         self.calculation = calculation
         self.molecule_name = molecule_name
@@ -36,19 +36,18 @@ class InputFile(object):
                 molecule_name: str,
                 mol_coords: Union[List[str], List[List]],
                 multiplicity: str):
-        """Static factory method which returns the proper input file based on provided calc
+        """
+        Static factory method which returns the proper input file based on provided calc
 
-            Args:
-                filepath (str): path to the gaussian input file
-                calculation (Calculation object): The calc to be run by gaussian
-                molecule_name (str): the name of the molecule
-                mol_coords (list): List of lines containing xyz coords for mol, should end with a
-                    newline character. IF CALC IS QST3: List of list of lines containing xyz coords for ts,
-                    reactant, and product, IN THAT ORDER. Lines should end with a newline character
-                multiplicity (str): multiplicity of the provided molecule
+        :param filepath: path to the gaussian input file
+        :param calculation: The calc to be run by gaussian
+        :param molecule_name: the name of the molecule
+        :param mol_coords: List of lines containing xyz coords for mol, should end with a newline character.
+            IF CALC IS QST3: List of list of lines containing xyz coords for reactant, product, and ts IN THAT ORDER.
+            Lines should end with a newline character.
+        :param multiplicity: multiplicity of the provided molecule
 
-            Returns:
-                OutputFile object
+        :return: OutputFile object
         """
 
         if calculation.name == 'qst3':
@@ -68,7 +67,7 @@ class InputFile(object):
     def write(self):
         """Write the input file in the proper gaussian format"""
 
-        #Write file lines according to gaussian requirements
+        # Write file lines according to gaussian requirements
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
@@ -76,27 +75,21 @@ class InputFile(object):
             file.write(''.join(line for line in self.mol_coords))
             file.write('\n\n')
 
-class QST3InputFile(InputFile):
-    """Wrapper which represents a gaussian input file, allowing for better customization of
-            contained mol coords & calc kws
 
-            Args:
-                filepath (str): path to the gaussian input file
-                calculation (Calculation object): The calc to be run by gaussian
-                molecule_name (str): the name of the molecule
-                mol_coords (list): List of list of lines containing xyz coords for reactant,
-                product, and ts **IN THAT ORDER**. Lines should end with a newline character
-                multiplicity (str): multiplicity of the provided molecule
+class QST3InputFile(InputFile):
+    """
+    Wrapper which represents a gaussian input file, allowing for better customization of
+    contained mol coords & calc kws
     """
 
     def write(self):
         """Write the QST3 input file in the proper gaussian format"""
 
-        #Write lines according to qst3 requirements for gaussian
+        # Write lines according to qst3 requirements for gaussian
         with open(self.filepath, 'w') as file:
             file.write(self.calculation.get_calc_line() + '\n\n')
 
-            #Mol coords have to specified r -> p -> ts, otherwise gaussian will complain
+            # Mol coords have to specified r -> p -> ts, otherwise gaussian will complain
             for coords, name in zip(self.mol_coords, ('reactant', 'product', 'ts')):
                 file.write(self.molecule_name + ' {}\n\n'.format(name))
                 file.write(self.multiplicity + '\n')
@@ -105,58 +98,54 @@ class QST3InputFile(InputFile):
 
             file.write('\n')
 
-class QST2InputFile(QST3InputFile):
-    """Wrapper which represents a gaussian input file, allowing for better customization of
-            contained mol coords & calc kws
 
-            Args:
-                filepath (str): path to the gaussian input file
-                calculation (Calculation object): The calc to be run by gaussian
-                molecule_name (str): the name of the molecule
-                mol_coords (list): List of list of lines containing xyz coords for reactant and
-                product **IN THAT ORDER**. Lines should end with a newline character
-                multiplicity (str): multiplicity of the provided molecule
+class QST2InputFile(QST3InputFile):
     """
+    Wrapper which represents a gaussian input file, allowing for better customization of
+    contained mol coords & calc kws
+    """
+
 
 class OutputFile(object):
-    """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
-            customization of output file internals
-
-            Args:
-                filepath (str): path to the gaussian output file
-                input_file (InputFile object): input file corresponding to this output file
-                output_mol_path (str)
-    """
 
     def __init__(self,
                  filepath: str,
                  input_file: InputFile,
                  output_mol_path: str):
+        """
+        Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater customization of
+            output file internals
+
+        :param filepath: path to the gaussian output file
+        :param input_file: input file corresponding to this output file
+        :param output_mol_path: str
+        """
 
         self.filepath = filepath
         self.input_file = input_file
         self.output_mol_path = utils.sanitize_path(output_mol_path)
         self.mol_name = utils.get_file_name(output_mol_path)
 
-        #Define attributes which will be assigned later
+        # Define attributes which will be assigned later
         self.molecule_coords = None
         self.converge_metrics = None
         self.converge_fig_dir = None
 
     @staticmethod
     def factory(filepath: str, input_file: InputFile, output_mol_path):
-        """Static factory method which returns the proper output file based on provided InputFile
+        """
+        Static factory method which returns the proper output file based on provided InputFile
 
-            Args:
-                filepath (str): path to the gaussian output file
-                input_file (InputFile object): input file corresponding to the returned output file
+        :param filepath: path to the gaussian output file
+        :param input_file: input file corresponding to the returned output file
+        :param output_mol_path: str
 
-            Returns:
-                OutputFile object
+        :return: OutputFile
         """
 
         name = input_file.calculation.name
 
+        out = None
         if name == 'ts' or name == 'qst3' or name =='gopt_reverse' or name == 'gopt_forward':
 
             out = TsoptOutputFile(filepath, input_file, output_mol_path)
@@ -168,6 +157,9 @@ class OutputFile(object):
         elif name == 'irc_reverse':
 
             out = IrcRevOutputFile(filepath, input_file, output_mol_path)
+
+        if out is None:
+            raise exceptions.GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
 
         return out
 
@@ -186,7 +178,7 @@ class OutputFile(object):
             print('writing {} {} output file for {}...'.format(meth, calc_name, inp_mol))
             utils.run_gaussian_bash_command(self.input_file.filepath, self.filepath)
 
-        #Catch when gaussian errors out, parse error code and raise it
+        # Catch when gaussian errors out, parse error code and raise it
         except subprocess.CalledProcessError:
             code = utils.discover_gaussian_error_code(self.filepath)
             print('encountered error ({}) while writing {} output for {}'.format(code,
@@ -200,7 +192,7 @@ class OutputFile(object):
         try:
             self.molecule_coords = utils.get_coords(self.filepath)
 
-        #Raised if there are no coordinates to find, or if there's an unknown atom being parsed
+        # Raised if there are no coordinates to find, or if there's an unknown atom being parsed
         except exceptions.GaussianUtilsError as e:
             raise exceptions.GaussianOutputError(e.args[0])
         else:
@@ -209,11 +201,11 @@ class OutputFile(object):
     def write_obabel_xyz(self):
         """Converts the xyz coords contained within the output file to obabel format"""
 
-        #Make sure self has coords parsed already
+        # Make sure self has coords parsed already
         if self.molecule_coords is None:
             self.parse_xyz()
 
-        #Write mol in obabel format
+        # Write mol in obabel format
         with open(self.output_mol_path, 'w') as file:
             file.write(str(len(self.molecule_coords)) + '\n')
             file.write(self.mol_name + '\n')
@@ -231,6 +223,7 @@ class OutputFile(object):
             for specific OutputFile subclasses, as each calc produces different output files"""
 
         raise NotImplementedError('Using base OutputFile, must use subclass')
+
 
 class TsoptOutputFile(OutputFile):
     """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
@@ -251,7 +244,7 @@ class TsoptOutputFile(OutputFile):
                          input_file,
                          output_mol_path)
 
-        #Define attributes to be overwritten later
+        # Define attributes to be overwritten later
         self.freqs = None
         self.freq_path = None
 
@@ -265,44 +258,44 @@ class TsoptOutputFile(OutputFile):
     def write_freq(self):
         """Write frequencies to a txt file"""
 
-        #Make sure self has freqs already parsed
+        # Make sure self has freqs already parsed
         if self.freqs is None:
             self.parse_freq()
 
-        #Define where to write the freqs to
+        # Define where to write the freqs to
         self.freq_path = (utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
-                + self.mol_name
-                + '_freqs.txt')
+                          + self.mol_name
+                          + '_freqs.txt')
         utils.write_frequencies(self.freq_path, self.freqs)
 
-    def get_converge_metrics(self) -> List:
+    def get_converge_metrics(self) -> Type[ndarray]:
         """Gets the 4 tsopt convergence metrics"""
 
         self.converge_metrics = utils.get_tsopt_converge_metrics(self.filepath)
 
         return self.converge_metrics
 
-    def display_covergence(self, display_plot: bool=False, save_plot: bool=True):
+    def display_covergence(self, display_plot: bool = False, save_plot: bool = True):
         """Uses matplotlib to write convergence curves to png files"""
 
-        #Make sure self already has parsed converge_metrics
+        # Make sure self already has parsed converge_metrics
         if self.converge_metrics is None:
             self.get_converge_metrics()
 
-        #Define where to store the figures
+        # Define where to store the figures
         self.converge_fig_dir = utils.sanitize_path(os.path.dirname(self.filepath), add_slash=True)
 
-        #Set interactive to off so the figures aren't displayed during the run
+        # Set interactive to off so the figures aren't displayed during the run
         plt.ioff()
 
-        #Define a figure, create a plot in that figure, then save the figure
+        # Define a figure, create a plot in that figure, then save the figure
         plt.figure()
         plt.plot(self.converge_metrics[:, :2])
         plt.legend(['max_force', 'rms_force'])
         if save_plot:
             plt.savefig(self.converge_fig_dir + 'force_convergence.png', bbox_inches='tight')
 
-        #Define another figure, create plot and save figure
+        # Define another figure, create plot and save figure
         plt.figure()
         plt.plot(self.converge_metrics[:, 2:])
         plt.legend(['max_displacement', 'rms_displacement'])
@@ -312,42 +305,38 @@ class TsoptOutputFile(OutputFile):
         if display_plot:
             plt.show()
 
-class IrcFwdOutputFile(OutputFile):
-    """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
-            customization of output file internals
 
-            Args:
-                filepath (str): path to the gaussian output file
-                input_file (InputFile object): input file corresponding to this output file
-                output_mol_path (str)
+class IrcFwdOutputFile(OutputFile):
+    """
+    Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
+    customization of output file internals
     """
 
     def get_converge_metrics(self):
-
+        """To be implemented"""
         self.converge_metrics = utils.get_ircfwd_converge_metrics(self.filepath)
 
         return self.converge_metrics
 
-    def display_covergence(self):
+    def display_covergence(self, display_plot=False, save_plot=True):
+        """To be implemented"""
 
         pass
 
-class IrcRevOutputFile(OutputFile):
-    """Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
-            customization of output file internals
 
-            Args:
-                filepath (str): path to the gaussian output file
-                input_file (InputFile object): input file corresponding to this output file
-                output_mol_path (str)
+class IrcRevOutputFile(OutputFile):
+    """
+    Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
+    customization of output file internals
     """
 
     def get_converge_metrics(self):
-
+        """To be implemented"""
         self.converge_metrics = utils.get_ircrev_converge_metrics(self.filepath)
 
         return self.converge_metrics
 
-    def display_covergence(self):
+    def display_covergence(self, display_plot=False, save_plot=True):
+        """To be implemented"""
 
         pass
