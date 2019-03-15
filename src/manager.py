@@ -149,7 +149,7 @@ class GaussianManager(object):
                 self.output_file.write()
                 break
 
-            except GaussianOutputError as e:
+            except Exception as e:
 
                 # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
