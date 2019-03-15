@@ -4,7 +4,7 @@ common gaussian errors to ensure generated output is correct
 """
 
 import calculations
-import exceptions
+from exceptions import GaussianOutputError, GaussianManagerError
 import utils
 from inputs import InputFile
 from outputs import OutputFile
@@ -86,7 +86,7 @@ class GaussianManager(object):
                                  multiplicity, calculation, resolve_attempts)
 
         if gm is None:
-            raise exceptions.GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
+            raise GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
 
         return gm
 
@@ -149,7 +149,7 @@ class GaussianManager(object):
                 self.output_file.write()
                 break
 
-            except exceptions.GaussianOutputError as e:
+            except GaussianOutputError as e:
 
                 # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
@@ -166,6 +166,7 @@ class GaussianManager(object):
                 # l202 is a proximity error, meaning two atoms are too close together
                 elif 'l202' in e.args[0]:
                     self.raise_error(e.args[0] + 'error with proximity')
+
                 else:
                     self.resolve_convergence_error()
                     continue
@@ -191,8 +192,8 @@ class GaussianManager(object):
         # Simply pull the farthest geometry from the output file before it errored out and resubmit
         try:
             output_coords = self.output_file.parse_xyz()
-        except exceptions.GaussianOutputError as e:
-            raise exceptions.GaussianManagerError(e.args[0])
+        except GaussianOutputError as e:
+            raise GaussianManagerError(e.args[0])
         else:
             self.input_file.mol_coords = output_coords
             self.input_file.write()
@@ -200,7 +201,7 @@ class GaussianManager(object):
     def raise_error(self, error_code: str) -> None:
         """raises a GaussianManagerError with a provided error_code"""
 
-        raise exceptions.GaussianManagerError(error_code)
+        raise GaussianManagerError(error_code)
 
 
 class TsoptManager(GaussianManager):
@@ -255,7 +256,7 @@ class QST3Manager(TsoptManager):
 
         # Make sure enough coords have been parsed
         if ts_coords is None or reactant_coords is None or product_coords is None:
-            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
+            raise GaussianManagerError('Unable to find proper mol files for coord parsing')
 
         molecule_coords = [reactant_coords, product_coords, ts_coords]
         input_file = InputFile.factory(filepath=input_filepath,
@@ -302,7 +303,7 @@ class QST2Manager(QST3Manager):
 
         # Make sure enough coords have been parsed
         if reactant_coords is None or product_coords is None:
-            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
+            raise GaussianManagerError('Unable to find proper mol files for coord parsing')
 
         molecule_coords = [reactant_coords, product_coords]
         input_file = InputFile.factory(filepath=input_filepath,
