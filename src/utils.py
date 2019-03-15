@@ -1,10 +1,11 @@
-import exceptions
+from src.exceptions import GaussianUtilsError
 import numpy as np
 import os
 import subprocess
-from typing import List, Type, Union
+from typing import List, Union
 
-def sanitize_path(path: str, add_slash: bool=False) -> str:
+
+def sanitize_path(path: str, add_slash: bool = False) -> str:
     """Expand user in path and add final slash if not present and toggled"""
 
     if add_slash:
@@ -14,7 +15,8 @@ def sanitize_path(path: str, add_slash: bool=False) -> str:
 
     return path
 
-def make_dir(path: str, overwrite: bool=False, verbose: bool=False):
+
+def make_dir(path: str, overwrite: bool = False, verbose: bool = False):
         """Method for creating directories"""
 
         if os.path.isdir(path):
@@ -28,6 +30,7 @@ def make_dir(path: str, overwrite: bool=False, verbose: bool=False):
             if verbose:
                 print(path + ' created')
 
+
 def get_file_lines(path: str) -> List:
     """Reads and returns lines from path"""
 
@@ -36,14 +39,16 @@ def get_file_lines(path: str) -> List:
 
     return lines
 
+
 def run_gaussian_bash_command(input_filepath: str, output_filepath: str):
     """Loads the gaussian module and runs the subprocess.run() bash command for gaussian 2009"""
 
     # Load gaussian module, run the command
     subprocess.run("g09 < {} >& {}".format(input_filepath,
-                                                                         output_filepath),
-                                                                         shell=True,
-                                                                         check=True)
+                                           output_filepath),
+                   shell=True,
+                   check=True)
+
 
 def discover_gaussian_error_code(output_filepath: str) -> str:
     """Searches a provided output file for a specific string on the 3rd last line which dictates
@@ -58,6 +63,7 @@ def discover_gaussian_error_code(output_filepath: str) -> str:
 
     return error_code
 
+
 def get_coords_from_obabel_xyz(filepath: str) -> List:
     """Returns the coordinate section of an obabel xyz file as a list of lines"""
 
@@ -65,6 +71,7 @@ def get_coords_from_obabel_xyz(filepath: str) -> List:
     with open(filepath, 'r') as file:
             coordinates = file.readlines()[2:]
     return coordinates
+
 
 def get_coords(path: str) -> List:
     """parses the coordinates from the output file at path"""
@@ -77,12 +84,12 @@ def get_coords(path: str) -> List:
                      '16': 'S',
                      '15': 'P',
                      '14': 'Si',
-                     '9' : 'F',
-                     '8' : 'O',
-                     '7' : 'N',
-                     '6' : 'C',
-                     '4' : 'B',
-                     '1' : 'H'}
+                     '8': 'O',
+                     '7': 'N',
+                     '6': 'C',
+                     '9': 'F',
+                     '4': 'B',
+                     '1': 'H'}
 
     lines = get_file_lines(path)
 
@@ -102,7 +109,7 @@ def get_coords(path: str) -> List:
     try:
         crude_coords = lines[-beginning_idx: -end_idx - 1]
     except NameError:
-        raise exceptions.GaussianUtilsError('no coords to pull in {} '.format(path))
+        raise GaussianUtilsError('no coords to pull in {} '.format(path))
 
     # Pull out all of the extra bits from the coordinates
     sanit_coords = []
@@ -125,8 +132,8 @@ def get_coords(path: str) -> List:
 
         # Makeu sure no unsupported atoms in mol
         else:
-            raise exceptions.GaussianUtilsError(('Attempted to parse unsupported atom '
-                                                 + 'type {}').format(line[:3]))
+            raise GaussianUtilsError(('Attempted to parse unsupported atom '
+                                      + 'type {}').format(line[:3]))
 
     return sanit_coords
 
@@ -145,7 +152,7 @@ def get_freqs(path: str) -> List[Union[float, int]]:
             end_idx = lines.index(line)
 
     if start_idx is None or end_idx is None:
-        raise exceptions.GaussianUtilsError('Unable to find keywords in output file')
+        raise GaussianUtilsError('Unable to find keywords in output file')
 
     # Slice between key phrases, pull out the number of imag freqs from first line
     crude_freqs = lines[start_idx:end_idx]
@@ -180,7 +187,7 @@ def write_frequencies(path: str, freqs: List):
             file.write(str(line) + '\n')
 
 
-def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
+def get_tsopt_converge_metrics(path: str) -> np.ndarray:
     """Parses a tsopt output file for the tsopt converge metrics.
 
         Returns:
@@ -205,15 +212,18 @@ def get_tsopt_converge_metrics(path: str) -> Type[np.ndarray]:
 
     return metrics_array
 
-def get_ircfwd_converge_metrics(path: str) -> Type[np.ndarray]:
+
+def get_ircfwd_converge_metrics(_: str) -> np.ndarray:
     """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
 
-def get_ircrev_converge_metrics(path: str) -> Type[np.ndarray]:
+
+def get_ircrev_converge_metrics(_: str) -> np.ndarray:
     """Parse irc output file for converge metrics"""
 
     return np.zeros((5, 4))
+
 
 def log_error(path: str, msg: str, verbose=False):
     """Prints error message to console & logs the error message to a provided path"""
@@ -223,6 +233,7 @@ def log_error(path: str, msg: str, verbose=False):
 
     with open(path, 'a') as file:
         file.write(msg + '\n')
+
 
 def copy_file(filepath: str, dest: str):
     """Copies the geometry from a provided molecule path to a provided geometry directory
@@ -238,6 +249,7 @@ def copy_file(filepath: str, dest: str):
 
     return dest
 
+
 def check_newline(lines: List[str]) -> List[str]:
     """If last line is the newline char, remove it and return lines, else do nothing"""
 
@@ -246,12 +258,14 @@ def check_newline(lines: List[str]) -> List[str]:
 
     return lines
 
+
 def get_file_name(path: str) -> str:
     """Removes the file extension & path to give filename"""
 
     return os.path.splitext(os.path.basename(path))[0]
 
-def insert_suffix(path: str, suffix: str) -> str:
+
+def insert_suffix(path: str, suffix: Union[bytes, str]) -> str:
     """Inserts a suffix before file ext of path, will remove existing suffixes (split before '_')"""
 
     name = os.path.basename(path)

@@ -1,4 +1,4 @@
-from src import utils, exceptions
+from src import utils
 import os
 import pytest
 import subprocess

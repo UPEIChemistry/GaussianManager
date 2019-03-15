@@ -1,4 +1,5 @@
-from src import inputs, exceptions, utils
+from src import inputs, utils
+from src.exceptions import GaussianOutputError, GaussianFileError, GaussianUtilsError
 import matplotlib.pyplot as plt
 from numpy import ndarray
 import os
@@ -48,7 +49,7 @@ class OutputFile(object):
         name = input_file.calculation.name
 
         out = None
-        if name == 'ts' or name == 'qst3' or name =='gopt_reverse' or name == 'gopt_forward':
+        if name == 'ts' or name == 'qst3' or name == 'gopt_reverse' or name == 'gopt_forward':
 
             out = TsoptOutputFile(filepath, input_file, output_mol_path)
 
@@ -61,7 +62,7 @@ class OutputFile(object):
             out = IrcRevOutputFile(filepath, input_file, output_mol_path)
 
         if out is None:
-            raise exceptions.GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
+            raise GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
 
         return out
 
@@ -86,7 +87,7 @@ class OutputFile(object):
             print('encountered error ({}) while writing {} output for {}'.format(code,
                                                                                  calc_name,
                                                                                  inp_mol))
-            raise exceptions.GaussianOutputError(code)
+            raise GaussianOutputError(code)
 
     def parse_xyz(self) -> List[str]:
         """Searches the output file for the latest xyz coords for the output mol"""
@@ -95,8 +96,8 @@ class OutputFile(object):
             self.molecule_coords = utils.get_coords(self.filepath)
 
         # Raised if there are no coordinates to find, or if there's an unknown atom being parsed
-        except exceptions.GaussianUtilsError as e:
-            raise exceptions.GaussianOutputError(e.args[0])
+        except GaussianUtilsError as e:
+            raise GaussianOutputError(e.args[0])
         else:
             return self.molecule_coords
 

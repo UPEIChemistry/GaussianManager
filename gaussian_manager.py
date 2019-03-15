@@ -1,7 +1,8 @@
 """Main user interface for GM, used as a script to submit a list of calcs to run on a list of mols"""
 
 import argparse
-from src import manager, exceptions, utils, calculations
+from src import manager, utils, calculations
+from src.exceptions import GaussianManagerError
 import os
 import time
 from typing import List, Type, Union
@@ -36,7 +37,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
                 gm.run_manager()
 
             # Raised if GM cannot solve any errors thrown by gaussian
-            except exceptions.GaussianManagerError as e:
+            except GaussianManagerError as e:
 
                 # Stop mol run if either error is encountered with ts calcs
                 if calc.name == 'ts':
@@ -181,7 +182,7 @@ def _get_in_out(calc, geom_dir, mol):
         mol_out = geom_dir + utils.insert_suffix(mol_name, '_product')
 
     if mol_in is None or mol_out is None:
-        raise exceptions.GaussianManagerError('Unknown calc kw, cannot find where to put output molecule')
+        raise GaussianManagerError('Unknown calc kw, cannot find where to put output molecule')
 
     return mol_in, mol_out
 

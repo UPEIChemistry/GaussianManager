@@ -4,7 +4,7 @@ common gaussian errors to ensure generated output is correct
 """
 
 import calculations
-from exceptions import GaussianOutputError, GaussianManagerError
+from src.exceptions import GaussianManagerError, GaussianOutputError
 import utils
 from inputs import InputFile
 from outputs import OutputFile
@@ -149,7 +149,7 @@ class GaussianManager(object):
                 self.output_file.write()
                 break
 
-            except Exception as e:
+            except GaussianManagerError as e:
 
                 # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
