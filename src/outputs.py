@@ -1,5 +1,5 @@
 from src import inputs, utils
-from src.exceptions import GaussianOutputError, GaussianFileError, GaussianUtilsError
+import src.exceptions as exceptions
 import matplotlib.pyplot as plt
 from numpy import ndarray
 import os
@@ -62,7 +62,7 @@ class OutputFile(object):
             out = IrcRevOutputFile(filepath, input_file, output_mol_path)
 
         if out is None:
-            raise GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
+            raise exceptions.GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
 
         return out
 
@@ -87,7 +87,7 @@ class OutputFile(object):
             print('encountered error ({}) while writing {} output for {}'.format(code,
                                                                                  calc_name,
                                                                                  inp_mol))
-            raise GaussianOutputError(code)
+            raise exceptions.GaussianOutputError(code)
 
     def parse_xyz(self) -> List[str]:
         """Searches the output file for the latest xyz coords for the output mol"""
@@ -96,8 +96,8 @@ class OutputFile(object):
             self.molecule_coords = utils.get_coords(self.filepath)
 
         # Raised if there are no coordinates to find, or if there's an unknown atom being parsed
-        except GaussianUtilsError as e:
-            raise GaussianOutputError(e.args[0])
+        except exceptions.GaussianUtilsError as e:
+            raise exceptions.GaussianOutputError(e.args[0])
         else:
             return self.molecule_coords
 
@@ -171,7 +171,7 @@ class TsoptOutputFile(OutputFile):
                           + '_freqs.txt')
         utils.write_frequencies(self.freq_path, self.freqs)
 
-    def get_converge_metrics(self) -> Type[ndarray]:
+    def get_converge_metrics(self) -> ndarray:
         """Gets the 4 tsopt convergence metrics"""
 
         self.converge_metrics = utils.get_tsopt_converge_metrics(self.filepath)

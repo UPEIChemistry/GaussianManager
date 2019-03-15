@@ -4,7 +4,7 @@ common gaussian errors to ensure generated output is correct
 """
 
 import calculations
-from src.exceptions import GaussianManagerError, GaussianOutputError
+import src.exceptions as exceptions
 import utils
 from inputs import InputFile
 from outputs import OutputFile
@@ -86,7 +86,7 @@ class GaussianManager(object):
                                  multiplicity, calculation, resolve_attempts)
 
         if gm is None:
-            raise GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
+            raise exceptions.GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
 
         return gm
 
@@ -149,7 +149,7 @@ class GaussianManager(object):
                 self.output_file.write()
                 break
 
-            except GaussianManagerError as e:
+            except exceptions.GaussianOutputError as e:
 
                 # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
                 if 'l123' in e.args[0]:
@@ -192,8 +192,8 @@ class GaussianManager(object):
         # Simply pull the farthest geometry from the output file before it errored out and resubmit
         try:
             output_coords = self.output_file.parse_xyz()
-        except GaussianOutputError as e:
-            raise GaussianManagerError(e.args[0])
+        except exceptions.GaussianOutputError as e:
+            raise exceptions.GaussianManagerError(e.args[0])
         else:
             self.input_file.mol_coords = output_coords
             self.input_file.write()
@@ -201,7 +201,7 @@ class GaussianManager(object):
     def raise_error(self, error_code: str) -> None:
         """raises a GaussianManagerError with a provided error_code"""
 
-        raise GaussianManagerError(error_code)
+        raise exceptions.GaussianManagerError(error_code)
 
 
 class TsoptManager(GaussianManager):

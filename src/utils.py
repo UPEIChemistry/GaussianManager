@@ -1,4 +1,4 @@
-from src.exceptions import GaussianUtilsError
+import src.exceptions as exceptions
 import numpy as np
 import os
 import subprocess
@@ -109,7 +109,7 @@ def get_coords(path: str) -> List:
     try:
         crude_coords = lines[-beginning_idx: -end_idx - 1]
     except NameError:
-        raise GaussianUtilsError('no coords to pull in {} '.format(path))
+        raise exceptions.GaussianUtilsError('no coords to pull in {} '.format(path))
 
     # Pull out all of the extra bits from the coordinates
     sanit_coords = []
@@ -132,7 +132,7 @@ def get_coords(path: str) -> List:
 
         # Makeu sure no unsupported atoms in mol
         else:
-            raise GaussianUtilsError(('Attempted to parse unsupported atom '
+            raise exceptions.GaussianUtilsError(('Attempted to parse unsupported atom '
                                       + 'type {}').format(line[:3]))
 
     return sanit_coords
@@ -152,7 +152,7 @@ def get_freqs(path: str) -> List[Union[float, int]]:
             end_idx = lines.index(line)
 
     if start_idx is None or end_idx is None:
-        raise GaussianUtilsError('Unable to find keywords in output file')
+        raise exceptions.GaussianUtilsError('Unable to find keywords in output file')
 
     # Slice between key phrases, pull out the number of imag freqs from first line
     crude_freqs = lines[start_idx:end_idx]

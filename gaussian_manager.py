@@ -2,7 +2,7 @@
 
 import argparse
 from src import manager, utils, calculations
-from src.exceptions import GaussianManagerError
+import src.exceptions as exceptions
 import os
 import time
 from typing import List, Type, Union
@@ -37,7 +37,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
                 gm.run_manager()
 
             # Raised if GM cannot solve any errors thrown by gaussian
-            except GaussianManagerError as e:
+            except exceptions.GaussianManagerError as e:
 
                 # Stop mol run if either error is encountered with ts calcs
                 if calc.name == 'ts':
@@ -182,7 +182,7 @@ def _get_in_out(calc, geom_dir, mol):
         mol_out = geom_dir + utils.insert_suffix(mol_name, '_product')
 
     if mol_in is None or mol_out is None:
-        raise GaussianManagerError('Unknown calc kw, cannot find where to put output molecule')
+        raise exceptions.GaussianManagerError('Unknown calc kw, cannot find where to put output molecule')
 
     return mol_in, mol_out
 
