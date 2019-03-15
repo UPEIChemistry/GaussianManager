@@ -242,7 +242,7 @@ class QST3Manager(TsoptManager):
         ts_coords, reactant_coords, product_coords = None, None, None
 
         # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
-        for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
+        for d, _, files in os.walk(self.input_mol_filepath):
 
             # Loop through files and pull out ts, reactant & product coords
             for f in files:
@@ -256,7 +256,7 @@ class QST3Manager(TsoptManager):
 
         # Make sure enough coords have been parsed
         if ts_coords is None or reactant_coords is None or product_coords is None:
-            raise GaussianManagerError('Unable to find proper mol files for coord parsing')
+            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
         molecule_coords = [reactant_coords, product_coords, ts_coords]
         input_file = InputFile.factory(filepath=input_filepath,
@@ -303,7 +303,7 @@ class QST2Manager(QST3Manager):
 
         # Make sure enough coords have been parsed
         if reactant_coords is None or product_coords is None:
-            raise GaussianManagerError('Unable to find proper mol files for coord parsing')
+            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
 
         molecule_coords = [reactant_coords, product_coords]
         input_file = InputFile.factory(filepath=input_filepath,
