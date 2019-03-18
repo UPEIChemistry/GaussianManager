@@ -170,7 +170,6 @@ class GaussianManager(object):
                 else:
                     if (counter + 2) == self.resolve_attempts:
                         self.relax_convergence()
-
                     self.resolve_convergence_error()
                     continue
 
@@ -193,7 +192,6 @@ class GaussianManager(object):
 
         self.calculation.convergence = conv
         self.calculation.grid = grid
-        self.resolve_convergence_error()
 
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
@@ -278,13 +276,15 @@ class QST3Manager(TsoptManager):
 
     def resolve_convergence_error(self):
 
-        try:
-            ts_coords = self.output_file.parse_xyz()
-        except exceptions.GaussianOutputError as e:
-            raise exceptions.GaussianManagerError(e.args[0])
-        else:
-            self.input_file.mol_coords[-1] = ts_coords  # This is what is overridden from base GM
-            self.input_file.write()
+        pass
+
+        # try:
+        #     ts_coords = self.output_file.parse_xyz()
+        # except exceptions.GaussianOutputError as e:
+        #     raise exceptions.GaussianManagerError(e.args[0])
+        # else:
+        #     self.input_file.mol_coords[-1] = ts_coords  # This is what is overridden from base GM
+        #     self.input_file.write()
 
 
 class QST2Manager(QST3Manager):
