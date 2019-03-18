@@ -143,7 +143,7 @@ class GaussianManager(object):
         """Runs gaussian to generate the output file for provided InputFile object. Attempts to
             do rudimentary error resolution when gaussian throws an exception"""
 
-        for _ in range(self.resolve_attempts):
+        for counter in range(self.resolve_attempts):
 
             try:
                 self.output_file.write()
@@ -168,6 +168,9 @@ class GaussianManager(object):
                     self.raise_error(e.args[0] + 'error with proximity')
 
                 else:
+                    if (counter + 2) == self.resolve_attempts:
+                        self.relax_convergence()
+
                     self.resolve_convergence_error()
                     continue
 
@@ -186,6 +189,12 @@ class GaussianManager(object):
 
         self.output_file.display_covergence()
 
+    def relax_convergence(self, conv='loose', grid='SG1'):
+
+        self.calculation.convergence = conv
+        self.calculation.grid = grid
+        self.resolve_convergence_error()
+
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
 
@@ -195,7 +204,7 @@ class GaussianManager(object):
         except exceptions.GaussianOutputError as e:
             raise exceptions.GaussianManagerError(e.args[0])
         else:
-            self.input_file.mol_coords[-1] = output_coords  # This is what is overridden from base GM
+            self.input_file.mol_coords = output_coords
             self.input_file.write()
 
     def raise_error(self, error_code: str) -> None:
@@ -274,7 +283,7 @@ class QST3Manager(TsoptManager):
         except exceptions.GaussianOutputError as e:
             raise exceptions.GaussianManagerError(e.args[0])
         else:
-            self.input_file.mol_coords[-1] = ts_coords
+            self.input_file.mol_coords[-1] = ts_coords  # This is what is overridden from base GM
             self.input_file.write()
 
 
