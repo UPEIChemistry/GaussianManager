@@ -195,7 +195,7 @@ class GaussianManager(object):
         except exceptions.GaussianOutputError as e:
             raise exceptions.GaussianManagerError(e.args[0])
         else:
-            self.input_file.mol_coords = output_coords
+            self.input_file.mol_coords[-1] = output_coords  # This is what is overridden from base GM
             self.input_file.write()
 
     def raise_error(self, error_code: str) -> None:
@@ -267,10 +267,15 @@ class QST3Manager(TsoptManager):
 
         return input_file
 
-    def _get_mol_name(self) -> str:
-        """Gets the output mol name based on provided suffix"""
+    def resolve_convergence_error(self):
 
-        return os.path.basename(self.output_mol_filepath)
+        try:
+            ts_coords = self.output_file.parse_xyz()
+        except exceptions.GaussianOutputError as e:
+            raise exceptions.GaussianManagerError(e.args[0])
+        else:
+            self.input_file.mol_coords[-1] = ts_coords
+            self.input_file.write()
 
 
 class QST2Manager(QST3Manager):
