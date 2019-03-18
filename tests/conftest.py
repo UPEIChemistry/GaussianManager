@@ -18,6 +18,12 @@ def experiment_directory():
 
 
 @pytest.fixture(scope='session')
+def geom_directory():
+
+    return example + 'exp/OH-chloromethane/geometries'
+
+
+@pytest.fixture(scope='session')
 def blank_file():
 
     return tempfile.mkstemp()[-1]
@@ -30,27 +36,45 @@ def molecule():
 
 
 @pytest.fixture(scope='session')
+def output_ts():
+
+    return exp_dir + 'geometries/OH-chloromethane_ts.xyz'
+
+
+@pytest.fixture(scope='session')
+def output_reactant():
+
+    return exp_dir + 'geometries/OH-chloromethane_reactant.xyz'
+
+
+@pytest.fixture(scope='session')
+def output_product():
+
+    return exp_dir + 'geometries/OH-chloromethane_product.xyz'
+
+
+@pytest.fixture(scope='session')
 def ts_calc():
 
-    return calculations.TsoptCalc('mp2', '6-31G')
+    return calculations.TsoptCalc('mp2', 'cc-PVDZ')
 
 
 @pytest.fixture(scope='session')
 def qst3_calc():
 
-    return calculations.TsoptCalc('mp2', '6-31G', goal='qst3')
+    return calculations.TsoptCalc('mp2', 'cc-PVDZ', goal='qst3')
 
 
 @pytest.fixture(scope='session')
 def irc_r_calc():
 
-    return calculations.IrcCalc('mp2', '6-31G')
+    return calculations.IrcCalc('mp2', 'cc-PVDZ')
 
 
 @pytest.fixture(scope='session')
 def irc_f_calc():
 
-    return calculations.IrcCalc('mp2', '6-31G', direction='forward')
+    return calculations.IrcCalc('mp2', 'cc-PVDZ', direction='forward')
 
 
 @pytest.fixture(scope='session')

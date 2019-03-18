@@ -270,7 +270,7 @@ class QST3Manager(TsoptManager):
     def _get_mol_name(self) -> str:
         """Gets the output mol name based on provided suffix"""
 
-        return os.path.basename(self.input_mol_filepath)
+        return os.path.basename(self.output_mol_filepath)
 
 
 class QST2Manager(QST3Manager):

@@ -12,7 +12,7 @@ class TestInputFile:
         i.write()
         lines = utils.get_file_lines(blank_file)
 
-        assert ('mp2/6-31G '
+        assert ('mp2/cc-PVDZ '
                 + 'opt(ts, calcfc, noeigen, tight) '
                 + 'integral(grid=superfine) scf(maxcyc=256) freq') in lines[0]
 
