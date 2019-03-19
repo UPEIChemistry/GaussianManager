@@ -84,11 +84,11 @@ def get_coords(path: str) -> List:
                      '16': 'S',
                      '15': 'P',
                      '14': 'Si',
+                     '9': 'F',
                      '8': 'O',
                      '7': 'N',
                      '6': 'C',
-                     '9': 'F',
-                     '4': 'B',
+                     '5': 'B',
                      '1': 'H'}
 
     lines = get_file_lines(path)
@@ -271,3 +271,28 @@ def insert_suffix(path: str, suffix: Union[bytes, str]) -> str:
     name = os.path.basename(path)
 
     return (os.path.splitext(name)[0]).split('_')[0] + suffix + os.path.splitext(name)[-1]
+
+
+def find_rpt_coords(path, ts: bool = False):
+    """Search path for files which end in _reactant.xyz and _product.xyz"""
+
+    reactant_coords, product_coords, ts_coords = None, None, None
+
+    # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
+    for d, _, files in os.walk(os.path.dirname(path)):
+
+        # Loop through files and pull out ts, reactant & product coords
+        for f in files:
+            filepath = sanitize_path(d, add_slash=True) + f
+            if '_ts.xyz' in filepath:
+                ts_coords = get_coords_from_obabel_xyz(filepath)
+            if '_reactant.xyz' in filepath:
+                reactant_coords = get_coords_from_obabel_xyz(filepath)
+            elif '_product.xyz' in filepath:
+                product_coords = get_coords_from_obabel_xyz(filepath)
+
+    # Distinguish between needs for QST3/2 calcs
+    if ts:
+        return reactant_coords, product_coords, ts_coords
+    else:
+        return reactant_coords, product_coords

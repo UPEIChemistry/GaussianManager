@@ -2,7 +2,7 @@ import gaussian_manager
 from src import calculations
 
 
-def mock_gaussian(inp, out):
+def mock_gaussian(_, __):
 
     print("gaussian mocked!")
 

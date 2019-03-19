@@ -9,14 +9,15 @@ from typing import List, Type, Union
 
 
 def run(mols: List, out: str, calcs: List, multi: str):
-    """Main method of gaussian_manager interface for creating GM objects and running calculations
-        on provided list of mols.
+    """
+    Main method of gaussian_manager interface for creating GM objects and running calculations
+    on provided list of mols.
 
-        Args:
-            mols (list): The list of mol filepaths to run calcs on
-            out (str): Root dir where GM will add files and mol dirs to
-            calcs (list): List of calculation objects to run on provided mols
-            multi (str): Multiplicity of mols, currently all mols must have the same charge/multiplicity
+    Args:
+        mols (list): The list of mol filepaths to run calcs on
+        out (str): Root dir where GM will add files and mol dirs to
+        calcs (list): List of calculation objects to run on provided mols
+        multi (str): Multiplicity of mols, currently all mols must have the same charge/multiplicity
     """
 
     out = utils.sanitize_path(out, add_slash=True)
@@ -40,9 +41,6 @@ def run(mols: List, out: str, calcs: List, multi: str):
             except exceptions.GaussianManagerError as e:
 
                 # Stop mol run if either error is encountered with ts calcs
-                if calc.name == 'ts':
-                    if 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0]:
-                        break
 
                 msg = 'GM encountered unresolvable error/code ({}) running {} {} on {}'.format(e.args[0],
                                                                                                calc.method,
@@ -52,6 +50,12 @@ def run(mols: List, out: str, calcs: List, multi: str):
                 # Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)
                 utils.log_error(exp_log, msg, verbose=False)
+
+                # If the calc is a ts opt, stop the suite, since irc's depend on ts opts
+                if calc.name == 'ts':
+                    if 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0]:
+                        break
+
             finally:
                 # Log time of calc to mol dir
                 _record_time(c_start, mol_name, mol_log, calc)
@@ -77,7 +81,7 @@ def _get_args():
                                                           + ' they should be run. Possible keywords'
                                                           + ' include (tsopt), (irc_rev), (irc_fwd),'
                                                           + ' (qst3), (gopt_rev), and (gopt_fwd)'),
-                        default=['single'])
+                        default=['half'])
     parser.add_argument('-m', '--methods', nargs='+', default=['mp2'],
                         help=('List of theory levels to run the calc list at for each mol, typically'
                               + ' only a single item in this list, as the entire calc list is run'
@@ -191,11 +195,10 @@ def _get_gm(out: str, mol_name: str, mol_in: str, mol_out: str,
             multi: str, calc: Union[calculations.TsoptCalc,
                                     calculations.IrcCalc,
                                     calculations.GoptCalc]) -> Union[Type[manager.GaussianManager],
-                                                                     Type[manager.TsoptManager],
+                                                                     Type[manager.TSManager],
                                                                      Type[manager.QST2Manager],
                                                                      Type[manager.QST3Manager],
-                                                                     Type[manager.IrcRevManager],
-                                                                     Type[manager.IrcFwdManager]]:
+                                                                     Type[manager.IrcManager]]:
     """Calls GM factory method"""
 
     gm_dir = out + '{}/{}/{}/'.format(mol_name, calc.method, calc.name)

@@ -35,7 +35,7 @@ class OutputFile(object):
         self.converge_fig_dir = None
 
     @staticmethod
-    def factory(filepath: str, input_file: inputs.InputFile, output_mol_path) -> Type[T]:
+    def factory(filepath: str, input_file: Type[inputs.InputFile], output_mol_path) -> Type[T]:
         """
         Static factory method which returns the proper output file based on provided InputFile
 
@@ -48,21 +48,11 @@ class OutputFile(object):
 
         name = input_file.calculation.name
 
-        out = None
         if name == 'ts' or name == 'qst3' or name == 'gopt_reverse' or name == 'gopt_forward':
-
             out = TsoptOutputFile(filepath, input_file, output_mol_path)
 
-        elif name == 'irc_forward':
-
-            out = IrcFwdOutputFile(filepath, input_file, output_mol_path)
-
-        elif name == 'irc_reverse':
-
-            out = IrcRevOutputFile(filepath, input_file, output_mol_path)
-
-        if out is None:
-            raise exceptions.GaussianFileError('Unsupported calculation, unable to resolve necessary OutputFile')
+        else:
+            out = OutputFile(filepath, input_file, output_mol_path)
 
         return out
 
@@ -119,13 +109,13 @@ class OutputFile(object):
         """MUST BE OVERRIDDEN. Abstract method for parsing metrics from output file. Must be implemented for specific
             OutputFile subclasses, as each calculation produces a different output file"""
 
-        raise NotImplementedError('Using base OutputFile, must use subclass')
+        raise NotImplementedError
 
     def display_covergence(self, display_plot=False, save_plot=True):
         """MUST BE OVERIDDEN. Abstract method for displaying parsed metrics. Must be implemented
             for specific OutputFile subclasses, as each calc produces different output files"""
 
-        raise NotImplementedError('Using base OutputFile, must use subclass')
+        raise NotImplementedError
 
 
 class TsoptOutputFile(OutputFile):
@@ -207,39 +197,3 @@ class TsoptOutputFile(OutputFile):
 
         if display_plot:
             plt.show()
-
-
-class IrcFwdOutputFile(OutputFile):
-    """
-    Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
-    customization of output file internals
-    """
-
-    def get_converge_metrics(self):
-        """To be implemented"""
-        self.converge_metrics = utils.get_ircfwd_converge_metrics(self.filepath)
-
-        return self.converge_metrics
-
-    def display_covergence(self, display_plot=False, save_plot=True):
-        """To be implemented"""
-
-        pass
-
-
-class IrcRevOutputFile(OutputFile):
-    """
-    Wrapper for gaussian output files, linked to an InputFile instance. Allows for greater
-    customization of output file internals
-    """
-
-    def get_converge_metrics(self):
-        """To be implemented"""
-        self.converge_metrics = utils.get_ircrev_converge_metrics(self.filepath)
-
-        return self.converge_metrics
-
-    def display_covergence(self, display_plot=False, save_plot=True):
-        """To be implemented"""
-
-        pass

@@ -9,7 +9,6 @@ import utils
 from inputs import InputFile
 from outputs import OutputFile
 
-import os
 from typing import List, Union, Type, TypeVar
 
 T = TypeVar('T', bound='GaussianManager')
@@ -27,6 +26,7 @@ class GaussianManager(object):
 
         self.experiment_directory = utils.sanitize_path(experiment_directory, add_slash=True)
         utils.make_dir(self.experiment_directory)
+        self.log = self.experiment_directory + 'log.txt'
 
         self.input_mol_filepath = utils.sanitize_path(input_mol_filepath)
         self.output_mol_filepath = utils.sanitize_path(output_mol_filepath)
@@ -59,36 +59,113 @@ class GaussianManager(object):
         :return: GaussianManager instance
         """
 
-        gm = None
         if calculation.name == 'ts':
 
-            gm = TsoptManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                              multiplicity, calculation, resolve_attempts)
+            gm = TSManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                           multiplicity, calculation, resolve_attempts)
 
         elif calculation.name == 'qst3':
 
             gm = QST3Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
                              multiplicity, calculation, resolve_attempts)
 
-        elif calculation.name == 'irc_reverse':
+        elif calculation.name == 'qst2':
 
-            gm = IrcRevManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                               multiplicity, calculation, resolve_attempts)
+            gm = QST2Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                             multiplicity, calculation, resolve_attempts)
 
-        elif calculation.name == 'irc_forward':
+        elif 'irc' in calculation.name:
 
-            gm = IrcFwdManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                               multiplicity, calculation, resolve_attempts)
+            gm = IrcManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                            multiplicity, calculation, resolve_attempts)
 
-        elif calculation.name == 'gopt_reverse' or calculation.name == 'gopt_forward':
+        else:
 
             gm = GaussianManager(experiment_directory, input_mol_filepath, output_mol_filepath,
                                  multiplicity, calculation, resolve_attempts)
 
-        if gm is None:
-            raise exceptions.GaussianManagerError('Unsupported calculation found, unable to resolve required manager')
-
         return gm
+
+    def run_manager(self):
+        """Convenience function which calls all GM fxns required for running calc on mol"""
+
+        self.write_input()
+        self.write_output()
+        self.write_obabel_output()
+        self.write_convergence_metrics()
+
+    def write_input(self):
+        """Writes gaussian input file for provided GM args"""
+
+        self.input_file.write()
+
+    def write_output(self):
+        """Runs gaussian to generate the output file for provided InputFile object. Attempts to
+            do rudimentary error resolution when gaussian throws an exception"""
+
+        for counter in range(self.resolve_attempts):
+
+            try:
+                self.output_file.write()
+                break
+
+            except exceptions.GaussianOutputError as e:
+
+                utils.log_error(self.log, 'encountered {} with {}'.format(e.args[0], self.mol_name))
+
+                # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
+                if 'l123' in e.args[0]:
+                    break
+
+                # l301 is a mismatching of electrons & multiplicity usually
+                elif 'l301' in e.args[0]:
+                    self.raise_error(e.args[0] + ' error with multiplicity')
+
+                # l101 is some sort of input error, usually spacing is off
+                elif 'l101' in e.args[0]:
+                    self.raise_error(e.args[0] + ' error with input file')
+
+                # l202 is a proximity error, meaning two atoms are too close together
+                elif 'l202' in e.args[0]:
+                    self.raise_error(e.args[0] + 'error with proximity')
+
+                else:
+                    self.resolve_convergence_error()
+                    continue
+
+        # Raised if gm cannot resolve the error in time
+        else:
+            self.raise_error('counter ran out')
+
+    def write_obabel_output(self):
+        """Parses output file to write output mol in obabel format"""
+
+        self.output_file.write_obabel_xyz()
+        utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
+
+    def write_convergence_metrics(self):
+        """Calls into OutputFile object to parse convergence metrics from gaussian output"""
+
+        self.output_file.display_covergence()
+
+    def resolve_convergence_error(self):
+        """Solves rudimentary convergence errors thrown by gaussian"""
+
+        # Restart the calc from the checkpoint file
+        try:
+            self._remake_calc()
+            self.input_file = self._create_base_input()
+            self.output_file = self._create_base_output()
+
+        except exceptions.GaussianOutputError as e:
+            raise exceptions.GaussianManagerError(e.args[0])
+
+        return self.output_file.parse_xyz()
+
+    def raise_error(self, error_code: str) -> None:
+        """raises a GaussianManagerError with a provided error_code"""
+
+        raise exceptions.GaussianManagerError(error_code)
 
     def _create_base_input(self) -> Type[InputFile]:
         """Creates InputFile objects based on args provided to GM
@@ -126,92 +203,32 @@ class GaussianManager(object):
 
         return utils.get_file_name(self.output_mol_filepath)
 
+    def _remake_calc(self, calc=None):
+
+        self.calculation = calculations.Restart(self.calculation.name,
+                                                self.calculation.method,
+                                                self.calculation.basis_set,
+                                                calc)
+
+
+class IrcManager(GaussianManager):
+    """
+    GM sub-class which manages single irc calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+    """
+
+    def _remake_calc(self, calc='irc'):
+
+        super()._remake_calc(calc)
+
     def run_manager(self):
         """Convenience function which calls all GM fxns required for running calc on mol"""
 
         self.write_input()
         self.write_output()
         self.write_obabel_output()
-        self.write_convergence_metrics()
 
-    def write_input(self):
-        """Writes gaussian input file for provided GM args"""
-
-        self.input_file.write()
-
-    def write_output(self):
-        """Runs gaussian to generate the output file for provided InputFile object. Attempts to
-            do rudimentary error resolution when gaussian throws an exception"""
-
-        for counter in range(self.resolve_attempts):
-
-            try:
-                self.output_file.write()
-                break
-
-            except exceptions.GaussianOutputError as e:
-
-                # l123 is typically thrown by irc non-convergence, but we've nerfed ircs so they don't converge
-                if 'l123' in e.args[0]:
-                    break
-
-                # l301 is a mismatching of electrons & multiplicity usually
-                if 'l301' in e.args[0]:
-                    self.raise_error(e.args[0] + ' error with multiplicity')
-
-                # l101 is some sort of input error, usually spacing is off
-                elif 'l101' in e.args[0]:
-                    self.raise_error(e.args[0] + ' error with input file')
-
-                # l202 is a proximity error, meaning two atoms are too close together
-                elif 'l202' in e.args[0]:
-                    self.raise_error(e.args[0] + 'error with proximity')
-
-                else:
-                    if (counter + 2) == self.resolve_attempts:
-                        self.relax_convergence()
-                    self.resolve_convergence_error()
-                    continue
-
-        # Raised if gm cannot resolve the error in time
-        else:
-            self.raise_error('counter ran out')
-
-    def write_obabel_output(self):
-        """Parses output file to write output mol in obabel format"""
-
-        self.output_file.write_obabel_xyz()
-        utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
-
-    def write_convergence_metrics(self):
-        """Calls into OutputFile object to parse convergence metrics from gaussian output"""
-
-        self.output_file.display_covergence()
-
-    def relax_convergence(self, conv='loose', grid='SG1'):
-
-        self.calculation.convergence = conv
-        self.calculation.grid = grid
-
-    def resolve_convergence_error(self):
-        """Solves rudimentary convergence errors thrown by gaussian"""
-
-        # Simply pull the farthest geometry from the output file before it errored out and resubmit
-        try:
-            output_coords = self.output_file.parse_xyz()
-        except exceptions.GaussianOutputError as e:
-            raise exceptions.GaussianManagerError(e.args[0])
-        else:
-            self.input_file.mol_coords = output_coords
-            self.input_file.write()
-
-    def raise_error(self, error_code: str) -> None:
-        """raises a GaussianManagerError with a provided error_code"""
-
-        raise exceptions.GaussianManagerError(error_code)
-
-
-class TsoptManager(GaussianManager):
+class TSManager(GaussianManager):
     """
     GM sub-class which manages single tsopt calculations for single molecules. Capable of
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
@@ -224,20 +241,27 @@ class TsoptManager(GaussianManager):
         an error if gaussian creates a ts which doesn't have a single imag freq
         """
 
-        # Same as parent method, but adds freq parsing/checking
-        super().write_output()
-        self.output_file.write_freq()
-        if not utils.validate_single_imag_freq(self.output_file.freqs):
+        for _ in range(self.resolve_attempts):
+
+            super().write_output()
+            self.output_file.write_freq()
+
+            # Check for freqs, restart if NOT single negative freq
+            if not utils.validate_single_imag_freq(self.output_file.freqs):
+                continue
+            else:
+                break
+        else:
             self.raise_error('freq_error')
 
 
-class QST3Manager(TsoptManager):
+class QST3Manager(TSManager):
     """
     GM sub-class which manages single tsopt calculations for single molecules. Capable of
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _create_base_input(self) -> InputFile:
+    def _create_base_input(self, ts: bool = True) -> InputFile:
         """
         Creates InputFile objects based on args provided to GM
 
@@ -245,26 +269,15 @@ class QST3Manager(TsoptManager):
             InputFile object
         """
 
+        # Get coords
         input_filepath = self.experiment_directory + 'input.com'
-        ts_coords, reactant_coords, product_coords = None, None, None
+        ts_coords, reactant_coords, product_coords = utils.find_rpt_coords(self.input_mol_filepath, ts)
 
-        # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
-        for d, _, files in os.walk(self.input_mol_filepath):
-
-            # Loop through files and pull out ts, reactant & product coords
-            for f in files:
-                filepath = utils.sanitize_path(d, add_slash=True) + f
-                if '_ts.xyz' in filepath:
-                    ts_coords = utils.get_coords_from_obabel_xyz(filepath)
-                elif '_reactant.xyz' in filepath:
-                    reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
-                elif '_product.xyz' in filepath:
-                    product_coords = utils.get_coords_from_obabel_xyz(filepath)
-
-        # Make sure enough coords have been parsed
+        # Make sure files exist
         if ts_coords is None or reactant_coords is None or product_coords is None:
-            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
+            self.raise_error('unable to find proper mol files for parsing coords')
 
+        # Create input file
         molecule_coords = [reactant_coords, product_coords, ts_coords]
         input_file = InputFile.factory(filepath=input_filepath,
                                        calculation=self.calculation,
@@ -274,18 +287,6 @@ class QST3Manager(TsoptManager):
 
         return input_file
 
-    def resolve_convergence_error(self):
-
-        pass
-
-        # try:
-        #     ts_coords = self.output_file.parse_xyz()
-        # except exceptions.GaussianOutputError as e:
-        #     raise exceptions.GaussianManagerError(e.args[0])
-        # else:
-        #     self.input_file.mol_coords[-1] = ts_coords  # This is what is overridden from base GM
-        #     self.input_file.write()
-
 
 class QST2Manager(QST3Manager):
     """
@@ -293,51 +294,6 @@ class QST2Manager(QST3Manager):
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _create_base_input(self) -> InputFile:
-        """
-        Creates InputFile objects based on args provided to GM
+    def _create_base_input(self, ts: bool = False):
 
-        Returns:
-            InputFile object
-        """
-
-        input_filepath = self.experiment_directory + 'input.com'
-
-        reactant_coords, product_coords = None, None
-        # input_mol_filepath is a directory for QST3Managers, so gather all files in that dir
-        for d, _, files in os.walk(os.path.dirname(self.input_mol_filepath)):
-
-            # Loop through files and pull out ts, reactant & product coords
-            for f in files:
-                filepath = utils.sanitize_path(d, add_slash=True) + f
-                if '_reactant.xyz' in filepath:
-                    reactant_coords = utils.get_coords_from_obabel_xyz(filepath)
-                elif '_product.xyz' in filepath:
-                    product_coords = utils.get_coords_from_obabel_xyz(filepath)
-
-        # Make sure enough coords have been parsed
-        if reactant_coords is None or product_coords is None:
-            raise exceptions.GaussianManagerError('Unable to find proper mol files for coord parsing')
-
-        molecule_coords = [reactant_coords, product_coords]
-        input_file = InputFile.factory(filepath=input_filepath,
-                                       calculation=self.calculation,
-                                       molecule_name=self.mol_name,
-                                       multiplicity=self.multiplicity,
-                                       mol_coords=molecule_coords)
-
-        return input_file
-
-
-class IrcRevManager(GaussianManager):
-    """
-    GM sub-class which manages single irc-rev calculations for single molecules. Capable of
-    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
-    """
-
-
-class IrcFwdManager(GaussianManager):
-    """
-    GM sub-class which manages single irc-fwd calculations for single molecules. Capable of
-    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
-    """
+        super()._create_base_input(ts=False)

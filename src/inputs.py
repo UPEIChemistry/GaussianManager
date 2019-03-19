@@ -64,6 +64,7 @@ class InputFile(object):
 
         # Write file lines according to gaussian requirements
         with open(self.filepath, 'w') as file:
+            file.write('%Chk=checkpoint.com\n')
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
             file.write(self.multiplicity + '\n')

@@ -60,6 +60,8 @@ class TsoptCalc(Calculation):
                  goal: str = 'ts',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
+                 max_step_size: int = 10,
+                 num_steps: int = 10,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
@@ -75,10 +77,21 @@ class TsoptCalc(Calculation):
             energy of a stationary point
         """
 
+        self.method = method
+        self.basis_set = basis_set
+        self.goal = goal
+        self.convergence = convergence
+        self.grid = grid
+        self.max_step_size = max_step_size
+        self.num_steps = num_steps
+        self.maxcyc = maxcyc
+
         # Line specific to ts-opt calcs
-        calc_line = ('opt({goal}, calcfc, noeigen, {conv}) '
+        calc_line = ('opt({goal}, calcfc, noeigen, {conv}, maxsteps={msteps}, maxcycles={nsteps}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
                                                                               conv=convergence,
+                                                                              msteps=max_step_size,
+                                                                              nsteps=num_steps,
                                                                               grid=grid,
                                                                               cyc=maxcyc)
 
@@ -91,9 +104,12 @@ class GoptCalc(Calculation):
     def __init__(self,
                  method: str,
                  basis_set: str,
+                 goal='',
                  direction: str = 'reverse',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
+                 max_step_size: int = 10,
+                 num_steps: int = 10,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
@@ -108,10 +124,24 @@ class GoptCalc(Calculation):
             energy of a stationary point
         """
 
+        self.method = method
+        self.basis_set = basis_set
+        self.goal = goal
+        self.direction = direction
+        self.convergence = convergence
+        self.grid = grid
+        self.max_step_size = max_step_size
+        self.num_steps = num_steps
+        self.maxcyc = maxcyc
+
         # Line specific to ts-opt calcs
-        calc_line = 'opt({conv}) integral(grid={grid}) scf(maxcyc={cyc})'.format(conv=convergence,
-                                                                                 grid=grid,
-                                                                                 cyc=maxcyc)
+        calc_line = 'opt({goal} {conv}, maxstep={ssteps}, maxcycles={nsteps}) '\
+                    + 'integral(grid={grid}) scf(maxcyc={cyc})'.format(goal=goal,
+                                                                       conv=convergence,
+                                                                       msteps=max_step_size,
+                                                                       nsteps=num_steps,
+                                                                       grid=grid,
+                                                                       cyc=maxcyc)
 
         super().__init__(method, basis_set, calc_line)
         self.name = 'gopt_{}'.format(direction)
@@ -143,6 +173,15 @@ class IrcCalc(Calculation):
             If < 1, step is in units of 0.01 amu^(1/2) Bohr
         """
 
+        self.method = method
+        self.basis_set = basis_set
+        self.direction = direction
+        self.convergence = convergence
+        self.grid = grid
+        self.max_points = max_points
+        self.step_size = step_size
+        self.maxcyc = maxcyc
+
         # line specific to irc calcs
         calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc})').format(dir=direction,
@@ -157,3 +196,28 @@ class IrcCalc(Calculation):
                          calc_line)
 
         self.name = 'irc_' + direction
+
+
+class Restart(Calculation):
+
+    def __init__(self, name, method, basis_set, calc='opt'):
+        """
+        Blank calculation class which is used by managers to restart from checkpoint files
+
+        :param method: Method for calc, not sure if necessary?
+        :param basis_set: Basis for calc, see above
+        :param calc: calc kw to replace, either opt or irc
+        """
+
+        self.name = name
+        self.method = method
+        self.basis_set = basis_set
+        self.calc = calc
+
+        if self.calc == 'opt':
+            calc_line = 'opt=restart'
+
+        else:
+            calc_line = 'irc=restart'
+
+        super().__init__(self.method, self.basis_set, calc_line)

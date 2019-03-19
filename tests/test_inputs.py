@@ -13,8 +13,8 @@ class TestInputFile:
         lines = utils.get_file_lines(blank_file)
 
         assert ('mp2/cc-PVDZ '
-                + 'opt(ts, calcfc, noeigen, tight) '
-                + 'integral(grid=superfine) scf(maxcyc=256) freq') in lines[0]
+                + 'opt(ts, calcfc, noeigen, tight, maxsteps=10, maxcycles=10) '
+                + 'integral(grid=superfine) scf(maxcyc=256) freq') in lines[1]
 
         assert '\n' in lines[-1]
 
