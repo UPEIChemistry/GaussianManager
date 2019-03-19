@@ -87,7 +87,7 @@ class TsoptCalc(Calculation):
         self.maxcyc = maxcyc
 
         # Line specific to ts-opt calcs
-        calc_line = ('opt({goal}, calcfc, noeigen, {conv}, maxsteps={msteps}, maxcycles={nsteps}) '
+        calc_line = ('opt({goal}, calcfc, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
                                                                               conv=convergence,
                                                                               msteps=max_step_size,
