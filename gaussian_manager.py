@@ -31,6 +31,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
         # Loop through calculation objects created from user/default specifications
         for calc in calcs:
+
             c_start = time.time()
             mol_in, mol_out = _get_in_out(calc, geom_dir, mol)
             gm = _get_gm(out, mol_name, mol_in, mol_out, multi, calc)
@@ -40,12 +41,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
             # Raised if GM cannot solve any errors thrown by gaussian
             except exceptions.GaussianManagerError as e:
 
-                # Stop mol run if either error is encountered with ts calcs
-
-                msg = 'GM encountered unresolvable error/code ({}) running {} {} on {}'.format(e.args[0],
-                                                                                               calc.method,
-                                                                                               calc.name,
-                                                                                               mol_name)
+                msg = 'encountered ({}) running {} {} on {}'.format(e.args[0], calc.method, calc.name, mol_name)
 
                 # Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)

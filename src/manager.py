@@ -34,6 +34,7 @@ class GaussianManager(object):
 
         self.multiplicity = multiplicity
         self.calculation = calculation
+        self.calculation_name = calculation.name
         self.resolve_attempts = resolve_attempts
 
         self.input_file = self._create_base_input()
@@ -205,7 +206,7 @@ class GaussianManager(object):
 
     def _remake_calc(self, calc=None):
 
-        self.calculation = calculations.Restart(self.calculation.name,
+        self.calculation = calculations.Restart(self.calculation_name,
                                                 self.calculation.method,
                                                 self.calculation.basis_set,
                                                 calc)
@@ -227,6 +228,7 @@ class IrcManager(GaussianManager):
         self.write_input()
         self.write_output()
         self.write_obabel_output()
+
 
 class TSManager(GaussianManager):
     """
