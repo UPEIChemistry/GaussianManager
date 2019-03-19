@@ -1,4 +1,5 @@
-from src import calculations
+import os
+from src import calculations, utils
 from typing import List, Union, Type, TypeVar
 
 T = TypeVar('T', bound='InputFile')
@@ -64,7 +65,8 @@ class InputFile(object):
 
         # Write file lines according to gaussian requirements
         with open(self.filepath, 'w') as file:
-            file.write('%Chk=checkpoint.com\n')
+            file.write('%Chk={}/checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
+                                                                             add_slash=True)))
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
             file.write(self.multiplicity + '\n')
