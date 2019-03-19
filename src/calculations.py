@@ -60,8 +60,8 @@ class TsoptCalc(Calculation):
                  goal: str = 'ts',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
-                 max_step_size: int = 10,
-                 num_steps: int = 10,
+                 max_step_size: int = 1,
+                 num_steps: int = 100,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
@@ -108,8 +108,8 @@ class GoptCalc(Calculation):
                  direction: str = 'reverse',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
-                 max_step_size: int = 10,
-                 num_steps: int = 10,
+                 max_step_size: int = 1,
+                 num_steps: int = 100,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
