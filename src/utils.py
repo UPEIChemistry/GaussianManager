@@ -70,6 +70,11 @@ def get_coords_from_obabel_xyz(filepath: str) -> List:
     # Obabel xyz's have num atoms and molecule name as the first two lines, the rest are coords
     with open(filepath, 'r') as file:
             coordinates = file.readlines()[2:]
+
+    # If the final line is missing a newline char, add it
+    if '\n' not in coordinates[-1]:
+        coordinates[-1] += '\n'
+
     return coordinates
 
 
@@ -133,7 +138,7 @@ def get_coords(path: str) -> List:
         # Makeu sure no unsupported atoms in mol
         else:
             raise exceptions.GaussianUtilsError(('Attempted to parse unsupported atom '
-                                      + 'type {}').format(line[:3]))
+                                                 + 'type {}').format(line[:3]))
 
     return sanit_coords
 
