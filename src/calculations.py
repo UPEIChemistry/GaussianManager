@@ -61,7 +61,7 @@ class TsoptCalc(Calculation):
                  convergence: str = 'tight',
                  grid: str = 'superfine',
                  max_step_size: int = 50,
-                 num_steps: int = 100,
+                 num_steps: int = 500,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
@@ -109,7 +109,7 @@ class GoptCalc(Calculation):
                  convergence: str = 'tight',
                  grid: str = 'superfine',
                  max_step_size: int = 50,
-                 num_steps: int = 100,
+                 num_steps: int = 500,
                  maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
