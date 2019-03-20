@@ -135,13 +135,13 @@ class GoptCalc(Calculation):
         self.maxcyc = maxcyc
 
         # Line specific to ts-opt calcs
-        calc_line = 'opt({goal} {conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '\
-                    + 'integral(grid={grid}) scf(maxcyc={cyc})'.format(goal=goal,
-                                                                       conv=convergence,
-                                                                       msteps=max_step_size,
-                                                                       nsteps=num_steps,
-                                                                       grid=grid,
-                                                                       cyc=maxcyc)
+        calc_line = ('opt({goal} {conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(goal=goal,
+                                                                         conv=convergence,
+                                                                         msteps=max_step_size,
+                                                                         nsteps=num_steps,
+                                                                         grid=grid,
+                                                                         cyc=maxcyc)
 
         super().__init__(method, basis_set, calc_line)
         self.name = 'gopt_{}'.format(direction)
