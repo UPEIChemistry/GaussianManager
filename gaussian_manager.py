@@ -146,7 +146,7 @@ def _get_default_calcs(kw: str) -> List[Union[calculations.TsoptCalc, calculatio
 
     for mb in mbs[1:]:
 
-        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
+        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3', max_step_size=10))
         calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='reverse'))
         calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='forward'))
 

@@ -289,6 +289,10 @@ class QST3Manager(TSManager):
 
         return input_file
 
+    def _remake_calc(self, calc=None):
+
+        pass
+
 
 class QST2Manager(QST3Manager):
     """
