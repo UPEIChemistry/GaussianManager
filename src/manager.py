@@ -34,7 +34,7 @@ class GaussianManager(object):
 
         self.multiplicity = multiplicity
         self.calculation = calculation
-        self.calculation_name = calculation.name
+        self.calculation_name = self.calculation.name
         self.resolve_attempts = resolve_attempts
 
         self.input_file = self._create_base_input()
@@ -80,10 +80,10 @@ class GaussianManager(object):
             gm = IrcManager(experiment_directory, input_mol_filepath, output_mol_filepath,
                             multiplicity, calculation, resolve_attempts)
 
-        else:
+        elif 'gopt' in calculation.name:
 
-            gm = GaussianManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                                 multiplicity, calculation, resolve_attempts)
+            gm = OPTManager(experiment_directory, input_mol_filepath, output_mol_filepath,
+                            multiplicity, calculation, resolve_attempts)
 
         return gm
 
@@ -93,7 +93,7 @@ class GaussianManager(object):
         self.write_input()
         self.write_output()
         self.write_obabel_output()
-        self.write_convergence_metrics()
+
 
     def write_input(self):
         """Writes gaussian input file for provided GM args"""
@@ -195,12 +195,9 @@ class GaussianManager(object):
 
         return utils.get_file_name(self.output_mol_filepath)
 
-    def _remake_calc(self, calc=None):
+    def _remake_calc(self):
 
-        self.calculation = calculations.Restart(self.calculation_name,
-                                                self.calculation.method,
-                                                self.calculation.basis_set,
-                                                calc)
+        raise NotImplementedError
 
 
 class IrcManager(GaussianManager):
@@ -209,16 +206,36 @@ class IrcManager(GaussianManager):
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _remake_calc(self, calc='irc'):
+    def _remake_calc(self):
 
-        super()._remake_calc(calc)
+        self.calculation = calculations.IrcCalc(self.calculation.method,
+                                                self.calculation.basis_set,
+                                                self.calculation.direction,
+                                                self.calculation.convergence,
+                                                self.calculation.grid,
+                                                self.calculation.maxcyc,
+                                                self.calculation.max_points,
+                                                self.calculation.step_size,
+                                                restart=True)
 
-    def run_manager(self):
-        """Convenience function which calls all GM fxns required for running calc on mol"""
 
-        self.write_input()
-        self.write_output()
-        self.write_obabel_output()
+class OPTManager(GaussianManager):
+    """
+    GM sub-class which manages single tsopt calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+    """
+
+    def _remake_calc(self):
+
+        self.calculation = calculations.GoptCalc(self.calculation.method,
+                                                 self.calculation.basis_set,
+                                                 self.calculation.direction,
+                                                 self.calculation.convergence,
+                                                 self.calculation.grid,
+                                                 self.calculation.max_step_size,
+                                                 self.calculation.num_steps,
+                                                 self.calculation.maxcyc,
+                                                 restart=True)
 
 
 class TSManager(GaussianManager):
@@ -226,6 +243,14 @@ class TSManager(GaussianManager):
     GM sub-class which manages single tsopt calculations for single molecules. Capable of
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
+
+    def run_manager(self):
+        """Convenience function which calls all GM fxns required for running calc on mol"""
+
+        self.write_input()
+        self.write_output()
+        self.write_obabel_output()
+        self.write_convergence_metrics()
 
     def write_output(self):
         """
@@ -246,6 +271,18 @@ class TSManager(GaussianManager):
                 break
         else:
             self.raise_error('freq_error')
+
+    def _remake_calc(self):
+
+        self.calculation = calculations.TsoptCalc(self.calculation.method,
+                                                  self.calculation.basis_set,
+                                                  self.calculation.goal,
+                                                  self.calculation.convergence,
+                                                  self.calculation.grid,
+                                                  self.calculation.max_step_size,
+                                                  self.calculation.num_steps,
+                                                  self.calculation.maxcyc,
+                                                  restart=True)
 
 
 class QST3Manager(TSManager):
@@ -279,10 +316,6 @@ class QST3Manager(TSManager):
                                        mol_coords=molecule_coords)
 
         return input_file
-
-    def _remake_calc(self, calc=None):
-
-        pass
 
 
 class QST2Manager(QST3Manager):

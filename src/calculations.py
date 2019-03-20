@@ -62,7 +62,8 @@ class TsoptCalc(Calculation):
                  grid: str = 'superfine',
                  max_step_size: int = 50,
                  num_steps: int = 500,
-                 maxcyc: int = 256):
+                 maxcyc: int = 256,
+                 restart=False):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
 
@@ -86,14 +87,20 @@ class TsoptCalc(Calculation):
         self.num_steps = num_steps
         self.maxcyc = maxcyc
 
+        if not restart:
+            self.restart = ''
+        else:
+            self.restart = 'Restart, '
+
         # Line specific to ts-opt calcs
-        calc_line = ('opt({goal}, calcfc, cartesian, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=goal,
-                                                                              conv=convergence,
-                                                                              msteps=max_step_size,
-                                                                              nsteps=num_steps,
-                                                                              grid=grid,
-                                                                              cyc=maxcyc)
+        calc_line = ('opt({rest}{goal}, calcfc, cartesian, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(rest=self.restart,
+                                                                              goal=self.goal,
+                                                                              conv=self.convergence,
+                                                                              msteps=self.max_step_size,
+                                                                              nsteps=self.num_steps,
+                                                                              grid=self.grid,
+                                                                              cyc=self.maxcyc)
 
         super().__init__(method, basis_set, calc_line)
         self.name = goal
@@ -104,13 +111,13 @@ class GoptCalc(Calculation):
     def __init__(self,
                  method: str,
                  basis_set: str,
-                 goal='',
                  direction: str = 'reverse',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
                  max_step_size: int = 50,
                  num_steps: int = 500,
-                 maxcyc: int = 256):
+                 maxcyc: int = 256,
+                 restart=False):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
         :param method: level of theory
@@ -126,7 +133,6 @@ class GoptCalc(Calculation):
 
         self.method = method
         self.basis_set = basis_set
-        self.goal = goal
         self.direction = direction
         self.convergence = convergence
         self.grid = grid
@@ -134,14 +140,19 @@ class GoptCalc(Calculation):
         self.num_steps = num_steps
         self.maxcyc = maxcyc
 
+        if not restart:
+            self.restart = ''
+        else:
+            self.restart = 'Restart, '
+
         # Line specific to ts-opt calcs
-        calc_line = ('opt({goal} {conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(goal=goal,
-                                                                         conv=convergence,
-                                                                         ssteps=max_step_size,
-                                                                         nsteps=num_steps,
-                                                                         grid=grid,
-                                                                         cyc=maxcyc)
+        calc_line = ('opt({rest}{conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(rest=self.restart,
+                                                                         conv=self.convergence,
+                                                                         ssteps=self.max_step_size,
+                                                                         nsteps=self.num_steps,
+                                                                         grid=self.grid,
+                                                                         cyc=self.maxcyc)
 
         super().__init__(method, basis_set, calc_line)
         self.name = 'gopt_{}'.format(direction)
@@ -157,7 +168,8 @@ class IrcCalc(Calculation):
                  grid: str = 'superfine',
                  maxcyc: int = 256,
                  max_points: int = 2,
-                 step_size: int = 10):
+                 step_size: int = 10,
+                 restart=False):
         """
         Calc for irc calculations with exposed commonly customizable calc kws
         :param method: level of theory
@@ -182,42 +194,23 @@ class IrcCalc(Calculation):
         self.step_size = step_size
         self.maxcyc = maxcyc
 
+        if not restart:
+            self.restart = ''
+        else:
+            self.restart = 'Restart, '
+
         # line specific to irc calcs
-        calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(dir=direction,
-                                                                         pts=max_points,
-                                                                         step=step_size,
-                                                                         conv=convergence,
-                                                                         grid=grid,
-                                                                         cyc=maxcyc)
+        calc_line = ('irc({rest}{dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(rest=self.restart,
+                                                                         dir=self.direction,
+                                                                         pts=self.max_points,
+                                                                         step=self.step_size,
+                                                                         conv=self.convergence,
+                                                                         grid=self.grid,
+                                                                         cyc=self.maxcyc)
 
         super().__init__(method,
                          basis_set,
                          calc_line)
 
         self.name = 'irc_' + direction
-
-
-class Restart(Calculation):
-
-    def __init__(self, name, method, basis_set, calc='opt'):
-        """
-        Blank calculation class which is used by managers to restart from checkpoint files
-
-        :param method: Method for calc, not sure if necessary?
-        :param basis_set: Basis for calc, see above
-        :param calc: calc kw to replace, either opt or irc
-        """
-
-        self.name = name
-        self.method = method
-        self.basis_set = basis_set
-        self.calc = calc
-
-        if self.calc == 'opt':
-            calc_line = 'opt=restart'
-
-        else:
-            calc_line = 'irc=restart'
-
-        super().__init__(self.method, self.basis_set, calc_line)
