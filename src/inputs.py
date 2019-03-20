@@ -62,8 +62,8 @@ class InputFile(object):
 
         # Write file lines according to gaussian requirements
         with open(self.filepath, 'w') as file:
-            file.write('%Chk={}checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
-                                                                            add_slash=True)))
+            # file.write('%Chk={}checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
+            #                                                                 add_slash=True)))
             file.write(self.calculation.get_calc_line() + '\n\n')
             file.write(self.molecule_name + '\n\n')
             file.write(self.multiplicity + '\n')
@@ -82,8 +82,8 @@ class QST3InputFile(InputFile):
 
         # Write lines according to qst3 requirements for gaussian
         with open(self.filepath, 'w') as file:
-            file.write('%Chk={}checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
-                                                                            add_slash=True)))
+            # file.write('%Chk={}checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
+            #                                                                 add_slash=True)))
             file.write(self.calculation.get_calc_line() + '\n\n')
 
             # Mol coords have to specified r -> p -> ts, otherwise gaussian will complain

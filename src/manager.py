@@ -207,15 +207,16 @@ class IrcManager(GaussianManager):
 
     def _remake_calc(self):
 
-        self.calculation = calculations.IrcCalc(self.calculation.method,
-                                                self.calculation.basis_set,
-                                                self.calculation.direction,
-                                                self.calculation.convergence,
-                                                self.calculation.grid,
-                                                self.calculation.maxcyc,
-                                                self.calculation.max_points,
-                                                self.calculation.step_size,
-                                                restart=True)
+        pass
+        # self.calculation = calculations.IrcCalc(self.calculation.method,
+        #                                         self.calculation.basis_set,
+        #                                         self.calculation.direction,
+        #                                         self.calculation.convergence,
+        #                                         self.calculation.grid,
+        #                                         self.calculation.maxcyc,
+        #                                         self.calculation.max_points,
+        #                                         self.calculation.step_size,
+        #                                         restart=True)
 
 
 class OPTManager(GaussianManager):
@@ -226,15 +227,16 @@ class OPTManager(GaussianManager):
 
     def _remake_calc(self):
 
-        self.calculation = calculations.GoptCalc(self.calculation.method,
-                                                 self.calculation.basis_set,
-                                                 self.calculation.direction,
-                                                 self.calculation.convergence,
-                                                 self.calculation.grid,
-                                                 self.calculation.max_step_size,
-                                                 self.calculation.num_steps + self.calculation.num_steps,
-                                                 self.calculation.maxcyc,
-                                                 restart=True)
+        pass
+        # self.calculation = calculations.GoptCalc(self.calculation.method,
+        #                                          self.calculation.basis_set,
+        #                                          self.calculation.direction,
+        #                                          self.calculation.convergence,
+        #                                          self.calculation.grid,
+        #                                          self.calculation.max_step_size,
+        #                                          self.calculation.num_steps + self.calculation.num_steps,
+        #                                          self.calculation.maxcyc,
+        #                                          restart=True)
 
 
 class TSManager(GaussianManager):
@@ -273,15 +275,16 @@ class TSManager(GaussianManager):
 
     def _remake_calc(self):
 
-        self.calculation = calculations.TsoptCalc(self.calculation.method,
-                                                  self.calculation.basis_set,
-                                                  self.calculation.goal,
-                                                  self.calculation.convergence,
-                                                  self.calculation.grid,
-                                                  self.calculation.max_step_size,
-                                                  self.calculation.num_steps + self.calculation.num_steps,
-                                                  self.calculation.maxcyc,
-                                                  restart=True)
+        pass
+        # self.calculation = calculations.TsoptCalc(self.calculation.method,
+        #                                           self.calculation.basis_set,
+        #                                           self.calculation.goal,
+        #                                           self.calculation.convergence,
+        #                                           self.calculation.grid,
+        #                                           self.calculation.max_step_size,
+        #                                           self.calculation.num_steps + self.calculation.num_steps,
+        #                                           self.calculation.maxcyc,
+        #                                           restart=True)
 
 
 class QST3Manager(TSManager):

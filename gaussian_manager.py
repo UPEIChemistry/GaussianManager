@@ -134,18 +134,18 @@ def _get_default_calcs(kw: str) -> List[Union[calculations.TsoptCalc, calculatio
     mbs = [('mp2', 'cc-PVDZ'), ('b3lyp', 'cc-PVDZ'), ('b3lyp', 'aug-cc-PVDZ'),
            ('m06l', 'aug-cc-PVDZ'), ('m06l', 'aug-cc-PVTZ'), ('cbs-qb3', 'aug-cc-PVQZ')]
 
-    calcs = [calculations.TsoptCalc(mbs[0][0], mbs[0][1], goal='ts'),
+    calcs = [calculations.TsoptCalc(mbs[0][0], mbs[0][1], goal='ts', convergence='loose', grid='fine'),
              calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='reverse'),
-             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='reverse'),
+             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='reverse', convergence='loose', grid='fine'),
              calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='forward'),
-             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='forward')]
+             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='forward', convergence='loose', grid='fine')]
 
     if kw == 'single':
         return calcs
 
     for mb in mbs[1:]:
 
-        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3', max_step_size=10))
+        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
         calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='reverse'))
         calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='forward'))
 
