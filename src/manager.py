@@ -63,17 +63,17 @@ class GaussianManager(object):
         if calculation.name == 'ts':
 
             gm = TSManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                           multiplicity, calculation, resolve_attempts)
+                           multiplicity, calculation, resolve_attempts * 2)
 
         elif calculation.name == 'qst3':
 
             gm = QST3Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                             multiplicity, calculation, resolve_attempts)
+                             multiplicity, calculation, resolve_attempts * 2)
 
         elif calculation.name == 'qst2':
 
             gm = QST2Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                             multiplicity, calculation, resolve_attempts)
+                             multiplicity, calculation, resolve_attempts * 2)
 
         elif 'irc' in calculation.name:
 
@@ -93,7 +93,6 @@ class GaussianManager(object):
         self.write_input()
         self.write_output()
         self.write_obabel_output()
-
 
     def write_input(self):
         """Writes gaussian input file for provided GM args"""
@@ -233,7 +232,7 @@ class OPTManager(GaussianManager):
                                                  self.calculation.convergence,
                                                  self.calculation.grid,
                                                  self.calculation.max_step_size,
-                                                 self.calculation.num_steps,
+                                                 self.calculation.num_steps + self.calculation.num_steps,
                                                  self.calculation.maxcyc,
                                                  restart=True)
 
@@ -280,7 +279,7 @@ class TSManager(GaussianManager):
                                                   self.calculation.convergence,
                                                   self.calculation.grid,
                                                   self.calculation.max_step_size,
-                                                  self.calculation.num_steps,
+                                                  self.calculation.num_steps + self.calculation.num_steps,
                                                   self.calculation.maxcyc,
                                                   restart=True)
 

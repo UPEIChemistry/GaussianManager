@@ -93,7 +93,7 @@ class TsoptCalc(Calculation):
             self.restart = 'Restart, '
 
         # Line specific to ts-opt calcs
-        calc_line = ('opt({rest}{goal}, calcfc, cartesian, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
+        calc_line = ('opt({rest}{goal}, calcfc, cartesian, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(rest=self.restart,
                                                                               goal=self.goal,
                                                                               conv=self.convergence,
