@@ -209,8 +209,6 @@ class IrcCalc(Calculation):
                                                                          grid=self.grid,
                                                                          cyc=self.maxcyc)
 
-        super().__init__(method,
-                         basis_set,
-                         calc_line)
+        super().__init__(method, basis_set, calc_line)
 
         self.name = 'irc_' + direction

@@ -49,11 +49,8 @@ class InputFile(object):
         :return: OutputFile object
         """
 
-        if calculation.name == 'qst3':
+        if calculation.name == 'qst3' or calculation.name == 'qst2':
             inp = QST3InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
-
-        elif calculation.name == 'qst2':
-            inp = QST2InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
 
         else:
             inp = InputFile(filepath, calculation, molecule_name, mol_coords, multiplicity)
@@ -85,6 +82,8 @@ class QST3InputFile(InputFile):
 
         # Write lines according to qst3 requirements for gaussian
         with open(self.filepath, 'w') as file:
+            file.write('%Chk={}checkpoint.com\n'.format(utils.sanitize_path(os.path.dirname(self.filepath),
+                                                                            add_slash=True)))
             file.write(self.calculation.get_calc_line() + '\n\n')
 
             # Mol coords have to specified r -> p -> ts, otherwise gaussian will complain
@@ -95,10 +94,3 @@ class QST3InputFile(InputFile):
                 file.write('\n')
 
             file.write('\n')
-
-
-class QST2InputFile(QST3InputFile):
-    """
-    Wrapper which represents a gaussian input file, allowing for better customization of
-    contained mol coords & calc kws
-    """
