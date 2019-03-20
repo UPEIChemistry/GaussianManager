@@ -119,16 +119,8 @@ class GaussianManager(object):
                     break
 
                 # l301 is a mismatching of electrons & multiplicity usually
-                elif 'l301' in e.args[0]:
-                    self.raise_error(e.args[0] + ' error with multiplicity')
-
-                # l101 is some sort of input error, usually spacing is off
-                elif 'l101' in e.args[0]:
-                    self.raise_error(e.args[0] + ' error with input file')
-
-                # l202 is a proximity error, meaning two atoms are too close together
-                elif 'l202' in e.args[0]:
-                    self.raise_error(e.args[0] + 'error with proximity')
+                elif 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0] or 'l1' == e.args[0]:
+                    self.raise_error(e.args[0] + ' unresolvable error')
 
                 else:
                     self.resolve_convergence_error()
@@ -152,16 +144,15 @@ class GaussianManager(object):
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
 
-        # Restart the calc from the checkpoint file
+        # Restart the calc from the checkpoint file, re-write inp/out objects
         try:
             self._remake_calc()
             self.input_file = self._create_base_input()
             self.output_file = self._create_base_output()
+            self.write_input()
 
         except exceptions.GaussianOutputError as e:
             raise exceptions.GaussianManagerError(e.args[0])
-
-        return self.output_file.parse_xyz()
 
     def raise_error(self, error_code: str) -> None:
         """raises a GaussianManagerError with a provided error_code"""

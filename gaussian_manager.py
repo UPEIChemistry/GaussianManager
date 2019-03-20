@@ -49,7 +49,6 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
                 # If the calc is a ts opt, stop the suite, since irc's depend on ts opts
                 if calc.name == 'ts':
-                    if 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0]:
                         break
 
             finally:
