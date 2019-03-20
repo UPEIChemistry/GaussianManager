@@ -138,7 +138,7 @@ class GoptCalc(Calculation):
         calc_line = ('opt({goal} {conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
                      + 'integral(grid={grid}) scf(maxcyc={cyc})').format(goal=goal,
                                                                          conv=convergence,
-                                                                         msteps=max_step_size,
+                                                                         ssteps=max_step_size,
                                                                          nsteps=num_steps,
                                                                          grid=grid,
                                                                          cyc=maxcyc)
