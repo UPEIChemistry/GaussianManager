@@ -46,7 +46,7 @@ class GaussianManager(object):
                 output_mol_filepath: str,
                 multiplicity: str,
                 calculation: calculations.Calculation,
-                resolve_attempts: int = 4) -> Type[T]:
+                resolve_attempts: int = 6) -> Type[T]:
         """
         Static factory method for GM which returns corresponding GM object based on calc provided
 
@@ -63,17 +63,17 @@ class GaussianManager(object):
         if calculation.name == 'ts':
 
             gm = TSManager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                           multiplicity, calculation, resolve_attempts * 2)
+                           multiplicity, calculation, resolve_attempts + 2)
 
         elif calculation.name == 'qst3':
 
             gm = QST3Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                             multiplicity, calculation, resolve_attempts * 2)
+                             multiplicity, calculation, resolve_attempts + 2)
 
         elif calculation.name == 'qst2':
 
             gm = QST2Manager(experiment_directory, input_mol_filepath, output_mol_filepath,
-                             multiplicity, calculation, resolve_attempts * 2)
+                             multiplicity, calculation, resolve_attempts + 2)
 
         elif 'irc' in calculation.name:
 
