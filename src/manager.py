@@ -145,8 +145,7 @@ class GaussianManager(object):
 
         # Restart the calc from the checkpoint file, re-write inp/out objects
         try:
-            self._remake_calc()
-            self.input_file = self._create_base_input()
+            self._remake_input()
             self.output_file = self._create_base_output()
             self.write_input()
 
@@ -194,7 +193,7 @@ class GaussianManager(object):
 
         return utils.get_file_name(self.output_mol_filepath)
 
-    def _remake_calc(self):
+    def _remake_input(self):
 
         raise NotImplementedError
 
@@ -205,18 +204,9 @@ class IrcManager(GaussianManager):
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _remake_calc(self):
+    def _remake_input(self):
 
         pass
-        # self.calculation = calculations.IrcCalc(self.calculation.method,
-        #                                         self.calculation.basis_set,
-        #                                         self.calculation.direction,
-        #                                         self.calculation.convergence,
-        #                                         self.calculation.grid,
-        #                                         self.calculation.maxcyc,
-        #                                         self.calculation.max_points,
-        #                                         self.calculation.step_size,
-        #                                         restart=True)
 
 
 class OPTManager(GaussianManager):
@@ -225,21 +215,16 @@ class OPTManager(GaussianManager):
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _remake_calc(self):
+    def _remake_input(self):
 
-        pass
-        # self.calculation = calculations.GoptCalc(self.calculation.method,
-        #                                          self.calculation.basis_set,
-        #                                          self.calculation.direction,
-        #                                          self.calculation.convergence,
-        #                                          self.calculation.grid,
-        #                                          self.calculation.max_step_size,
-        #                                          self.calculation.num_steps + self.calculation.num_steps,
-        #                                          self.calculation.maxcyc,
-        #                                          restart=True)
+        self.input_file = InputFile.factory(self.input_file.filepath,
+                                            self.calculation,
+                                            self.mol_name,
+                                            self.output_file.parse_xyz(),
+                                            self.multiplicity)
 
 
-class TSManager(GaussianManager):
+class TSManager(OPTManager):
     """
     GM sub-class which manages single tsopt calculations for single molecules. Capable of
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
@@ -273,19 +258,6 @@ class TSManager(GaussianManager):
         else:
             self.raise_error('freq_error')
 
-    def _remake_calc(self):
-
-        pass
-        # self.calculation = calculations.TsoptCalc(self.calculation.method,
-        #                                           self.calculation.basis_set,
-        #                                           self.calculation.goal,
-        #                                           self.calculation.convergence,
-        #                                           self.calculation.grid,
-        #                                           self.calculation.max_step_size,
-        #                                           self.calculation.num_steps + self.calculation.num_steps,
-        #                                           self.calculation.maxcyc,
-        #                                           restart=True)
-
 
 class QST3Manager(TSManager):
     """
@@ -318,6 +290,16 @@ class QST3Manager(TSManager):
                                        mol_coords=molecule_coords)
 
         return input_file
+
+    def _remake_input(self):
+
+        ts_coords = self.output_file.parse_xyz()
+        self.input_file.mol_coords[-1] = ts_coords
+        self.input_file = InputFile.factory(self.input_file.filepath,
+                                            self.calculation,
+                                            self.mol_name,
+                                            self.input_file.mol_coords,
+                                            self.multiplicity)
 
 
 class QST2Manager(QST3Manager):

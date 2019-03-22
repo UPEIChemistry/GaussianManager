@@ -60,7 +60,7 @@ class TsoptCalc(Calculation):
                  goal: str = 'ts',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
-                 max_step_size: int = 32,
+                 max_step_size: int = 128,
                  num_steps: int = 512,
                  maxcyc: int = 256,
                  restart=False):
@@ -114,7 +114,7 @@ class GoptCalc(Calculation):
                  direction: str = 'reverse',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
-                 max_step_size: int = 32,
+                 max_step_size: int = 128,
                  num_steps: int = 512,
                  maxcyc: int = 256,
                  restart=False):
