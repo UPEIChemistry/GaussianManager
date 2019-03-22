@@ -35,7 +35,7 @@ class OutputFile(object):
         self.converge_fig_dir = None
 
     @staticmethod
-    def factory(filepath: str, input_file: Type[inputs.InputFile], output_mol_path) -> Type[T]:
+    def factory(filepath: str, input_file, output_mol_path) -> Type[T]:
         """
         Static factory method which returns the proper output file based on provided InputFile
 
