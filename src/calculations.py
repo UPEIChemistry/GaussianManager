@@ -59,11 +59,10 @@ class TsoptCalc(Calculation):
                  basis_set: str,
                  goal: str = 'ts',
                  convergence: str = 'tight',
-                 grid: str = 'superfine',
-                 max_step_size: int = 128,
+                 grid: str = 'ultrafine',
+                 max_step_size: int = 64,
                  num_steps: int = 512,
-                 maxcyc: int = 256,
-                 restart=False):
+                 maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
 
@@ -87,15 +86,9 @@ class TsoptCalc(Calculation):
         self.num_steps = num_steps
         self.maxcyc = maxcyc
 
-        if not restart:
-            self.restart = ''
-        else:
-            self.restart = 'Restart, '
-
         # Line specific to ts-opt calcs
-        calc_line = ('opt({rest}{goal}, calcfc, cartesian, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(rest=self.restart,
-                                                                              goal=self.goal,
+        calc_line = ('opt({goal}, calcfc, cartesian, noeigen, {conv}, maxstep={msteps}, maxcycles={nsteps}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc}) freq').format(goal=self.goal,
                                                                               conv=self.convergence,
                                                                               msteps=self.max_step_size,
                                                                               nsteps=self.num_steps,
@@ -113,11 +106,10 @@ class GoptCalc(Calculation):
                  basis_set: str,
                  direction: str = 'reverse',
                  convergence: str = 'tight',
-                 grid: str = 'superfine',
-                 max_step_size: int = 128,
+                 grid: str = 'ultrafine',
+                 max_step_size: int = 64,
                  num_steps: int = 512,
-                 maxcyc: int = 256,
-                 restart=False):
+                 maxcyc: int = 256):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
         :param method: level of theory
@@ -140,15 +132,9 @@ class GoptCalc(Calculation):
         self.num_steps = num_steps
         self.maxcyc = maxcyc
 
-        if not restart:
-            self.restart = ''
-        else:
-            self.restart = 'Restart, '
-
         # Line specific to ts-opt calcs
-        calc_line = ('opt({rest}{conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(rest=self.restart,
-                                                                         conv=self.convergence,
+        calc_line = ('opt({conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(conv=self.convergence,
                                                                          ssteps=self.max_step_size,
                                                                          nsteps=self.num_steps,
                                                                          grid=self.grid,
@@ -168,8 +154,7 @@ class IrcCalc(Calculation):
                  grid: str = 'superfine',
                  maxcyc: int = 256,
                  max_points: int = 2,
-                 step_size: int = 10,
-                 restart=False):
+                 step_size: int = 10):
         """
         Calc for irc calculations with exposed commonly customizable calc kws
         :param method: level of theory
@@ -194,15 +179,9 @@ class IrcCalc(Calculation):
         self.step_size = step_size
         self.maxcyc = maxcyc
 
-        if not restart:
-            self.restart = ''
-        else:
-            self.restart = 'Restart, '
-
         # line specific to irc calcs
-        calc_line = ('irc({rest}{dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
-                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(rest=self.restart,
-                                                                         dir=self.direction,
+        calc_line = ('irc({dir}, calcfc, maxpoints={pts}, stepsize={step}, {conv}) '
+                     + 'integral(grid={grid}) scf(maxcyc={cyc})').format(dir=self.direction,
                                                                          pts=self.max_points,
                                                                          step=self.step_size,
                                                                          conv=self.convergence,

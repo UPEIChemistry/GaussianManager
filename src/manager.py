@@ -215,21 +215,6 @@ class OPTManager(GaussianManager):
     generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
     """
 
-    def _remake_input(self):
-
-        self.input_file = InputFile.factory(self.input_file.filepath,
-                                            self.calculation,
-                                            self.mol_name,
-                                            self.output_file.parse_xyz(),
-                                            self.multiplicity)
-
-
-class TSManager(OPTManager):
-    """
-    GM sub-class which manages single tsopt calculations for single molecules. Capable of
-    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
-    """
-
     def run_manager(self):
         """Convenience function which calls all GM fxns required for running calc on mol"""
 
@@ -237,6 +222,22 @@ class TSManager(OPTManager):
         self.write_output()
         self.write_obabel_output()
         self.write_convergence_metrics()
+
+    def _remake_input(self):
+
+        self.input_file = InputFile.factory(self.input_file.filepath,
+                                            self.calculation,
+                                            self.mol_name,
+                                            self.output_file.parse_xyz(),
+                                            self.multiplicity)
+        self.write_convergence_metrics()
+
+
+class TSManager(OPTManager):
+    """
+    GM sub-class which manages single tsopt calculations for single molecules. Capable of
+    generating gaussian inputs, parsing outputs for info and resolving rudimentary gaussian errors
+    """
 
     def write_output(self):
         """
