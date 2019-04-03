@@ -119,6 +119,9 @@ class GaussianManager(object):
                 if 'l123' in e.args[0]:
                     break
 
+                elif 'l502' in e.args[0]:
+                    self.fix_rare_convergence()
+
                 # l301 is a mismatching of electrons & multiplicity usually
                 elif 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0] or 'l1' == e.args[0]:
                     self.raise_error(e.args[0] + ' unresolvable error')
@@ -160,6 +163,12 @@ class GaussianManager(object):
 
         except exceptions.GaussianOutputError as e:
             raise exceptions.GaussianManagerError(e.args[0])
+
+    def fix_rare_convergence(self):
+        """Solves the l502 error by setting SCF=QC"""
+
+        self.calculation.scf = 'qc'
+        self.write_input()
 
     def raise_error(self, error_code: str) -> None:
         """raises a GaussianManagerError with a provided error_code"""
