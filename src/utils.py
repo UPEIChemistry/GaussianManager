@@ -2,7 +2,7 @@ import src.exceptions as exceptions
 import numpy as np
 import os
 import subprocess
-from typing import List, Union
+from typing import List, Union, Tuple
 
 
 def sanitize_path(path: str, add_slash: bool = False) -> str:
@@ -250,7 +250,7 @@ def copy_file(filepath: str, dest: str):
     filepath = sanitize_path(filepath)
     dest = sanitize_path(dest)
 
-    subprocess.run('cp {} {}'.format(filepath, dest), check=True, shell=True)
+    subprocess.run('cp -r {} {}'.format(filepath, dest), check=True, shell=True)
 
     return dest
 
@@ -301,3 +301,54 @@ def find_rpt_coords(path, ts: bool = False):
         return reactant_coords, product_coords, ts_coords
     else:
         return reactant_coords, product_coords
+
+
+def swap_sym_num(coord):
+
+    atom_num_dict = {'53': 'I',
+                     '35': 'Br',
+                     '34': 'Se',
+                     '17': 'Cl',
+                     '16': 'S',
+                     '15': 'P',
+                     '14': 'Si',
+                     '9': 'F',
+                     '8': 'O',
+                     '7': 'N',
+                     '6': 'C',
+                     '5': 'B',
+                     '1': 'H'}
+
+    for key, value in atom_num_dict.items():
+
+        if coord.split()[0] == value:
+            return key
+
+
+def parse(mol_path: str) -> Tuple[np.ndarray, np.ndarray]:
+
+    crude_coords = _sanitize_coords(get_coords_from_obabel_xyz(mol_path))
+
+    cartesians = np.zeros((len(crude_coords), 3))
+    atomic_nums = np.zeros(len(crude_coords))
+    for i, c in enumerate(crude_coords):
+        num = swap_sym_num(c)
+        atomic_nums[i] = num
+        for j, n in enumerate(c.split()[1:]):
+            cartesians[i][j] = float(n)
+
+    return cartesians, atomic_nums
+
+
+def export_np(path, array):
+
+    np.save(path, array)
+
+
+def _sanitize_coords(crude_coords):
+
+    for c in crude_coords:
+        if c == '\n':
+            crude_coords.remove(c)
+
+    return crude_coords

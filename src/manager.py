@@ -3,12 +3,13 @@ Module of GaussianManager classes which manage the creation of a single guassian
 common gaussian errors to ensure generated output is correct
 """
 
-import calculations
+import calculations, utils
 import src.exceptions as exceptions
-import utils
+
 from inputs import InputFile
 from outputs import OutputFile
 
+import os
 from typing import List, Union, Type, TypeVar
 
 T = TypeVar('T', bound='GaussianManager')
@@ -93,6 +94,7 @@ class GaussianManager(object):
         self.write_input()
         self.write_output()
         self.write_obabel_output()
+        self.write_numpy_output()
 
     def write_input(self):
         """Writes gaussian input file for provided GM args"""
@@ -135,10 +137,17 @@ class GaussianManager(object):
         self.output_file.write_obabel_xyz()
         utils.copy_file(self.output_file.output_mol_path, self.experiment_directory)
 
-    def write_convergence_metrics(self):
-        """Calls into OutputFile object to parse convergence metrics from gaussian output"""
+    def write_numpy_output(self):
+        """Parse xyz into npy files"""
 
-        self.output_file.display_covergence()
+        cart, atomic_nums = utils.parse(self.output_file.output_mol_path)
+
+        cart_name = os.path.splitext(self.output_file.output_mol_path)[0] + '_cartesians.npy'
+        utils.export_np(cart_name, cart)
+        utils.copy_file(cart_name, self.experiment_directory)
+
+        atm_num_name = os.path.splitext(self.output_file.output_mol_path)[0] + '_atm_nums.npy'
+        utils.export_np(atm_num_name, atomic_nums)
 
     def resolve_convergence_error(self):
         """Solves rudimentary convergence errors thrown by gaussian"""
@@ -218,10 +227,13 @@ class OPTManager(GaussianManager):
     def run_manager(self):
         """Convenience function which calls all GM fxns required for running calc on mol"""
 
-        self.write_input()
-        self.write_output()
-        self.write_obabel_output()
+        super().run_manager()
         self.write_convergence_metrics()
+
+    def write_convergence_metrics(self):
+        """Calls into OutputFile object to parse convergence metrics from gaussian output"""
+
+        self.output_file.display_covergence()
 
     def _remake_input(self):
 

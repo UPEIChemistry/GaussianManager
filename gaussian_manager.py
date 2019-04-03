@@ -22,11 +22,13 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
     out = utils.sanitize_path(out, add_slash=True)
     exp_log = out + 'log.txt'
+    failed_dir = out + 'failed/'
+    utils.make_dir(failed_dir)
 
     # Loop through mols, apply the same calcs for every mol
     for mol in mols:
         m_start = time.time()
-        mol_name, geom_dir, mol_log = _get_mol_specs(mol, out)
+        mol_name, mol_dir, geom_dir, mol_log = _get_mol_specs(mol, out)
         utils.make_dir(geom_dir)
 
         # Loop through calculation objects created from user/default specifications
@@ -46,6 +48,9 @@ def run(mols: List, out: str, calcs: List, multi: str):
                 # Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)
                 utils.log_error(exp_log, msg, verbose=False)
+
+                # Copy failed mol into seperate directory
+                utils.copy_file(mol_dir, failed_dir)
 
                 # If the calc is a ts opt, stop the suite, since irc's depend on ts opts
                 if calc.name == 'ts':
@@ -210,7 +215,7 @@ def _get_mol_specs(mol, out):
     geom_dir = mol_dir + 'geometries/'
     mol_log = mol_dir + 'log.txt'
 
-    return mol_name, geom_dir, mol_log
+    return mol_name, mol_dir, geom_dir, mol_log
 
 
 def _record_time(start, mol_name, log, calc=None):
