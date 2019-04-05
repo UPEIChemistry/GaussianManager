@@ -1,4 +1,4 @@
-from src import calculations
+from gaussian_manager import calculations
 import pytest
 import tempfile
 

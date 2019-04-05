@@ -1,5 +1,5 @@
-from src import inputs, utils
-import src.exceptions as exceptions
+from . import inputs, utils, exceptions
+
 import matplotlib.pyplot as plt
 from numpy import ndarray
 import os

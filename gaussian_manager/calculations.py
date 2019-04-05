@@ -16,7 +16,6 @@ class Calculation(object):
 
         :param method: level of theory for calc
         :param basis_set: basis set for calc
-        :param calc_line: collection of calc kws properly formatted for gaussian
         """
 
         self.method = method
@@ -66,8 +65,8 @@ class TsoptCalc(Calculation):
             energy of a stationary point
         """
 
-        self.method = method
-        self.basis_set = basis_set
+        super().__init__(method, basis_set)
+
         self.goal = goal
         self.convergence = convergence
         self.grid = grid
@@ -75,8 +74,6 @@ class TsoptCalc(Calculation):
         self.num_steps = num_steps
         self.scf = scf
         self.name = goal
-
-        super().__init__(method, basis_set)
 
     def create_calc_line(self):
 
@@ -118,8 +115,8 @@ class GoptCalc(Calculation):
             energy of a stationary point
         """
 
-        self.method = method
-        self.basis_set = basis_set
+        super().__init__(method, basis_set)
+
         self.direction = direction
         self.convergence = convergence
         self.grid = grid
@@ -128,13 +125,11 @@ class GoptCalc(Calculation):
         self.scf = scf
         self.name = 'gopt_{}'.format(direction)
 
-        super().__init__(method, basis_set)
-
     def create_calc_line(self):
 
         # Line specific to ts-opt calcs
         calc_line = ('opt({conv}, cartesian, maxstep={ssteps}, maxcycles={nsteps}) '
-                     + 'integral(grid={grid}) scf({scf)').format(
+                     + 'integral(grid={grid}) scf({scf})').format(
             conv=self.convergence,
             ssteps=self.max_step_size,
             nsteps=self.num_steps,
@@ -171,8 +166,8 @@ class IrcCalc(Calculation):
             If < 1, step is in units of 0.01 amu^(1/2) Bohr
         """
 
-        self.method = method
-        self.basis_set = basis_set
+        super().__init__(method, basis_set)
+
         self.direction = direction
         self.convergence = convergence
         self.grid = grid
@@ -180,8 +175,6 @@ class IrcCalc(Calculation):
         self.step_size = step_size
         self.scf = scf
         self.name = 'irc_' + direction
-
-        super().__init__(method, basis_set)
 
     def create_calc_line(self):
 
@@ -193,7 +186,7 @@ class IrcCalc(Calculation):
             step=self.step_size,
             conv=self.convergence,
             grid=self.grid,
-            cyc=self.scf
+            scf=self.scf
         )
 
         return calc_line

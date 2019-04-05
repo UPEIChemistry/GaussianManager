@@ -1,5 +1,4 @@
-import os
-from src import calculations, utils
+from . import calculations, utils
 from typing import List, Union, Type, TypeVar
 
 T = TypeVar('T', bound='InputFile')

@@ -1,4 +1,4 @@
-from src import inputs, utils
+from ..gaussian_manager import inputs, utils
 
 
 class TestInputFile:

@@ -1,4 +1,4 @@
-from src import utils
+from ..gaussian_manager import utils
 import os
 import pytest
 import subprocess

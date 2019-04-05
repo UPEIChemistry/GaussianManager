@@ -1,4 +1,4 @@
-from src import manager, utils
+from ..gaussian_manager import manager, utils
 
 
 class TestGaussianManager:

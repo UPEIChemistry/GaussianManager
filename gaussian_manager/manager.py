@@ -2,12 +2,9 @@
 Module of GaussianManager classes which manage the creation of a single guassian input/output. Capable of resolving
 common gaussian errors to ensure generated output is correct
 """
-
-import calculations, utils
-import src.exceptions as exceptions
-
-from inputs import InputFile
-from outputs import OutputFile
+from . import calculations, utils, exceptions
+from .inputs import InputFile
+from .outputs import OutputFile
 
 import os
 from typing import List, Union, Type, TypeVar
