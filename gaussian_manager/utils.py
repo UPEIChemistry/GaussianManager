@@ -250,7 +250,7 @@ def copy_file(filepath: str, dest: str):
     filepath = sanitize_path(filepath)
     dest = sanitize_path(dest)
 
-    subprocess.run('cp -r {} {}'.format(filepath, dest), check=True, shell=True)
+    subprocess.run('cp -r -d {} {}'.format(filepath, dest), check=True, shell=True)
 
     return dest
 
