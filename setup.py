@@ -10,5 +10,5 @@ setup(
     description='Package for managing Gaussian09 calculations, allowing for automation of transition state searching',
     install_requires=['numpy', 'matplotlib'],
     entry_points={
-        'console_scripts': ['gm = GaussianManager.main:main']}
+        'console_scripts': ['gausman = GaussianManager.main:main']}
 )
