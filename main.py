@@ -1,3 +1,5 @@
+"""Main CLI module for GM, parses args and submits them to gaussian_manager.run.run()"""
+
 from .gaussian_manager import calculations, utils, run
 
 import argparse
