@@ -35,7 +35,7 @@ def _get_args():
                                                           + ' they should be run. Possible keywords'
                                                           + ' include (tsopt), (irc_rev), (irc_fwd),'
                                                           + ' (qst3), (gopt_rev), and (gopt_fwd)'),
-                        default=['half'])
+                        default=['single'])
     parser.add_argument('-m', '--methods', nargs='+', default=['mp2'],
                         help=('List of theory levels to run the calc list at for each mol, typically'
                               + ' only a single item in this list, as the entire calc list is run'
