@@ -77,7 +77,7 @@ def _resolve_calcs(kws: str, methods: List, basis_sets: List) -> List[Union[
     calcs = []
     for method, basis in zip(methods, basis_sets):
         for kw in kws:
-            if kw == 'full' or kw == 'half' or kw == 'single':
+            if kw == 'mp2' or kw == 'b3lyp' or kw == 'm06l'or kw == 'cbs':
                 return _get_default_calcs(kw)
             elif kw == 'tsopt':
                 calcs.append(calculations.TsoptCalc(method, basis, goal='ts'))
