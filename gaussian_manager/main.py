@@ -23,27 +23,31 @@ def main():
 def _get_args():
     """Get args from command line"""
 
-    parser = argparse.ArgumentParser(description=('Main user interface for GM, used to submit a list of calcs to '
-                                                  + 'run on a list of mols'))
-    parser.add_argument('-i', '--input-mol-path', nargs='+',
-                        help=('Directory containing all molecules to run calculation, or filepaths of individual '
-                              + 'molecule xyz files'))
-    parser.add_argument('--multi', default='-1 1',
-                        help=('Multiplicity of mols. Currently, all submitted mols must have the '
-                              + 'same charge/multiplicity'))
-    parser.add_argument('-o', '--output-root', help=('Root directory of the experiment where log '
-                                                     + 'files and mol directories are written to'))
-    parser.add_argument('-c', '--calcs', nargs='+', help=('List of calc keywords in order of how'
-                                                          + ' they should be run. Possible keywords'
-                                                          + ' include (tsopt), (irc_rev), (irc_fwd),'
-                                                          + ' (qst3), (gopt_rev), and (gopt_fwd)'),
-                        default=['single'])
-    parser.add_argument('-m', '--methods', nargs='+', default=['mp2'],
-                        help=('List of theory levels to run the calc list at for each mol, typically'
-                              + ' only a single item in this list, as the entire calc list is run'
-                              + ' for each level of theory specified'))
-    parser.add_argument('-b', '--basis-sets', nargs='+', default=['cc-PVDZ'],
-                        help='Basis set for calcs. len(methods) == len(basis_sets) must be True')
+    parser = argparse.ArgumentParser(description=(
+            'Main user interface for GM, used to submit a list of calcs to run on a list of mols'
+    ))
+    parser.add_argument('-i', '--input-mol-path', nargs='+', help=(
+            'Directory containing all molecules to run calculation, or filepaths of individual molecule xyz files'
+    ))
+    parser.add_argument('--multi', default='-1 1', help=(
+            'Multiplicity of mols. Currently, all submitted mols must have the same charge/multiplicity'
+    ))
+    parser.add_argument('-o', '--output-root', help=(
+            'Root directory of the experiment where log files and mol directories are written to'
+    ))
+    parser.add_argument('-c', '--calcs', nargs='+', default=['mp2'], help=(
+            'List of calc keywords in order of how they should be run. Default is [mp2] Datset specific keywords: '
+            + '[mp2], [b3lyp], [m06l], or [cbs]. Possible calc specific keywords: [tsopt], [irc_rev], [irc_fwd], '
+            + '[qst3], [gopt_rev], and [gopt_fwd]'
+    ))
+    parser.add_argument('-m', '--methods', nargs='+', default=['mp2'], help=(
+            'Used when specifying calc specific keywords. List of theory levels to run the calc list at for each mol, '
+            + 'typically only a single item in this list, as the entire calc list is run for each level of theory '
+            + 'specified'
+    ))
+    parser.add_argument('-b', '--basis-sets', nargs='+', default=['cc-PVDZ'], help=(
+        'Used when specifying calc specific keywords. Basis set for calcs. len(methods) == len(basis_sets) must be True'
+    ))
 
     return parser.parse_args()
 
@@ -63,9 +67,11 @@ def _sanit_molpath(paths):
     return mols
 
 
-def _resolve_calcs(kws, methods, basis_sets) -> List[Union[calculations.TsoptCalc,
-                                                           calculations.IrcCalc,
-                                                           calculations.GoptCalc]]:
+def _resolve_calcs(kws: str, methods: List, basis_sets: List) -> List[Union[
+    calculations.TsoptCalc,
+    calculations.IrcCalc,
+    calculations.GoptCalc
+]]:
     """Checks provided calcs args to create list of calculation objects"""
 
     calcs = []
@@ -92,26 +98,48 @@ def _resolve_calcs(kws, methods, basis_sets) -> List[Union[calculations.TsoptCal
 def _get_default_calcs(kw: str) -> List[Union[calculations.TsoptCalc, calculations.IrcCalc, calculations.GoptCalc]]:
     """Resolves the default/convenience calc keywords"""
 
-    mbs = [('mp2', 'cc-PVDZ'), ('b3lyp', 'cc-PVDZ'), ('b3lyp', 'aug-cc-PVDZ'),
-           ('m06l', 'aug-cc-PVDZ'), ('m06l', 'aug-cc-PVTZ'), ('cbs-qb3', 'aug-cc-PVQZ')]
+    if kw == 'b3lyp':
 
-    calcs = [calculations.TsoptCalc(mbs[0][0], mbs[0][1], goal='ts', convergence='loose', grid='fine'),
-             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='reverse'),
-             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='reverse', convergence='loose', grid='fine'),
-             calculations.IrcCalc(mbs[0][0], mbs[0][1], direction='forward'),
-             calculations.GoptCalc(mbs[0][0], mbs[0][1], direction='forward', convergence='loose', grid='fine')]
+        calcs = [
+            calculations.TsoptCalc('b3lyp', 'cc-PVDZ', goal='qst3'),
+            calculations.GoptCalc('b3lyp', 'cc-PVDZ', direction='reverse'),
+            calculations.GoptCalc('b3lyp', 'cc-PVDZ', direction='forward'),
+            calculations.TsoptCalc('b3lyp', 'aug-cc-PVDZ', goal='qst3'),
+            calculations.GoptCalc('b3lyp', 'aug-cc-PVDZ', direction='reverse'),
+            calculations.GoptCalc('b3lyp', 'aug-cc-PVDZ', direction='forward')
+        ]
 
-    if kw == 'single':
-        return calcs
+    elif kw == 'm06l':
 
-    for mb in mbs[1:]:
+        calcs = [
+            calculations.TsoptCalc('m06l', 'aug-cc-PVDZ', goal='qst3'),
+            calculations.GoptCalc('m06l', 'aug-cc-PVDZ', direction='reverse'),
+            calculations.GoptCalc('m06l', 'aug-cc-PVDZ', direction='forward'),
+            calculations.TsoptCalc('m06l', 'aug-cc-PVTZ', goal='qst3'),
+            calculations.GoptCalc('m06l', 'aug-cc-PVTZ', direction='reverse'),
+            calculations.GoptCalc('m06l', 'aug-cc-PVTZ', direction='forward')
+        ]
 
-        calcs.append(calculations.TsoptCalc(mb[0], mb[1], goal='qst3'))
-        calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='reverse'))
-        calcs.append(calculations.GoptCalc(mb[0], mb[1], direction='forward'))
+    elif kw == 'cbs':
 
-        if kw == 'half':
-            return calcs
+        calcs = [
+            calculations.TsoptCalc('cbs-qb3', 'aug-cc-PVTZ', goal='qst3'),
+            calculations.GoptCalc('cbs-qb3', 'aug-cc-PVTZ', direction='reverse'),
+            calculations.GoptCalc('cbs-qb3', 'aug-cc-PVTZ', direction='forward'),
+            calculations.TsoptCalc('cbs-qb3', 'aug-cc-PVQZ', goal='qst3'),
+            calculations.GoptCalc('cbs-qb3', 'aug-cc-PVQZ', direction='reverse'),
+            calculations.GoptCalc('cbs-qb3', 'aug-cc-PVQZ', direction='forward')
+        ]
+
+    else:
+
+        calcs = [
+            calculations.TsoptCalc('mp2', 'cc-PVDZ', goal='ts', convergence='loose', grid='ultrafine'),
+            calculations.IrcCalc('mp2', 'cc-PVDZ', direction='reverse'),
+            calculations.GoptCalc('mp2', 'cc-PVDZ', direction='reverse', convergence='loose', grid='ultrafine'),
+            calculations.IrcCalc('mp2', 'cc-PVDZ', direction='forward'),
+            calculations.GoptCalc('mp2', 'cc-PVDZ', direction='forward', convergence='loose', grid='ultrafine')
+        ]
 
     return calcs
 

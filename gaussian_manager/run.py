@@ -2,6 +2,7 @@
 
 from . import manager, utils, calculations, exceptions
 import os
+from shutil import rmtree
 import time
 from typing import List, Type, Union
 
@@ -60,6 +61,12 @@ def run(mols: List, out: str, calcs: List, multi: str):
 
         # Log time of entire mol calc to exp dir
         _record_time(m_start, mol_name, exp_log)
+
+    # Remove failed molecules from the exp dir, keep them in the failed dir
+    superlist, sublist = _get_failed_dirlists(out)
+    dirs_in_both = set(superlist) & set(sublist)
+    for d in dirs_in_both:
+        _remove_dir(os.path.join(out, d))
 
 
 def _get_in_out(calc, geom_dir, mol):
@@ -140,3 +147,24 @@ def _record_time(start, mol_name, log, calc=None):
         msg = '{} {} on {} took {}:{}:{}'.format(calc.method, calc.name, mol_name, h, mi, s)
 
     utils.log_error(log, msg, verbose=True)
+
+
+def _get_failed_dirlists(path: str):
+
+    for i, (dirname, dirs, files) in enumerate(os.walk(path)):
+        if i == 0:
+            failed_superlist = [d for d in dirs if 'failed' not in d]
+        if 'failed' in dirname:
+            failed_sublist = [d for d in dirs]
+            break
+
+    return failed_superlist, failed_sublist
+
+
+def _remove_dir(dirpath: str):
+    """Remove provided dirpath
+
+    :param dirpath: path to directory to remove. Will remove dirs recursively.
+    """
+
+    rmtree(dirpath)
