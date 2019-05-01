@@ -7,9 +7,7 @@ from .inputs import InputFile
 from .outputs import OutputFile
 
 import os
-from typing import List, Union, Type, TypeVar
-
-T = TypeVar('T', bound='GaussianManager')
+from typing import List, Union, Type
 
 
 class GaussianManager(object):
@@ -44,7 +42,7 @@ class GaussianManager(object):
                 output_mol_filepath: str,
                 multiplicity: str,
                 calculation: calculations.Calculation,
-                resolve_attempts: int = 6) -> Type[T]:
+                resolve_attempts: int = 4):
         """
         Static factory method for GM which returns corresponding GM object based on calc provided
 
@@ -116,11 +114,8 @@ class GaussianManager(object):
                 if 'l123' in e.args[0]:
                     break
 
-                elif 'l502' in e.args[0]:
-                    self.fix_rare_convergence()
-
-                # l301 is a mismatching of electrons & multiplicity usually
-                elif 'l301' in e.args[0] or 'l101' in e.args[0] or 'l202' in e.args[0] or 'l1' == e.args[0]:
+                # Various unresolvable errors can be thrown by Gaussian
+                elif self._check_unresolvable_error_link(e.args[0]):
                     self.raise_error(e.args[0] + ' unresolvable error')
 
                 else:
@@ -212,6 +207,21 @@ class GaussianManager(object):
 
         raise NotImplementedError
 
+    @staticmethod
+    def _check_unresolvable_error_link(link: str) -> bool:
+
+        if 'l301' in link:  # Multiplicity error
+            return True
+        elif 'l101' in link:  # Input File error
+            return True
+        elif 'l202' in link:  # Proximity error
+            return True
+        elif 'l1' == link:  # Calc KW error
+            return True
+        elif 'l801' in link:  # SCF error?
+            return True
+        else:
+            return False
 
 class IrcManager(GaussianManager):
     """

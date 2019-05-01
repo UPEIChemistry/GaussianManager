@@ -3,8 +3,9 @@
 from . import manager, utils, calculations, exceptions
 import os
 from shutil import rmtree
+import sys
 import time
-from typing import List, Type, Union
+from typing import List, Type
 
 
 def run(mols: List, out: str, calcs: List, multi: str):
@@ -42,7 +43,7 @@ def run(mols: List, out: str, calcs: List, multi: str):
             # Raised if GM cannot solve any errors thrown by gaussian
             except exceptions.GaussianManagerError as e:
 
-                msg = 'encountered ({}) running {} {} on {}'.format(e.args[0], calc.method, calc.name, mol_name)
+                msg = 'encountered ({}) running {} on {}'.format(e.args[0], calc.name, mol_name)
 
                 # Log to both the mol and main exp dirs
                 utils.log_error(mol_log, msg, verbose=True)
@@ -63,10 +64,13 @@ def run(mols: List, out: str, calcs: List, multi: str):
         _record_time(m_start, mol_name, exp_log)
 
     # Remove failed molecules from the exp dir, keep them in the failed dir
-    superlist, sublist = _get_failed_dirlists(out)
+    try:
+        superlist, sublist = _get_failed_dirlists(out)
+    except exceptions.GaussianManagerError:  # Cannot delete failed mols, so exit GM
+        sys.exit()
     dirs_in_both = set(superlist) & set(sublist)
     for d in dirs_in_both:
-        _remove_dir(os.path.join(out, d))
+        rmtree(os.path.join(out, d))
 
 
 def _get_in_out(calc, geom_dir, mol):
@@ -100,14 +104,13 @@ def _get_in_out(calc, geom_dir, mol):
     return mol_in, mol_out
 
 
-def _get_gm(out: str, mol_name: str, mol_in: str, mol_out: str,
-            multi: str, calc: Union[calculations.TsoptCalc,
-                                    calculations.IrcCalc,
-                                    calculations.GoptCalc]) -> Union[Type[manager.GaussianManager],
-                                                                     Type[manager.TSManager],
-                                                                     Type[manager.QST2Manager],
-                                                                     Type[manager.QST3Manager],
-                                                                     Type[manager.IrcManager]]:
+def _get_gm(
+        out: str,
+        mol_name: str,
+        mol_in: str,
+        mol_out: str,
+        multi: str,
+        calc: calculations.Calculation) -> Type[manager.GaussianManager]:
     """Calls GM factory method"""
 
     gm_dir = out + '{}/{}/{}/'.format(mol_name, calc.method, calc.name)
@@ -151,6 +154,7 @@ def _record_time(start, mol_name, log, calc=None):
 
 def _get_failed_dirlists(path: str):
 
+    failed_superlist, failed_sublist = None, None
     for i, (dirname, dirs, files) in enumerate(os.walk(path)):
         if i == 0:
             failed_superlist = [d for d in dirs if 'failed' not in d]
@@ -158,13 +162,6 @@ def _get_failed_dirlists(path: str):
             failed_sublist = [d for d in dirs]
             break
 
+    if failed_superlist is None or failed_sublist is None:
+        raise exceptions.GaussianManagerError('unable to ')
     return failed_superlist, failed_sublist
-
-
-def _remove_dir(dirpath: str):
-    """Remove provided dirpath
-
-    :param dirpath: path to directory to remove. Will remove dirs recursively.
-    """
-
-    rmtree(dirpath)

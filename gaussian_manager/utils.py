@@ -114,7 +114,7 @@ def get_coords(path: str) -> List:
     try:
         crude_coords = lines[-beginning_idx: -end_idx - 1]
     except NameError:
-        raise exceptions.GaussianUtilsError('no coords to pull in {} '.format(path))
+        raise exceptions.GaussianUtilsError('no coords to pull in {} '.format(os.path.basename(path)))
 
     # Pull out all of the extra bits from the coordinates
     sanit_coords = []
