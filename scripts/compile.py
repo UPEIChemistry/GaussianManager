@@ -10,11 +10,11 @@ def get_args():
 
     parser = argparse.ArgumentParser(description='Compile batch geometries into single data directory,')
     parser.add_argument('--root',
-                        default='/home/riley/gaussian/experiments/batches/',
+                        default='/home/riley/gaussian/mp2',
                         help='Root dir where exp batches are located')
     parser.add_argument('--dest',
-                        default='/home/riley/gaussian/experiments/batches/data/',
-                        help='Where to place mol directories')
+                        default='/home/riley/gaussian/mp2/arrays',
+                        help='Where to place final arrays')
 
     return parser.parse_args()
 
@@ -27,7 +27,6 @@ def run():
 
 def main(src, dest):
 
-    make_data_dir(src, dest)
     array_files = []
     for i, (dirname, dirs, files) in enumerate(os.walk(dest)):
 
@@ -54,10 +53,10 @@ def main(src, dest):
     ts = compile_arrays(add_dummy_atoms(ts, max_atoms))
     z = compile_arrays(add_dummy_atoms_z(z, max_atoms))
 
-    np.save('/home/riley/gaussian/experiments/batches/data/mp2_reactant_cartesians.npy', r)
-    np.save('/home/riley/gaussian/experiments/batches/data/mp2_product_cartesians.npy', p)
-    np.save('/home/riley/gaussian/experiments/batches/data/mp2_ts_cartesians.npy', ts)
-    np.save('/home/riley/gaussian/experiments/batches/data/mp2_atm_nums.npy', z)
+    np.save(dest + '/mp2_reactant_cartesians.npy', r)
+    np.save(dest + '/mp2_product_cartesians.npy', p)
+    np.save(dest + '/mp2_ts_cartesians.npy', ts)
+    np.save(dest + '/mp2_atm_nums.npy', z)
 
 
 def make_data_dir(src, dest):

@@ -197,3 +197,5 @@ class TsoptOutputFile(OutputFile):
 
         if display_plot:
             plt.show()
+
+        plt.close('all')
