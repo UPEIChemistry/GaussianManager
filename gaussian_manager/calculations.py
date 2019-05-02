@@ -50,7 +50,7 @@ class TsoptCalc(Calculation):
                  grid: str = 'ultrafine',
                  max_step_size: int = 64,
                  num_steps: int = 512,
-                 scf: str = 'maxcyc=256'):
+                 scf: str = 'maxcyc=512'):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
 
@@ -101,7 +101,7 @@ class GoptCalc(Calculation):
                  grid: str = 'ultrafine',
                  max_step_size: int = 64,
                  num_steps: int = 512,
-                 scf: str = 'maxcyc=256'):
+                 scf: str = 'maxcyc=512'):
         """
         Calc for tsopt calculations with exposed commonly customizable calc kws
         :param method: level of theory
@@ -148,7 +148,7 @@ class IrcCalc(Calculation):
                  direction: str = 'reverse',
                  convergence: str = 'tight',
                  grid: str = 'superfine',
-                 scf: str = 'maxcyc=256',
+                 scf: str = 'maxcyc=512',
                  max_points: int = 2,
                  step_size: int = 10):
         """

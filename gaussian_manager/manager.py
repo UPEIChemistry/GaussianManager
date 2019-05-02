@@ -157,7 +157,7 @@ class GaussianManager(object):
             raise exceptions.GaussianManagerError(e.args[0])
 
     def fix_rare_convergence(self):
-        """Solves the l502 error by setting SCF=QC"""
+        """DEPRECATED. Solves the l502 error by setting SCF=QC"""
 
         self.calculation.scf = 'qc'
         self.write_input()
